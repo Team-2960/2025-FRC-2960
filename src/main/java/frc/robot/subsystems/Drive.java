@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
@@ -15,7 +16,6 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveDriveWheelPositions;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
@@ -24,7 +24,6 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTableValue;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.networktables.StructPublisher;
-import edu.wpi.first.units.Angle;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
@@ -43,16 +42,14 @@ import javax.swing.text.html.Option;
 import java.lang.reflect.Field;
 import java.sql.Driver;
 
-import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.commands.FollowPathHolonomic;
+import com.pathplanner.lib.commands.FollowPathCommand;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.path.PathPlannerPath;
-import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
-import com.pathplanner.lib.util.PIDConstants;
-import com.pathplanner.lib.util.ReplanningConfig;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.studica.frc.AHRS;
+import com.studica.frc.AHRS.NavXComType;
 
 public class Drive extends SubsystemBase {
     public enum AngleControlMode {
@@ -111,6 +108,7 @@ public class Drive extends SubsystemBase {
     private FieldObject2d fieldTargetPoint;
 
     // PathPlanner
+    public RobotConfig config;
     public AutoBuilder autoBuilder;
 
     // AdvantageScope
@@ -148,7 +146,7 @@ public class Drive extends SubsystemBase {
                 Rotation2d.fromDegrees(0), false);
 
         // Initialize NavX
-        navx = new AHRS(SPI.Port.kMXP);
+        navx = new AHRS(NavXComType.kMXP_SPI);
         navx.reset();
         targetSeen = false;
         robotTargetAngle = 0;
@@ -175,16 +173,23 @@ public class Drive extends SubsystemBase {
                 VecBuilder.fill(0.5, 0.5, Units.degreesToRadians(30)));
 
         // Setup PathPlanner
+        try{
+            config = RobotConfig.fromGUISettings();
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
         autoBuilder = new AutoBuilder();
-        autoBuilder.configureHolonomic(this::getEstimatedPos,
+        AutoBuilder.configure(
+                this::getEstimatedPos,
                 this::presetPosition,
                 this::getChassisSpeeds,
-                this::pathPlannerKinematics,
-                new HolonomicPathFollowerConfig(
-                        new PIDConstants(1, 0, 0), new PIDConstants(1, 0, 0),
-                        Constants.maxSpeed,
-                        0.4,
-                        new ReplanningConfig()),
+                (speeds, feedforwards) -> pathPlannerKinematics(speeds),
+                new PPHolonomicDriveController(
+                        new PIDConstants(1, 0, 0), 
+                        new PIDConstants(1, 0, 0)
+                ),
+                config,
                 () -> {
                     var alliance = DriverStation.getAlliance();
                     if (alliance.isPresent()) {
@@ -452,7 +457,7 @@ public class Drive extends SubsystemBase {
         double minError = Math.min(Math.abs(error), Math.abs(compError));
 
         // Calculate ramp down speed
-        double speed = Math.min(minError * rampDistance.getRadians(), Constants.kMaxAngularSpeed);
+        double speed = Math.min(minError * rampDistance.getRadians(), Constants.maxAngularSpeed);
         
         // Set direction
         double direction = error > 0 ? 1 : -1;
@@ -518,13 +523,6 @@ public class Drive extends SubsystemBase {
      * 
      * @param targetAngle target robot angle
      */
-    private double calcRateToAngle(Rotation2d targetAngle) {
-        // Get current angle position
-        Pose2d pose = getEstimatedPos();
-        Rotation2d currentAngle = pose.getRotation();
-
-        return calcRateToAngle(targetAngle, currentAngle);
-    }
 
     /**
      * Calculates the angle rate to reach a target angle
@@ -532,46 +530,6 @@ public class Drive extends SubsystemBase {
      * @param targetAngle  target robot angle
      * @param currentAngle current robot angle
      */
-    private double calcRateToAngle(Rotation2d targetAngle, Rotation2d currentAngle) {
-
-       /* 
-        // Determine minimum error distance
-        double error = currentAngle.minus(targetAngle).getRadians();
-        double compError = 2 * Math.PI - Math.abs(error);
-        double minError = Math.min(Math.abs(error), Math.abs(compError));
-         
-        // Calculate ramp down speed
-        double speed = Math.min(minError /
-        Constants.driveAngleRampDistance.getRadians(), 1)
-        / Constants.maxAutoAngularSpeed;
-         
-        // Set direction
-        double direction = error > 0 ? 1 : -1;
-         
-        if (minError == compError)
-        direction *= -1;
-         
-        speed *= direction;
-        return speed;
-        */
-        
-        Rotation2d error = currentAngle.minus(targetAngle);
-        Rotation2d compError = Rotation2d.fromDegrees(360).minus(error);
-        double minError = Math.min(error.getRadians(), compError.getRadians());
-        Rotation2d tarAngle;
-        if(error.getDegrees() > 180){
-            tarAngle = targetAngle.rotateBy(Rotation2d.fromDegrees(360));
-        }else{
-            tarAngle = targetAngle;
-        }
-        double speed = angleAlignPID.calculate(currentAngle.getRadians(), tarAngle.getRadians());
-        robotTargetAngle = tarAngle.getDegrees();
-        
-       /* if (Math.abs(angleDiff.getDegrees()) > 180){
-            speed *= -1;
-        }*/
-        return speed;
-    }
 
     /**
      * Calculates the angle rate to look at a target point
@@ -579,13 +537,6 @@ public class Drive extends SubsystemBase {
      * @param point  target point
      * @param offset target orientation offset
      */
-    private double calcRateToPoint(Translation2d point, Rotation2d offset) {
-        Pose2d pose = getEstimatedPos();
-        Translation2d targetOffset = point.minus(pose.getTranslation());
-        Rotation2d targetAngle = (targetOffset.getAngle().plus(offset));
-
-        return calcRateToAngle(targetAngle, pose.getRotation());
-    }
 
     private void updateUI() {
         Pose2d pose = getEstimatedPos();
@@ -633,37 +584,18 @@ public class Drive extends SubsystemBase {
         targetSeen = false;
     }
 
-    public Command followPathCommand(String pathName) {
-        PathPlannerPath path = PathPlannerPath.fromPathFile(pathName);
-
-        return new FollowPathHolonomic(
-                path,
-                this::getEstimatedPos, // Robot pose supplier
-                this::getChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-                this::pathPlannerKinematics, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
-                new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your
-                                                 // Constants class
-                        Constants.drivePIDConstants, // Translation PID constants
-                        Constants.driveAngPIDConstants, // Rotation PID constants
-                        Constants.maxSpeed, // Max module speed, in m/s
-                        0.4, // Drive base radius in meters. Distance from robot center to furthest module.
-                        new ReplanningConfig() // Default path replanning config. See the API for the options here
-                ),
-                () -> {
-                    // Boolean supplier that controls when the path will be mirrored for the red
-                    // alliance
-                    // This will flip the path being followed to the red side of the field.
-                    // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
-
-                    var alliance = DriverStation.getAlliance();
-                    if (alliance.isPresent()) {
-                        return alliance.get() == DriverStation.Alliance.Red;
-                    }
-                    return false;
-                },
-                this // Reference to this subsystem to set requirements
-        );
-    }
+    public Command getAutonomousCommand() {
+        try{
+            // Load the path you want to follow using its name in the GUI
+            PathPlannerPath path = PathPlannerPath.fromPathFile("Example Path");
+    
+            // Create a path following command using AutoBuilder. This will also trigger event markers.
+            return AutoBuilder.followPath(path);
+        } catch (Exception e) {
+            DriverStation.reportError("Big oops: " + e.getMessage(), e.getStackTrace());
+            return Commands.none();
+        }
+      }
 
     
 

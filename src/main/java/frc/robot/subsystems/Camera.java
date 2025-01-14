@@ -54,8 +54,7 @@ public class Camera extends SubsystemBase {
         aprilTagFieldLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
 
         // Initialize camera pose estimator
-        photonPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout,
-                PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, camera, Constants.robotToCamera);
+        photonPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, Constants.robotToCamera);
 
         // Initialize class variables
         lastPose = new Pose2d();
@@ -89,7 +88,7 @@ public class Camera extends SubsystemBase {
      * Retrieves camera pose estimation updates
      */
     private void updatePose() {
-        var estPoseUpdate = photonPoseEstimator.update();
+        var estPoseUpdate = photonPoseEstimator.update(null, null, null);
         var resultUpdate = camera.getLatestResult();
         // Check if an AprilTag is visible
         if (estPoseUpdate.isPresent()) {

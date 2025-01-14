@@ -10,11 +10,19 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
-import com.revrobotics.CANSparkMax;
+import com.ctre.phoenix6.signals.MotorOutputStatusValue;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkLimitSwitch;
-import com.revrobotics.CANSparkBase.IdleMode;
-import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkLimitSwitch;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.EncoderConfig;
+import com.revrobotics.spark.config.LimitSwitchConfig;
+import com.revrobotics.spark.config.SparkBaseConfig;
+import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.LimitSwitchConfig.Type;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 public class Climber extends SubsystemBase {
 
@@ -27,11 +35,14 @@ public class Climber extends SubsystemBase {
 
     private static Climber climber = null;
 
-    private CANSparkMax winchL;
-    private CANSparkMax winchR;
+    private SparkMax winchL;
+    private SparkMax winchR;
+    private SparkBaseConfig winchConfig;
+    private LimitSwitchConfig winchLimitConfig;
 
     private SparkLimitSwitch winchLimit;
     private RelativeEncoder winchEncoder;
+    private EncoderConfig winchEncoderConfig;
 
     private DoubleSolenoid ratchetRelease;
     private Timer ratchetTimer;
@@ -52,18 +63,23 @@ public class Climber extends SubsystemBase {
      */
     private Climber() {
         // Initialize Motors
-        winchL = new CANSparkMax(Constants.winchMotorL, MotorType.kBrushless);
-        winchR = new CANSparkMax(Constants.winchMotorR, MotorType.kBrushless);
-        winchL.setIdleMode(IdleMode.kBrake);
-        winchR.setIdleMode(IdleMode.kBrake);
-        winchR.setInverted(true);
+        winchL = new SparkMax(Constants.winchMotorL, MotorType.kBrushless);
+        winchR = new SparkMax(Constants.winchMotorR, MotorType.kBrushless);
+        
+        //Initialize Configurations
+        winchConfig = new SparkMaxConfig().idleMode(IdleMode.kBrake);
+        winchEncoderConfig = new EncoderConfig().positionConversionFactor(Constants.winchCircum);
+        winchLimitConfig = new LimitSwitchConfig().forwardLimitSwitchType(Type.kNormallyOpen).forwardLimitSwitchEnabled(false);
+
+        //Configure the winch motors, limit switch, encoder
+        winchL.configure(winchConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        winchR.configure(winchConfig.inverted(true).apply(winchEncoderConfig), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         // Initialize Encoder
         winchEncoder = winchR.getEncoder();
-        winchEncoder.setPositionConversionFactor(Constants.winchCircum);
 
-        // Initialize limit switch
-        winchLimit = winchL.getForwardLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen);
+        //Initialize Limit Switch
+        winchLimit = winchL.getForwardLimitSwitch();
 
         // Initialize climber state
         climbState = ClimberStates.MATCH_START;
@@ -210,7 +226,7 @@ public class Climber extends SubsystemBase {
     }
 
     private void setMotor(double value, boolean enableLimit) {
-        winchLimit.enableLimitSwitch(enableLimit);
+        winchLimitConfig.forwardLimitSwitchEnabled(enableLimit);
         winchL.set(value);
         winchR.set(value);
 

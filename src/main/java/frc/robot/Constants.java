@@ -3,10 +3,13 @@ package frc.robot;
 import edu.wpi.first.units.*;
 import edu.wpi.first.wpilibj2.command.PIDCommand;
 
-import com.pathplanner.lib.util.PIDConstants;
+import com.pathplanner.lib.config.ModuleConfig;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.math.system.plant.DCMotor;
 import frc.robot.Util.*;
 
 public class Constants {
@@ -36,6 +39,8 @@ public class Constants {
     public static final double winchCircum = Math.PI * winchDiam * (15/36); // in.
 
     public static final int revTBEncCountPerRev = 4096;
+
+    public static final ModuleConfig moduleConfig = new ModuleConfig(0.048, 5.450, 1.2, new DCMotor(12, 3.6, 211, 3.6, 710.418819, 1), 211, 1);
 
     // CAN IDs
     public static final int shooterTop = 14;
@@ -79,6 +84,8 @@ public class Constants {
     // Auton
     public static double autonRampDownSpeed = 0.5;  
     public static double minSpeed = 2;              // m/s
+    //TODO Change MOI
+    public static final RobotConfig robotConfig = new RobotConfig(52.16, 6.883, moduleConfig, robotWidth);
 
     //Preset Auton Positions
     public static final Pose2d redSourceSide = new Pose2d(0, 0, Rotation2d.fromDegrees(0));

@@ -1,10 +1,13 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.revrobotics.CANSparkFlex;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.servohub.ServoHub.ResetMode;
+import com.revrobotics.spark.SparkFlex;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.SparkBaseConfig;
+import com.revrobotics.spark.config.SparkFlexConfig;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.GenericEntry;
@@ -28,8 +31,8 @@ public class IntakePizzaBox extends SubsystemBase {
 
     private TalonFX intakeRollers;
 
-    private CANSparkFlex shooterTop;
-    private CANSparkFlex shooterBot;
+    private SparkFlex shooterTop;
+    private SparkFlex shooterBot;
 
     private RelativeEncoder shootEncoder1;
     private RelativeEncoder shootEncoder2;
@@ -57,12 +60,11 @@ public class IntakePizzaBox extends SubsystemBase {
     private IntakePizzaBox() {
         // Initialize Intake Motor
         intakeRollers = new TalonFX(Constants.intakeRollers);
-        intakeRollers.setInverted(false);
 
         // Initialize Shooter Motors
-        shooterTop = new CANSparkFlex(Constants.shooterTop, MotorType.kBrushless);
-        shooterBot = new CANSparkFlex(Constants.shooterBot, MotorType.kBrushless);
-        shooterTop.setInverted(true);
+        shooterTop = new SparkFlex(Constants.shooterTop, MotorType.kBrushless);
+        shooterBot = new SparkFlex(Constants.shooterBot, MotorType.kBrushless);
+        shooterTop.configure(new SparkFlexConfig().inverted(true), com.revrobotics.spark.SparkBase.ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         // Initialize Shooter Encoders
         shootEncoder1 = shooterTop.getEncoder();

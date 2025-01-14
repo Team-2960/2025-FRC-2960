@@ -1,9 +1,16 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.SparkAbsoluteEncoder;
-import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.revrobotics.servohub.ServoHub.ResetMode;
+import com.revrobotics.spark.SparkAbsoluteEncoder;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.AbsoluteEncoderConfig;
+import com.revrobotics.spark.config.SparkFlexConfig;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -20,7 +27,7 @@ public class Swerve extends SubsystemBase {
 
     private final TalonFX mDrive;
 
-    private final CANSparkMax mAngle;
+    private final SparkMax mAngle;
 
     private final SparkAbsoluteEncoder encAngle;
 
@@ -29,6 +36,8 @@ public class Swerve extends SubsystemBase {
 
     private final PIDController anglePIDController;
     private final SimpleMotorFeedforward angleFeedforward;
+
+    private TalonFXConfiguration talonConfig;
 
     private SwerveModuleState desiredState;
 
@@ -48,12 +57,15 @@ public class Swerve extends SubsystemBase {
         mDrive = new TalonFX(driveMotorID);
         mDrive.setInverted(invertDrive);
         swerveAngleOffset = swerveOffset;
-        mAngle = new CANSparkMax(angleMotorID, MotorType.kBrushless);
+        mAngle = new SparkMax(angleMotorID, MotorType.kBrushless);
+        mAngle.configure(new SparkFlexConfig().apply(new AbsoluteEncoderConfig().inverted(true)), 
+                         com.revrobotics.spark.SparkBase.ResetMode.kResetSafeParameters, 
+                         PersistMode.kPersistParameters);
         mAngle.setInverted(true);
 
         // Initialize Angle Sensor
-        encAngle = mAngle.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle);
-        encAngle.setInverted(true);
+        encAngle = mAngle.getAbsoluteEncoder();
+    
 
         // Initialize Drive rate controllers
         drivePIDcontroller = new PIDController(Constants.drivePID.kP, Constants.drivePID.kI,
