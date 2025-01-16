@@ -5,11 +5,6 @@ import frc.robot.Util.FieldLayout;
 
 import java.util.Map;
 
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.configs.MotorOutputConfigs;
-import com.ctre.phoenix6.controls.DutyCycleOut;
-import com.ctre.phoenix6.controls.VoltageOut;
-import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
@@ -23,6 +18,7 @@ import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -57,8 +53,8 @@ public class Arm extends SubsystemBase {
         }
     }
 
-    private TalonFX armMotor1;
-    private TalonFX armMotor2;
+    private Talon armMotor1;
+    private Talon armMotor2;
 
     private DoubleSolenoid armExtender1;
     private DoubleSolenoid armExtender2;
@@ -134,8 +130,8 @@ public class Arm extends SubsystemBase {
         //unused channels
         
 
-        armMotor1 = new TalonFX(Constants.armMotor1);
-        armMotor2 = new TalonFX(Constants.armMotor2);
+        armMotor1 = new Talon(Constants.armMotor1);
+        armMotor2 = new Talon(Constants.armMotor2);
 
         armExtender1 = new DoubleSolenoid(Constants.phCANID, PneumaticsModuleType.REVPH, Constants.armExt1Rev,
                 Constants.armExt1For);
