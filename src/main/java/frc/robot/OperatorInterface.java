@@ -4,7 +4,7 @@ import frc.robot.Util.FieldLayout;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Drive;
-import frc.robot.subsystems.IntakePizzaBox;
+import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Climber.ClimberStates;
 
 import edu.wpi.first.math.MathUtil;
@@ -174,16 +174,6 @@ public class OperatorInterface extends SubsystemBase {
 
 
 
-        if (driverController.getRawButton(6)) {
-            IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.SHOOT);
-        }
-        if (driverController.getRawButton(8)) {
-            climber.setClimbState(ClimberStates.CLIMB);
-        }
-        if (driverController.getRawAxis(3) > .1) {
-            IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.INTAKE);
-        }
-
         
         climber.setRatchet(driverController.getRawButton((5)));
 
@@ -251,22 +241,8 @@ public class OperatorInterface extends SubsystemBase {
      * Updates the controls for the Pizzabox
      */
     private void updatePizzabox() {
-        IntakePizzaBox intakePB = IntakePizzaBox.getInstance();
+        Intake intakePB = Intake.getInstance();
 
-        if (operatorController.getRawButton(6)) {
-            intakePB.setState(IntakePizzaBox.PizzaboxState.FAST_SHOOT);
-        } else if (operatorController.getRawAxis(3) > .1) {
-            intakePB.setState(IntakePizzaBox.PizzaboxState.SHOOT);
-        } else if (operatorController.getRawButton(5)) {
-            intakePB.setState(IntakePizzaBox.PizzaboxState.INTAKE);
-        } else if (operatorController.getRawAxis(2) > .2) {
-
-            intakePB.setState(IntakePizzaBox.PizzaboxState.REVERSE);
-        } else if (operatorController.getRawAxis(5) > .1) {
-            intakePB.setState(IntakePizzaBox.PizzaboxState.SHOOT_PREP);
-        } else {
-            intakePB.setState(IntakePizzaBox.PizzaboxState.IDLE);
-        }
     }
 
     /**
@@ -290,7 +266,7 @@ public class OperatorInterface extends SubsystemBase {
      */
     private void updateDriverFeedback() {
         double rumblePower = 0;
-        IntakePizzaBox intakePB = IntakePizzaBox.getInstance();
+        Intake intakePB = Intake.getInstance();
         AddressableLEDBuffer ledColor = led_idle;
 
         boolean isEndGame = DriverStation.isTeleop() && DriverStation.getMatchTime() <= 50 && DriverStation.getMatchType() != MatchType.None;

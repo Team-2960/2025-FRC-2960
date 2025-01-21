@@ -42,11 +42,7 @@ public class Constants {
 
     public static final ModuleConfig moduleConfig = new ModuleConfig(0.048, 5.450, 1.2, new DCMotor(12, 3.6, 211, 3.6, 710.418819, 1), 211, 1);
 
-    // CAN IDs
-    public static final int shooterTop = 14;
-    public static final int shooterBot = 13;
-
-    public static final int intakeRollers = 15;
+    public static final int intakeRollers = 0;
 
     public static final int winchMotorL = 10;
     public static final int winchMotorR = 9;
