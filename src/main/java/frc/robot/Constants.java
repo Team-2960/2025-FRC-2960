@@ -47,8 +47,7 @@ public class Constants {
     public static final int winchMotorL = 10;
     public static final int winchMotorR = 9;
     
-    public static final int armMotor1 =11;
-    public static final int armMotor2 = 12;
+    public static final int armMotor = 0;
 
     public static final int frontLeftDriveM = 3;
     public static final int frontLeftAngleM = 4;
@@ -116,14 +115,14 @@ public class Constants {
     public static final PIDParam angleAlignPID = new PIDParam(4, 0, 0.3);
 
     // Arm
-    public static PIDParam armPIDS0 = new PIDParam(0.01, 0.0, 0.0);
-    public static FFParam armFFS0 = FFParam.arm(.1, 2, 0.25, 0.0);
+    public static PIDParam armPIDS0 = new PIDParam(0, 0.0, 0.0);
+    public static FFParam armFFS0 = FFParam.arm(0, 0, 0, 0.0);
 
-    public static PIDParam armPIDS1 = new PIDParam(0.01, 0.0, 0.0);
-    public static FFParam armFFS1 = FFParam.arm(.1, 2, 0.25, 0.0);
+    public static PIDParam armPIDS1 = new PIDParam(0.0, 0.0, 0.0);
+    public static FFParam armFFS1 = FFParam.arm(0, 0, 0, 0.0);
     
-    public static PIDParam armPIDS2 = new PIDParam(0.01, 0.0, 0.0);
-    public static FFParam armFFS2 = FFParam.arm(.1, 2, 0.25, 0.0);
+    public static PIDParam armPIDS2 = new PIDParam(0.0, 0.0, 0.0);
+    public static FFParam armFFS2 = FFParam.arm(0, 2, 0, 0.0);
 
     public static final Rotation2d minArmS0Pos = Rotation2d.fromDegrees(20 + 16);
     public static final Rotation2d minArmS0Angle = Rotation2d.fromDegrees(2 + 16);

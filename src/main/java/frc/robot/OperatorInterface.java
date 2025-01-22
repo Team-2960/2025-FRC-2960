@@ -133,7 +133,7 @@ public class OperatorInterface extends SubsystemBase {
         if (DriverStation.isTeleop()) {
             updateDrive();
             updateArm();
-            updatePizzabox();
+            updateIntake();
             updateClimber();
             updateDriverFeedback();
         }
@@ -202,8 +202,6 @@ public class OperatorInterface extends SubsystemBase {
             arm.setState("Amp");// amp
         } else if (operatorController.getRawButton(4)) {
             arm.setState("Intake");
-        } else if (operatorController.getPOV() == 90 && operatorController.getPOV() != 270) {
-            arm.armAutoAlign();
         } else if (operatorController.getPOV() == 270 && operatorController.getPOV() != 90) {
             arm.setState("home");
         }
@@ -226,11 +224,6 @@ public class OperatorInterface extends SubsystemBase {
 
         // Manual Arm Extension control
         int opPOVAngle = operatorController.getPOV();
-        if (opPOVAngle == 0 && lastOpPOV != 0)
-            arm.stepExtOut();
-        if (opPOVAngle == 180 && lastOpPOV != 180)
-            arm.stepExtIn();
-
         lastOpPOV = opPOVAngle;
 
         // Update shuffleboard
@@ -240,9 +233,8 @@ public class OperatorInterface extends SubsystemBase {
     /**
      * Updates the controls for the Pizzabox
      */
-    private void updatePizzabox() {
-        Intake intakePB = Intake.getInstance();
-
+    private void updateIntake() {
+        Intake intake = Intake.getInstance();
     }
 
     /**

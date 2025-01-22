@@ -183,7 +183,6 @@ public class Climber extends SubsystemBase {
                 retractClimber(1, true);
                 break;
             case CLIMB_START:
-                extendClimber();
                 break;
             case IDLE:
             default:
@@ -206,21 +205,6 @@ public class Climber extends SubsystemBase {
             setMotor(0, true);
         } else {
             setMotor(winchSpeed, true);
-        }
-    }
-
-    /**
-     * Extends the climber to the max height
-     */
-    private void extendClimber() {
-        // Check if the arm is clear of the climber
-        if (!Arm.getInstance().isInClimberZone()) {
-            // Check if the climber is at its max extention
-            if (getExtension() < Constants.winchMaxExtension) {
-                setMotor(-.5, true);
-            } else {
-                setMotor(0, true);
-            }
         }
     }
 
