@@ -272,18 +272,6 @@ public class OperatorInterface extends SubsystemBase {
         boolean isEndGame = DriverStation.isTeleop() && DriverStation.getMatchTime() <= 50 && DriverStation.getMatchType() != MatchType.None;
 
         // Rumble the controllers at half power for .5 seconds when a note is in the
-        // intake
-        if (intakePB.isNotePresent()) {
-            if (!lastIsNotePresent) {
-                rumbleTimer.restart();
-                ledTimer.restart();
-            }
-
-            if (rumbleTimer.get() < .5)
-                rumblePower = .5;
-
-            ledColor = led_note;
-        }
 
         // Rumble the controllers at full power for 1 second when the end game is about
         // to start
@@ -312,9 +300,6 @@ public class OperatorInterface extends SubsystemBase {
         // Update LEDs
         leds.setData(ledColor);
 
-        // Update state transition checks
-        lastIsNotePresent = intakePB.isNotePresent();
-        lastIsEndGame = isEndGame;
 
         // Update UI
         sb_rumblePower.setDouble(rumblePower);

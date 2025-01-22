@@ -206,7 +206,6 @@ public class Climber extends SubsystemBase {
             setMotor(0, true);
         } else {
             setMotor(winchSpeed, true);
-
         }
     }
 
