@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import frc.robot.Constants;
 
 public class Pneumatics extends SubsystemBase {
-
+    /*
     private static Pneumatics instance = null;
 
     public Compressor compressor;
@@ -44,6 +44,6 @@ public class Pneumatics extends SubsystemBase {
             instance = new Pneumatics();
 
         return instance;
-    }
+    }*/
 
 }

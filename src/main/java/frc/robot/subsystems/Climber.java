@@ -68,12 +68,12 @@ public class Climber extends SubsystemBase {
         
         //Initialize Configurations
         winchConfig = new SparkMaxConfig().idleMode(IdleMode.kBrake);
-        winchEncoderConfig = new EncoderConfig().positionConversionFactor(Constants.winchCircum);
+        //winchEncoderConfig = new EncoderConfig().positionConversionFactor(Constants.winchRatchedDelay);
         winchLimitConfig = new LimitSwitchConfig().forwardLimitSwitchType(Type.kNormallyOpen).forwardLimitSwitchEnabled(false);
 
         //Configure the winch motors, limit switch, encoder
         winchL.configure(winchConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-        winchR.configure(winchConfig.inverted(true).apply(winchEncoderConfig), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        winchR.configure(winchConfig.inverted(true), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         // Initialize Encoder
         winchEncoder = winchR.getEncoder();
