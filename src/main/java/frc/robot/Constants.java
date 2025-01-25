@@ -40,7 +40,7 @@ public class Constants {
 
     public static final int revTBEncCountPerRev = 4096;
 
-    public static final ModuleConfig moduleConfig = new ModuleConfig(0.048, 5.450, 1.2, new DCMotor(12, 3.6, 211, 3.6, 710.418819, 1), 211, 1);
+    public static final ModuleConfig moduleConfig = new ModuleConfig(0.0381, 5.450, 1, new DCMotor(12, 4.69, 257, 1.5, 106.33, 1), 257, 1);
 
     // CAN IDs
     public static final int shooterTop = 14;

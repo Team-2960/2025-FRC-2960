@@ -358,18 +358,7 @@ public class Drive extends SubsystemBase {
     /**
      * Subsystem periodic method
      */
-    @Override
-    public void periodic() {
-        if (DriverStation.isAutonomous()) {
-            fieldRelative = false;
-        } else if (DriverStation.isTeleop()) {
-            fieldRelative = true;
-        }
-        update_kinematics();
-        update_odometry();
-        updateUI();
-        updateScope();
-    }
+    
 
     /**
      * Updates the robot swerve kinematics
@@ -518,6 +507,13 @@ public class Drive extends SubsystemBase {
         }
     }
 
+    public void goToPoint(Pose2d point){
+        Pose2d currentPose = getEstimatedPos();
+        Transform2d distance = point.minus(currentPose);
+        
+    }
+
+
     /**
      * Calculates the angle rate to reach a target angle
      * 
@@ -597,7 +593,18 @@ public class Drive extends SubsystemBase {
         }
       }
 
-    
+    @Override
+    public void periodic() {
+        if (DriverStation.isAutonomous()) {
+            fieldRelative = false;
+        } else if (DriverStation.isTeleop()) {
+            fieldRelative = true;
+        }
+        update_kinematics();
+        update_odometry();
+        updateUI();
+        updateScope();
+    }
 
     /**
      * Static Initializer

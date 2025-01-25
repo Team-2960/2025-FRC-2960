@@ -596,12 +596,12 @@ public class Arm extends SubsystemBase {
      * Updates the brake mode control of the
      */
     private void updateBrakeMode() {
-        var motorConfigs = new MotorOutputConfigs();
+        // var motorConfigs = new MotorOutputConfigs();
 
-        motorConfigs.NeutralMode = !brakeModeDisableBtn.get() ? NeutralModeValue.Coast : NeutralModeValue.Brake;
+        // motorConfigs.NeutralMode = !brakeModeDisableBtn.get() ? NeutralModeValue.Coast : NeutralModeValue.Brake;
 
-        armMotor1.getConfigurator().apply(motorConfigs);
-        armMotor2.getConfigurator().apply(motorConfigs);
+        // armMotor1.getConfigurator().apply(motorConfigs);
+        // armMotor2.getConfigurator().apply(motorConfigs);
     }
 
     /**
