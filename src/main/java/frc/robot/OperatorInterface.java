@@ -60,6 +60,7 @@ public class OperatorInterface extends SubsystemBase {
     private GenericEntry sb_rumblePower;
     private GenericEntry sb_rumbleTimer;
     private GenericEntry sb_isEndGame;
+    private GenericEntry sb_armCommand;
 
     /**
      * Constructor
@@ -111,6 +112,7 @@ public class OperatorInterface extends SubsystemBase {
                 .withSize(2, 4);
         sb_armRate = arm_layout.add("Arm Manual Rate", 0).getEntry();
         sb_armExtendManual = arm_layout.add("Arm Extend", 0).getEntry();
+        sb_armCommand = arm_layout.add("Current Arm Command", "").getEntry();
 
         var rumble_layout = Shuffleboard.getTab("OI")
                 .getLayout("Rumble", BuiltInLayouts.kList)
@@ -162,8 +164,6 @@ public class OperatorInterface extends SubsystemBase {
             drive.setTargetPoint(FieldLayout.getSpeakerPose().getTranslation(), FieldLayout.getSpeakerPose().getRotation());
         } else if (driverController.getRawButton(3)){
             drive.setTargetPoint(new Translation2d(0,0), Rotation2d.fromDegrees(180));
-        } else {
-            drive.setAngleRate(rSpeed);
         }
 
         Climber climber = Climber.getInstance();
@@ -205,17 +205,25 @@ public class OperatorInterface extends SubsystemBase {
 
         // Set Arm Presets
         if (operatorController.getRawButton(1)) {
-            arm.setState("Speaker");
+            arm.setStateCommand("Speaker");
+            sb_armCommand.setString(arm.getArmCommand().getName());
         } else if (operatorController.getRawButton(2)) {
-            arm.setState("lineSpeaker");
+            arm.setStateCommand("lineSpeaker");
+            sb_armCommand.setString(arm.getArmCommand().getName());
         } else if (operatorController.getRawButton(3)) {
-            arm.setState("Amp");// amp
+            arm.setStateCommand("Amp");// amp
+            sb_armCommand.setString(arm.getArmCommand().getName());
         } else if (operatorController.getRawButton(4)) {
-            arm.setState("Intake");
+            arm.setStateCommand("Intake");
+            sb_armCommand.setString(arm.getArmCommand().getName());
         } else if (operatorController.getPOV() == 90 && operatorController.getPOV() != 270) {
             arm.armAutoAlign();
+            sb_armCommand.setString(arm.getArmCommand().getName());
         } else if (operatorController.getPOV() == 270 && operatorController.getPOV() != 90) {
-            arm.setState("home");
+            arm.setStateCommand("home");
+            sb_armCommand.setString(arm.getArmCommand().getName());
+        }else{
+            arm.setHoldCommand();
         }
 
         // TODO Map Podium shot preset
@@ -225,26 +233,10 @@ public class OperatorInterface extends SubsystemBase {
         double armManualRate = armManual * Constants.maxArmSpeed;
 
         if (Math.abs(armManual) > .1) {
-            arm.setArmRate(armManualRate);
-        } else if (arm.getControlMode() == Arm.ArmControlMode.MANUAL_RATE) {
-            arm.setArmRate(0);
-        } else if (arm.getControlMode() == Arm.ArmControlMode.MANUAL_VOLT) {
-            arm.setArmVolt(0);
+            arm.setRateCommand(armManualRate);
         }
 
         sb_armRate.setDouble(armManualRate);
-
-        // Manual Arm Extension control
-        int opPOVAngle = operatorController.getPOV();
-        if (opPOVAngle == 0 && lastOpPOV != 0)
-            arm.stepExtOut();
-        if (opPOVAngle == 180 && lastOpPOV != 180)
-            arm.stepExtIn();
-
-        lastOpPOV = opPOVAngle;
-
-        // Update shuffleboard
-        sb_armExtendManual.setInteger(opPOVAngle);
     }
 
     /**

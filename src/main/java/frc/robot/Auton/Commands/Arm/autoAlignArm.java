@@ -12,7 +12,7 @@ public class autoAlignArm extends Command {
     
     @Override
     public boolean isFinished() {
-        boolean finished = Arm.getInstance().atTarget();
-        return finished;
+        //boolean finished = Arm.getInstance().atTarget();
+        return true;
     }
 }

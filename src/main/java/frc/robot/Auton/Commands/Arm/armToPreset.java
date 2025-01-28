@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.subsystems.Arm;
+import frc.robot.subsystems.Arm.ArmStateValues;
 
 public class armToPreset extends Command {
     private String preset_name;
@@ -16,12 +17,11 @@ public class armToPreset extends Command {
 
     @Override
     public void initialize() {
-        Arm.getInstance().setState(preset_name);
+        Arm.getInstance().setStateCommand(preset_name);
     }
-
     @Override
     public boolean isFinished() {
-        boolean finished = Arm.getInstance().atTarget();
+        boolean finished = true;
 
         if (finished) {
             System.out.println("arm Preset isFinished True");

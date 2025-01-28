@@ -157,6 +157,8 @@ public class Drive extends SubsystemBase {
 
         angleAlignPID = new PIDController(Constants.angleAlignPID.kP, Constants.angleAlignPID.kI,
                 Constants.angleAlignPID.kD);
+        
+        angleAlignPID.enableContinuousInput(-Math.PI, Math.PI);
 
         // Initialize pose estimation
         swerveDrivePoseEstimator = new SwerveDrivePoseEstimator(
@@ -438,21 +440,8 @@ public class Drive extends SubsystemBase {
     }
 
     private double calcRateToAngle(Rotation2d targetAngle, Rotation2d currentAngle) {
-        Rotation2d rampDistance = Rotation2d.fromRadians(0.5);    // TODO move to constants
-
-        // Determine minimum error distance
-        double error = currentAngle.minus(targetAngle).getRadians();
-        double compError = 2 * Math.PI - Math.abs(error);
-        double minError = Math.min(Math.abs(error), Math.abs(compError));
-
-        // Calculate ramp down speed
-        double speed = Math.min(minError * rampDistance.getRadians(), Constants.maxAngularSpeed);
+        double speed = angleAlignPID.calculate(currentAngle.getRadians(), targetAngle.getRadians());
         
-        // Set direction
-        double direction = error > 0 ? 1 : -1;
-        if (minError == compError)  direction *= -1;
-        speed *= direction;
-
         return speed;
     }
 

@@ -113,7 +113,7 @@ public class IntakePizzaBox extends SubsystemBase {
         return state;
     }
 
-    /**
+    /**2
      * Checks if a game piece is present
      * 
      * @return true if a gamepiece is present, false otherwise
@@ -140,7 +140,7 @@ public class IntakePizzaBox extends SubsystemBase {
             // Check if a gamepiece is present
             if (isNotePresent()) {
                 intakeRollers.setVoltage(0);
-                if(Arm.getInstance().getArmAngle().getDegrees() <= 10) Arm.getInstance().setState("home");
+                if(Arm.getInstance().getArmAngle().getDegrees() <= 10) Arm.getInstance().setStateCommand("home");
             }else if (isIntakeNotePresent()) {
                 intakeRollers.setVoltage(Constants.intakeSlowVoltage);
             }else{
