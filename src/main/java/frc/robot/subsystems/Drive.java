@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.subsystems.Arm.ArmRateCommand;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -60,8 +61,6 @@ public class Drive extends SubsystemBase {
 
     private final SwerveDriveKinematics kinematics;
 
-    private double xSpeed = 0;
-    private double ySpeed = 0;
     private double rSpeed = 0;
     private Rotation2d targetAngle = new Rotation2d();
     private Translation2d targetPoint = new Translation2d();
@@ -96,11 +95,37 @@ public class Drive extends SubsystemBase {
     public AutoBuilder autoBuilder;
 
     // AdvantageScope
-    private final SwerveDrivePoseEstimator odometeryPoseEstimator;
     private SwerveModuleState[] swerveModuleStates;
     private StructPublisher<Pose2d> odometryPose;
     private StructArrayPublisher<Pose2d> arrayPose;
     private StructArrayPublisher<SwerveModuleState> swerveModules;
+
+    public class DriveRateCommand extends Command{
+        double xSpeed;
+        double ySpeed;
+        double rSpeed;
+
+        public DriveRateCommand(double xSpeed, double ySpeed, double rSpeed){
+            this.xSpeed = xSpeed;
+            this.ySpeed = ySpeed;
+            this.rSpeed = rSpeed;
+            addRequirements(Drive.this);
+        } 
+
+        public void setRate(double xSpeed, double ySpeed, double rSpeed){
+            this.xSpeed = xSpeed;
+            this.ySpeed = ySpeed;
+            this.rSpeed = rSpeed;
+        }
+
+        @Override
+        public void execute(){
+            setAngleRate(rSpeed);
+            updateKinematics(xSpeed, ySpeed);
+        }
+    }
+
+    private final DriveRateCommand driveRateCommand;
 
     /**
      * Constructor
@@ -187,25 +212,15 @@ public class Drive extends SubsystemBase {
 
         );
 
-        // Using AdvantageScope
-        swerveModuleStates = new SwerveModuleState[] {
-                frontLeft.getState(),
-                frontRight.getState(),
-                backLeft.getState(),
-                backRight.getState()
-        };
-        odometeryPoseEstimator = new SwerveDrivePoseEstimator(kinematics,
-                navx.getRotation2d(),
-                new SwerveModulePosition[] {
-                        frontLeft.getPosition(),
-                        frontRight.getPosition(),
-                        backLeft.getPosition(),
-                        backRight.getPosition()
-                },
-                new Pose2d(),
-                VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(5)),
-                VecBuilder.fill(0.5, 0.5, Units.degreesToRadians(30)));
+        //Call method to initialize shuffleboard
+        shuffleBoardInit();
 
+        driveRateCommand = new DriveRateCommand(0, 0, 0);
+        setDefaultCommand(driveRateCommand);
+        
+    }
+
+    public void shuffleBoardInit(){
         odometryPose = NetworkTableInstance.getDefault()
                 .getStructTopic("Odometry Pose", Pose2d.struct).publish();
         arrayPose = NetworkTableInstance.getDefault()
@@ -230,7 +245,6 @@ public class Drive extends SubsystemBase {
         sb_speedTargetR = pose_layout.add("Target Speed R", 0).getEntry();
 
         sb_field2d = Shuffleboard.getTab("Drive").add(field2d).withWidget("Field");
-        
     }
 
     /*
@@ -251,8 +265,7 @@ public class Drive extends SubsystemBase {
      * @param ySpeed speed of along the y-axis
      */
     public void setSpeed(double xSpeed, double ySpeed) {
-        this.xSpeed = xSpeed;
-        this.ySpeed = ySpeed;
+        updateKinematics(xSpeed, ySpeed);
     }
 
     /**
@@ -277,7 +290,6 @@ public class Drive extends SubsystemBase {
      */
     public void setAngleRate(double rSpeed) {
         this.rSpeed = rSpeed;
-        this.angleMode = AngleControlMode.AngleRate;
     }
 
     /**
@@ -349,18 +361,17 @@ public class Drive extends SubsystemBase {
     /**
      * Updates the robot swerve kinematics
      */
-    private void update_kinematics() {
+    private void updateKinematics(double xSpeed, double ySpeed) {
         ChassisSpeeds speeds;
 
-        double xSpeed = this.xSpeed;
-        double ySpeed = this.ySpeed;
+        // double xSpeed = this.xSpeed;
+        // double ySpeed = this.ySpeed;
+
         double autonRSpeed = chassisSpeeds.omegaRadiansPerSecond;
         /*if (targetSeen && fieldRelative) {
             xSpeed *= -1;
             ySpeed *= -1;
         }*/
-
-        rSpeed = getAngleRate();
         
         if (fieldRelative) {
             Pose2d robot_pose = getEstimatedPos();
@@ -415,18 +426,18 @@ public class Drive extends SubsystemBase {
         this.chassisSpeeds = chassisSpeeds;
     }
 
-    private double calcRateToAngle(Rotation2d targetAngle) { 
+    private void calcRateToAngle(Rotation2d targetAngle) { 
         // Get current angle position
         Pose2d pose = getEstimatedPos();
         Rotation2d currentAngle = pose.getRotation();
 
-        return calcRateToAngle(targetAngle, currentAngle);
+        calcRateToAngle(targetAngle, currentAngle);
     }
 
-    private double calcRateToAngle(Rotation2d targetAngle, Rotation2d currentAngle) {
+    private void calcRateToAngle(Rotation2d targetAngle, Rotation2d currentAngle) {
         double speed = angleAlignPID.calculate(currentAngle.getRadians(), targetAngle.getRadians());
         
-        return speed;
+        this.rSpeed = speed;
     }
 
     /**
@@ -434,12 +445,12 @@ public class Drive extends SubsystemBase {
      * @param   point   target point
      * @param   offset  target orientation offset
      */
-    private double calcRateToPoint(Translation2d point, Rotation2d offset) {
+    private void calcRateToPoint(Translation2d point, Rotation2d offset) {
         Pose2d pose = getEstimatedPos();
         Translation2d targetOffset = targetPoint.minus(pose.getTranslation());
         Rotation2d targetAngle = targetOffset.getAngle().plus(offset);
 
-        return calcRateToAngle(targetAngle, pose.getRotation());
+        calcRateToAngle(targetAngle, pose.getRotation());
     }
 
     /**
@@ -453,31 +464,6 @@ public class Drive extends SubsystemBase {
                         backLeft.getPosition(),
                         backRight.getPosition()
                 });
-        odometeryPoseEstimator.update(navx.getRotation2d(),
-                new SwerveModulePosition[] {
-                        frontLeft.getPosition(),
-                        frontRight.getPosition(),
-                        backLeft.getPosition(),
-                        backRight.getPosition()
-                });
-    }
-
-    /**
-     * Calculates the target angular rate for the robot
-     * 
-     * @return target angular rate for the robot based on current angle
-     *         control mode and settings
-     */
-    private double getAngleRate() {
-        switch (angleMode) {
-            case LookAtPoint:
-                return calcRateToPoint(targetPoint, targetAngle);
-            case Angle:
-                return calcRateToAngle(targetAngle);
-            case AngleRate:
-            default:
-                return rSpeed;
-        }
     }
 
     public void goToPoint(Pose2d point){
@@ -513,8 +499,6 @@ public class Drive extends SubsystemBase {
         sb_posEstY.setDouble(pose.getY());
         sb_posEstR.setDouble(pose.getRotation().getDegrees());
 
-        sb_speedX.setDouble(xSpeed);
-        sb_speedY.setDouble(ySpeed);
         sb_speedR.setDouble(rSpeed);
         sb_robotTargetAngle.setDouble(robotTargetAngle);
 
@@ -523,11 +507,6 @@ public class Drive extends SubsystemBase {
     }
 
     private void updateScope() {
-        odometryPose.set(odometeryPoseEstimator.getEstimatedPosition());
-        arrayPose.set(new Pose2d[] {
-                odometeryPoseEstimator.getEstimatedPosition(),
-                swerveDrivePoseEstimator.getEstimatedPosition()
-        });
         swerveModules.set(new SwerveModuleState[] {
                 frontLeft.getState(),
                 frontRight.getState(),
@@ -566,6 +545,11 @@ public class Drive extends SubsystemBase {
         }
       }
 
+    public void setDriveRateCommand(double xSpeed, double ySpeed, double rSpeed){
+        driveRateCommand.setRate(xSpeed, ySpeed, rSpeed);
+        if (getCurrentCommand() != driveRateCommand) driveRateCommand.schedule();
+    }
+
     @Override
     public void periodic() {
         if (DriverStation.isAutonomous()) {
@@ -573,7 +557,6 @@ public class Drive extends SubsystemBase {
         } else if (DriverStation.isTeleop()) {
             fieldRelative = true;
         }
-        update_kinematics();
         update_odometry();
         updateUI();
         updateScope();

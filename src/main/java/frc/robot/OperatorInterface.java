@@ -187,9 +187,8 @@ public class OperatorInterface extends SubsystemBase {
         
         climber.setRatchet(driverController.getRawButton((5)));
 
-        drive.setfieldRelative(fieldRelative);
-        drive.setSpeed(xSpeed, ySpeed);
-        drive.setAngleRate(rSpeed);
+        drive.setDriveRateCommand(xSpeed, ySpeed, rSpeed);
+        
 
         // Update Shuffleboard
         sb_driveX.setDouble(xSpeed);
