@@ -68,11 +68,8 @@ public class Arm extends SubsystemBase {
 
     private ArmStateValues targetState = defaultState;
 
-    private double manual_volt;
-    private double manual_rate;
-
-    private double targetRate;
-    private double targetVolt;
+    private double armVolt;
+    private double armRate;
 
     private Map<String, ArmStateValues> armStates = Map.of(
             "Match Start", new ArmStateValues(Rotation2d.fromDegrees(60)),
@@ -102,6 +99,7 @@ public class Arm extends SubsystemBase {
     private GenericEntry sb_anglePosRotations;
     private GenericEntry sb_atAngle;
     private GenericEntry sb_atTarget;
+    private GenericEntry sb_currentArmCommand;
 
     public class ArmVoltageCommand extends Command{
         private double targetVoltage;
@@ -151,7 +149,7 @@ public class Arm extends SubsystemBase {
         private Rotation2d target;
 
         public ArmHoldCommand(){
-            target = Rotation2d.fromDegrees(0);
+            target = new Rotation2d();
             addRequirements(Arm.this);
         }
 
@@ -218,11 +216,8 @@ public class Arm extends SubsystemBase {
 
         // Set control mode
         control_mode = ArmControlMode.MANUAL_VOLT;
-        manual_volt = 0;
-        manual_rate = 0;
-
-        targetRate = 0;
-        targetVolt = 0;
+        armVolt = 0;
+        armRate = 0;
 
         // Set target state to current state
         targetState = new ArmStateValues(getArmAngle());
@@ -234,6 +229,8 @@ public class Arm extends SubsystemBase {
         armRateCommand = new ArmRateCommand(0);
         armAngleCommand = new ArmAngleCommand(Rotation2d.fromDegrees(0));
         armHoldCommand = new ArmHoldCommand();
+
+        setDefaultCommand(new ArmHoldCommand());
 
     }
 
@@ -256,6 +253,8 @@ public class Arm extends SubsystemBase {
         sb_anglePosRotations = layout.add("Arm Encoder Rotations Output", 0).getEntry();
         sb_atAngle = layout.add("At Angle", false).getEntry();
         sb_atTarget = layout.add("At Target", false).getEntry();
+        sb_currentArmCommand = layout.add("Current Arm Command", getCurrentCommand().getName()).getEntry();
+
     }
 
     /**
@@ -360,7 +359,7 @@ public class Arm extends SubsystemBase {
      * @param targetSpeed target
      */
     private void setArmRate(double targetSpeed) {
-        double result = this.manual_volt;
+        double result = this.armRate;
 
         Rotation2d currentAngle = getArmAngle();
         double angleRate = getArmVelocity();
@@ -380,6 +379,9 @@ public class Arm extends SubsystemBase {
         result = calcPID + calcFF;
         
         setMotorVolt(result);
+        
+        //Shuffleboard display
+        this.armRate = result;
     }
 
     /**
@@ -389,7 +391,6 @@ public class Arm extends SubsystemBase {
      * @param voltage desired motor voltage
      */
     private void setMotorVolt(double voltage) {
-        this.targetVolt = voltage;
         // Set soft limits
         if (absoluteArmEncoder.get() < Constants.upperEncLimit) {
             voltage = Math.min(0, voltage);
@@ -399,6 +400,9 @@ public class Arm extends SubsystemBase {
         settings.EnableFOC = true;
         armMotor1.setControl(settings);
         armMotor2.setControl(settings);
+        
+        //Shuffleboard display
+        this.armVolt = settings.Output;
         
     }
 
@@ -450,6 +454,7 @@ public class Arm extends SubsystemBase {
         sb_angleTargetVolt.setDouble(targetVolt);
         sb_brakeModeDisabled.setBoolean(!brakeModeDisableBtn.get());
         sb_anglePosRotations.setDouble(absoluteArmEncoder.get());
+        sb_currentArmCommand.setString(getCurrentCommand().getName());
     }
 
     public void setRateCommand(double rate){
@@ -481,6 +486,7 @@ public class Arm extends SubsystemBase {
     @Override
     public void periodic() {
         SmartDashboard.putNumber("SpeakerPosition", FieldLayout.getSpeakerPose().getX());
+        updateUI(armRate, armVolt);
     }
 
 

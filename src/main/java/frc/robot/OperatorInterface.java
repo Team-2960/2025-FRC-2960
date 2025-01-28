@@ -60,7 +60,6 @@ public class OperatorInterface extends SubsystemBase {
     private GenericEntry sb_rumblePower;
     private GenericEntry sb_rumbleTimer;
     private GenericEntry sb_isEndGame;
-    private GenericEntry sb_armCommand;
 
     /**
      * Constructor
@@ -112,7 +111,6 @@ public class OperatorInterface extends SubsystemBase {
                 .withSize(2, 4);
         sb_armRate = arm_layout.add("Arm Manual Rate", 0).getEntry();
         sb_armExtendManual = arm_layout.add("Arm Extend", 0).getEntry();
-        sb_armCommand = arm_layout.add("Current Arm Command", "").getEntry();
 
         var rumble_layout = Shuffleboard.getTab("OI")
                 .getLayout("Rumble", BuiltInLayouts.kList)
@@ -206,24 +204,16 @@ public class OperatorInterface extends SubsystemBase {
         // Set Arm Presets
         if (operatorController.getRawButton(1)) {
             arm.setStateCommand("Speaker");
-            sb_armCommand.setString(arm.getArmCommand().getName());
         } else if (operatorController.getRawButton(2)) {
             arm.setStateCommand("lineSpeaker");
-            sb_armCommand.setString(arm.getArmCommand().getName());
         } else if (operatorController.getRawButton(3)) {
             arm.setStateCommand("Amp");// amp
-            sb_armCommand.setString(arm.getArmCommand().getName());
         } else if (operatorController.getRawButton(4)) {
             arm.setStateCommand("Intake");
-            sb_armCommand.setString(arm.getArmCommand().getName());
         } else if (operatorController.getPOV() == 90 && operatorController.getPOV() != 270) {
             arm.armAutoAlign();
-            sb_armCommand.setString(arm.getArmCommand().getName());
         } else if (operatorController.getPOV() == 270 && operatorController.getPOV() != 90) {
             arm.setStateCommand("home");
-            sb_armCommand.setString(arm.getArmCommand().getName());
-        }else{
-            arm.setHoldCommand();
         }
 
         // TODO Map Podium shot preset
