@@ -5,8 +5,6 @@ import frc.robot.Util.FieldLayout;
 
 import java.util.Map;
 
-import org.ejml.dense.row.decomposition.eig.symm.SymmetricQrAlgorithm_FDRM;
-
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.math.controller.ArmFeedforward;
@@ -16,7 +14,6 @@ import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -123,12 +120,24 @@ public class Arm extends SubsystemBase {
 
     public class ArmRateCommand extends Command{
         private double targetRate;
+        private double tolerance;
 
-        public ArmRateCommand(double targetRate){
+        public ArmRateCommand(double targetRate, double tolerance){
             this.targetRate = targetRate;
+            this.tolerance = tolerance;
             addRequirements(Arm.this);
         }
 
+        public void setRate(double targetRate){
+            this.targetRate = targetRate;
+        }
+
+        public void setToleranceRate(double targetRate, double tolerance){
+            SmartDashboard.putNumber("Arm tolerance", targetRate);
+            this.targetRate = targetRate;
+            this.tolerance = tolerance;
+        }
+        
         @Override
         public void execute(){
             setArmRate(targetRate);
@@ -136,13 +145,8 @@ public class Arm extends SubsystemBase {
 
         @Override
         public boolean isFinished(){
-            return targetRate == 0;
+            return targetRate == 0 || Math.abs(targetRate) <= tolerance;
         }
-
-        public void setRate(double targetRate){
-            this.targetRate = targetRate;
-        }
-
     }
 
     public class ArmHoldCommand extends Command{
@@ -155,6 +159,7 @@ public class Arm extends SubsystemBase {
 
         @Override
         public void initialize(){
+            System.out.println("Command initialized");
             target = getArmAngle();
         }
 
@@ -169,6 +174,7 @@ public class Arm extends SubsystemBase {
         
         public ArmAngleCommand(Rotation2d armAngle){
             this.armAngle = armAngle;
+            addRequirements(Arm.this);
         }
 
         public void setAngle(Rotation2d armAngle){
@@ -184,6 +190,10 @@ public class Arm extends SubsystemBase {
         public boolean isFinished(){
             return atAngle(armAngle, Rotation2d.fromDegrees(2));
         }
+    }
+
+    public class ArmBrakeModeCommand extends Command{
+        
     }
 
 
@@ -226,12 +236,11 @@ public class Arm extends SubsystemBase {
         shuffleBoardInit();
 
         armVoltageCommand = new ArmVoltageCommand(0);
-        armRateCommand = new ArmRateCommand(0);
+        armRateCommand = new ArmRateCommand(0, 0);
         armAngleCommand = new ArmAngleCommand(Rotation2d.fromDegrees(0));
         armHoldCommand = new ArmHoldCommand();
 
         setDefaultCommand(new ArmHoldCommand());
-
     }
 
     public void shuffleBoardInit(){
@@ -253,7 +262,7 @@ public class Arm extends SubsystemBase {
         sb_anglePosRotations = layout.add("Arm Encoder Rotations Output", 0).getEntry();
         sb_atAngle = layout.add("At Angle", false).getEntry();
         sb_atTarget = layout.add("At Target", false).getEntry();
-        sb_currentArmCommand = layout.add("Current Arm Command", getCurrentCommand().getName()).getEntry();
+        //sb_currentArmCommand = layout.add("Current Arm Command", getCurrentCommand().getName()).getEntry();
 
     }
 
@@ -454,11 +463,16 @@ public class Arm extends SubsystemBase {
         sb_angleTargetVolt.setDouble(targetVolt);
         sb_brakeModeDisabled.setBoolean(!brakeModeDisableBtn.get());
         sb_anglePosRotations.setDouble(absoluteArmEncoder.get());
-        sb_currentArmCommand.setString(getCurrentCommand().getName());
+        //sb_currentArmCommand.setString(getCurrentCommand().getName());
     }
 
     public void setRateCommand(double rate){
         armRateCommand.setRate(rate);
+        if(getCurrentCommand() != armRateCommand) armRateCommand.schedule();
+    }
+
+    public void setTolRateCommand(double rate, double tolerance){
+        armRateCommand.setToleranceRate(rate, tolerance);
         if(getCurrentCommand() != armRateCommand) armRateCommand.schedule();
     }
 
@@ -473,7 +487,7 @@ public class Arm extends SubsystemBase {
     }
 
     public void setHoldCommand(){
-        if(getCurrentCommand() != armHoldCommand) armHoldCommand.schedule();
+        if(getCurrentCommand() != armHoldCommand) new ArmHoldCommand().schedule();
     }
 
     public Command getArmCommand(){
@@ -487,6 +501,11 @@ public class Arm extends SubsystemBase {
     public void periodic() {
         SmartDashboard.putNumber("SpeakerPosition", FieldLayout.getSpeakerPose().getX());
         updateUI(armRate, armVolt);
+        var currentCommand = getCurrentCommand();
+        String curCommandName = "null";
+        if (currentCommand != null) curCommandName = currentCommand.getName();
+        
+        SmartDashboard.putString("Current Command", curCommandName);
     }
 
 
