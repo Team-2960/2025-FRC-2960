@@ -4,6 +4,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.subsystems.Drive.LinearDriveCommands.DriveRateCommand;
+import frc.robot.subsystems.Drive.RotationDriveCommands.RotationRateCommand;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -99,62 +101,57 @@ public class Drive extends SubsystemBase {
     private StructArrayPublisher<Pose2d> arrayPose;
     private StructArrayPublisher<SwerveModuleState> swerveModules;
 
-    public class DriveRateCommand extends Command{
-        double xSpeed;
-        double ySpeed;
-        Rotation2d targetAngle;
-        Translation2d point;
+    
 
-        private enum rotationModes{
-            RATEMODE,
-            ANGLEMODE,
-            POINTMODE
-        }
+    public class LinearDriveCommands extends SubsystemBase{
+        public class DriveRateCommand extends Command{
+            double xSpeed;
+            double ySpeed;
+            Rotation2d targetAngle;
+            Translation2d point;
+        
+            public DriveRateCommand(double xSpeed, double ySpeed){
+                this.xSpeed = xSpeed;
+                this.ySpeed = ySpeed;
+                addRequirements(LinearDriveCommands.this);
+            } 
+    
+            public void setSpeeds(double xSpeed, double ySpeed){
+                this.xSpeed = xSpeed;
+                this.ySpeed = ySpeed;
+            }
 
-        rotationModes mode;
-
-        public DriveRateCommand(double xSpeed, double ySpeed){
-            this.xSpeed = xSpeed;
-            this.ySpeed = ySpeed;
-            addRequirements(Drive.this);
-        } 
-
-        public void setSpeeds(double xSpeed, double ySpeed){
-            this.xSpeed = xSpeed;
-            this.ySpeed = ySpeed;
-        }
-
-        public void setRotationSpeed(double rotSpeed){
-            rSpeed = rotSpeed;
-            mode = rotationModes.RATEMODE;
-        }
-
-        public void setAngle(Rotation2d angle){
-            this.targetAngle = angle;
-            mode = rotationModes.ANGLEMODE;
-        }
-
-        public void lookAtPoint(Translation2d point){
-            this.point = point;
-            mode = rotationModes.POINTMODE;
-        }
-
-        @Override
-        public void execute(){
-            updateKinematics(xSpeed, ySpeed);
-            if (mode == rotationModes.RATEMODE){
-                setRotationSpeed(rSpeed);
-
-            }else if (mode == rotationModes.ANGLEMODE){
-                setAngle(targetAngle);
-
-            }else if (mode == rotationModes.POINTMODE){
-                lookAtPoint(targetPoint);
+            @Override
+            public void execute(){
+                updateKinematics(xSpeed, ySpeed);
             }
         }
     }
 
+    public class RotationDriveCommands extends SubsystemBase{
+        public class RotationRateCommand extends Command{
+            double rSpeed;
+
+            public RotationRateCommand(double rSpeed){
+                this.rSpeed = rSpeed;
+                addRequirements(RotationDriveCommands.this);
+            }
+
+            public void setRotationRate(double rSpeed){
+                this.rSpeed = rSpeed;
+            }
+
+            @Override
+            public void execute(){
+                setAngleRate(rSpeed);
+            }
+        }
+    }
+
+    private final LinearDriveCommands linearDriveCommands;
     private final DriveRateCommand driveRateCommand;
+    private final RotationDriveCommands rotationDriveCommands;
+    private final RotationRateCommand rotationRateCommand;
 
     /**
      * Constructor
@@ -243,9 +240,10 @@ public class Drive extends SubsystemBase {
 
         //Call method to initialize shuffleboard
         shuffleBoardInit();
-
-        driveRateCommand = new DriveRateCommand(0, 0);
-        setDefaultCommand(driveRateCommand);
+        linearDriveCommands = new LinearDriveCommands();
+        driveRateCommand = linearDriveCommands.new DriveRateCommand(0, 0);
+        rotationDriveCommands = new RotationDriveCommands();
+        rotationRateCommand = rotationDriveCommands.new RotationRateCommand(0);
         
     }
 
@@ -576,8 +574,9 @@ public class Drive extends SubsystemBase {
 
     public void setDriveRateCommand(double xSpeed, double ySpeed, double rSpeed){
         driveRateCommand.setSpeeds(xSpeed, ySpeed);
-        driveRateCommand.setRotationSpeed(rSpeed);
-        if (getCurrentCommand() != driveRateCommand) driveRateCommand.schedule();
+        rotationRateCommand.setRotationRate(rSpeed);
+        if (linearDriveCommands.getCurrentCommand() != driveRateCommand) driveRateCommand.schedule();
+        if (rotationDriveCommands.getCurrentCommand() != rotationRateCommand) rotationRateCommand.schedule();
     }
 
     @Override

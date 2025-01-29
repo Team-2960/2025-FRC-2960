@@ -156,7 +156,7 @@ public class OperatorInterface extends SubsystemBase {
         double xSpeed = MathUtil.applyDeadband(driverController.getRawAxis(1), 0.05) * maxSpeed * alliance_dir;
         double ySpeed = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.05) * maxSpeed * alliance_dir;
         double rSpeed = MathUtil.applyDeadband(driverController.getRawAxis(4), 0.05) * maxAngleRate * -1;
-        /*
+        
         if (driverController.getRawButton(1)) {
             drive.setTargetAngle(Rotation2d.fromDegrees(-90));
         } else if (driverController.getRawButton(2)) {
@@ -164,7 +164,7 @@ public class OperatorInterface extends SubsystemBase {
         } else if (driverController.getRawButton(3)){
             drive.setTargetPoint(new Translation2d(0,0), Rotation2d.fromDegrees(180));
         }
-        */
+        
 
         Climber climber = Climber.getInstance();
 
