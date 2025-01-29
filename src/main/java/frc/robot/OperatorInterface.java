@@ -180,11 +180,12 @@ public class OperatorInterface extends SubsystemBase {
 
         drive.setDriveRate(xSpeed, ySpeed);
 
-        if (Math.abs(rSpeed) > 0.05){
+        if (Math.abs(driverController.getRawAxis(4)) > 0.05){
             drive.setAngleRate(rSpeed);
-        }
-        if (driverController.getRawButton(1)) {
+
+        } else if (driverController.getRawButton(1)) {
             drive.setAngleAlign(Rotation2d.fromDegrees(-90));
+            
         }
 
         // Update Shuffleboard

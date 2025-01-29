@@ -65,8 +65,7 @@ public class Drive extends SubsystemBase {
 
     private final SwerveDriveKinematics kinematics;
 
-    private double rSpeed = 0;
-    private Rotation2d targetAngle = new Rotation2d();
+    private double rSpeed;
     private Translation2d targetPoint = new Translation2d();
     private AngleControlMode angleMode = AngleControlMode.AngleRate;
     private boolean fieldRelative = false;
@@ -162,7 +161,7 @@ public class Drive extends SubsystemBase {
 
             @Override
             public void execute(){
-                calcRateToAngle(this.angle, getEstimatedPos().getRotation());
+                calcRateToAngle(angle);
             }
         }
     }
@@ -211,6 +210,8 @@ public class Drive extends SubsystemBase {
         field2d.getObject("fieldTargetPoint").setPose(targetPoint.getX(), targetPoint.getY(), Rotation2d.fromDegrees(0));
 
         chassisSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, 0, new Rotation2d());
+
+        rSpeed = 0;
 
         angleAlignPID = new PIDController(Constants.angleAlignPID.kP, Constants.angleAlignPID.kI,
                 Constants.angleAlignPID.kD);
@@ -347,30 +348,6 @@ public class Drive extends SubsystemBase {
     }
 
     /**
-     * Sets the target angle of the robot and sets the robot to Angle angle
-     * control mode.
-     * 
-     * 
-     * @param angle target angle for the robot.
-     */
-    public void setTargetAngle(Rotation2d angle) {
-        this.targetAngle = angle;
-    }
-
-    /**
-     * Sets the target point of the robot and sets the robot to LookAtPoint
-     * angle control mode.
-     * 
-     * @param point  point to look at
-     * @param offset offset angle for the robot orientation
-     */
-    public void setTargetPoint(Translation2d point, Rotation2d offset) {
-        this.targetPoint = point;
-        this.targetAngle = offset;
-        this.angleMode = AngleControlMode.LookAtPoint;
-    }
-
-    /**
      * Gets the robots estimiated pose
      * 
      * @return estimated robot pose
@@ -405,11 +382,6 @@ public class Drive extends SubsystemBase {
     public boolean getTargetSeen() {
         return targetSeen;
     }
-
-    /**
-     * Subsystem periodic method
-     */
-    
 
     /**
      * Updates the robot swerve kinematics
@@ -526,26 +498,6 @@ public class Drive extends SubsystemBase {
     }
 
 
-    /**
-     * Calculates the angle rate to reach a target angle
-     * 
-     * @param targetAngle target robot angle
-     */
-
-    /**
-     * Calculates the angle rate to reach a target angle
-     * 
-     * @param targetAngle  target robot angle
-     * @param currentAngle current robot angle
-     */
-
-    /**
-     * Calculates the angle rate to look at a target point
-     * 
-     * @param point  target point
-     * @param offset target orientation offset
-     */
-
     private void updateUI() {
         Pose2d pose = getEstimatedPos();
         sb_posEstX.setDouble(pose.getX());
@@ -609,8 +561,8 @@ public class Drive extends SubsystemBase {
         if (rotationDriveCommands.getCurrentCommand() != rotationRateCommand) rotationRateCommand.schedule();
     }
 
-    public void setAngleAlign(Rotation2d angle){
-        angleAlignCommand.setAngle(angle);
+    public void setAngleAlign(Rotation2d targetAngle){
+        angleAlignCommand.setAngle(targetAngle);
         if (rotationDriveCommands.getCurrentCommand() != angleAlignCommand) angleAlignCommand.schedule();
     }
 
