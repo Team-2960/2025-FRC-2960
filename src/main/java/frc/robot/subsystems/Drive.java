@@ -4,7 +4,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.subsystems.Arm.ArmRateCommand;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -103,25 +102,55 @@ public class Drive extends SubsystemBase {
     public class DriveRateCommand extends Command{
         double xSpeed;
         double ySpeed;
-        double rSpeed;
+        Rotation2d targetAngle;
+        Translation2d point;
 
-        public DriveRateCommand(double xSpeed, double ySpeed, double rSpeed){
+        private enum rotationModes{
+            RATEMODE,
+            ANGLEMODE,
+            POINTMODE
+        }
+
+        rotationModes mode;
+
+        public DriveRateCommand(double xSpeed, double ySpeed){
             this.xSpeed = xSpeed;
             this.ySpeed = ySpeed;
-            this.rSpeed = rSpeed;
             addRequirements(Drive.this);
         } 
 
-        public void setRate(double xSpeed, double ySpeed, double rSpeed){
+        public void setSpeeds(double xSpeed, double ySpeed){
             this.xSpeed = xSpeed;
             this.ySpeed = ySpeed;
-            this.rSpeed = rSpeed;
+        }
+
+        public void setRotationSpeed(double rotSpeed){
+            rSpeed = rotSpeed;
+            mode = rotationModes.RATEMODE;
+        }
+
+        public void setAngle(Rotation2d angle){
+            this.targetAngle = angle;
+            mode = rotationModes.ANGLEMODE;
+        }
+
+        public void lookAtPoint(Translation2d point){
+            this.point = point;
+            mode = rotationModes.POINTMODE;
         }
 
         @Override
         public void execute(){
-            setAngleRate(rSpeed);
             updateKinematics(xSpeed, ySpeed);
+            if (mode == rotationModes.RATEMODE){
+                setRotationSpeed(rSpeed);
+
+            }else if (mode == rotationModes.ANGLEMODE){
+                setAngle(targetAngle);
+
+            }else if (mode == rotationModes.POINTMODE){
+                lookAtPoint(targetPoint);
+            }
         }
     }
 
@@ -215,7 +244,7 @@ public class Drive extends SubsystemBase {
         //Call method to initialize shuffleboard
         shuffleBoardInit();
 
-        driveRateCommand = new DriveRateCommand(0, 0, 0);
+        driveRateCommand = new DriveRateCommand(0, 0);
         setDefaultCommand(driveRateCommand);
         
     }
@@ -546,7 +575,8 @@ public class Drive extends SubsystemBase {
       }
 
     public void setDriveRateCommand(double xSpeed, double ySpeed, double rSpeed){
-        driveRateCommand.setRate(xSpeed, ySpeed, rSpeed);
+        driveRateCommand.setSpeeds(xSpeed, ySpeed);
+        driveRateCommand.setRotationSpeed(rSpeed);
         if (getCurrentCommand() != driveRateCommand) driveRateCommand.schedule();
     }
 
