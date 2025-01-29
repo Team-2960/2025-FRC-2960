@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.Drive.LinearDriveCommands.DriveRateCommand;
+import frc.robot.subsystems.Drive.RotationDriveCommands.AngleAlignCommand;
 import frc.robot.subsystems.Drive.RotationDriveCommands.RotationRateCommand;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
@@ -28,6 +29,8 @@ import edu.wpi.first.wpilibj.shuffleboard.ComplexWidget;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 import java.util.Optional;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
@@ -80,7 +83,6 @@ public class Drive extends SubsystemBase {
     private GenericEntry sb_speedR;
     private GenericEntry sb_robotTargetAngle;
     private GenericEntry sb_speedTargetR;
-    private double robotTargetAngle;
 
     private ComplexWidget sb_field2d;
     
@@ -107,7 +109,6 @@ public class Drive extends SubsystemBase {
         public class DriveRateCommand extends Command{
             double xSpeed;
             double ySpeed;
-            Rotation2d targetAngle;
             Translation2d point;
         
             public DriveRateCommand(double xSpeed, double ySpeed){
@@ -146,12 +147,34 @@ public class Drive extends SubsystemBase {
                 setAngleRate(rSpeed);
             }
         }
+
+        public class AngleAlignCommand extends Command{
+            Rotation2d angle;
+
+            public AngleAlignCommand(Rotation2d angle){
+                this.angle = angle;
+                addRequirements(RotationDriveCommands.this);
+            }
+
+            public void setAngle(Rotation2d angle){
+                this.angle = angle;
+            }
+
+            @Override
+            public void execute(){
+                calcRateToAngle(this.angle, getEstimatedPos().getRotation());
+            }
+        }
     }
 
+    //Command classes
     private final LinearDriveCommands linearDriveCommands;
-    private final DriveRateCommand driveRateCommand;
     private final RotationDriveCommands rotationDriveCommands;
+
+    //Commands
+    private final DriveRateCommand driveRateCommand;
     private final RotationRateCommand rotationRateCommand;
+    private final AngleAlignCommand angleAlignCommand;
 
     /**
      * Constructor
@@ -184,7 +207,6 @@ public class Drive extends SubsystemBase {
         navx = new AHRS(NavXComType.kMXP_SPI);
         navx.reset();
         targetSeen = false;
-        robotTargetAngle = 0;
         field2d = new Field2d();
         field2d.getObject("fieldTargetPoint").setPose(targetPoint.getX(), targetPoint.getY(), Rotation2d.fromDegrees(0));
 
@@ -240,10 +262,15 @@ public class Drive extends SubsystemBase {
 
         //Call method to initialize shuffleboard
         shuffleBoardInit();
+
+        //Make instance of Command Classes
         linearDriveCommands = new LinearDriveCommands();
-        driveRateCommand = linearDriveCommands.new DriveRateCommand(0, 0);
         rotationDriveCommands = new RotationDriveCommands();
+        
+        //Make instances of Commands
+        driveRateCommand = linearDriveCommands.new DriveRateCommand(0, 0);
         rotationRateCommand = rotationDriveCommands.new RotationRateCommand(0);
+        angleAlignCommand = rotationDriveCommands.new AngleAlignCommand(Rotation2d.fromDegrees(0));
         
     }
 
@@ -328,7 +355,6 @@ public class Drive extends SubsystemBase {
      */
     public void setTargetAngle(Rotation2d angle) {
         this.targetAngle = angle;
-        this.angleMode = AngleControlMode.Angle;
     }
 
     /**
@@ -527,10 +553,11 @@ public class Drive extends SubsystemBase {
         sb_posEstR.setDouble(pose.getRotation().getDegrees());
 
         sb_speedR.setDouble(rSpeed);
-        sb_robotTargetAngle.setDouble(robotTargetAngle);
-
         field2d.setRobotPose(swerveDrivePoseEstimator.getEstimatedPosition());
         field2d.getObject("fieldTargetPoint").setPose(targetPoint.getX(), targetPoint.getY(), Rotation2d.fromDegrees(0));
+        var currentCommand = Drive.getInstance().getCurrentCommand().getName();
+        if (currentCommand == null) currentCommand = "null";
+        SmartDashboard.putString("Current Drive Command", currentCommand);
     }
 
     private void updateScope() {
@@ -572,11 +599,19 @@ public class Drive extends SubsystemBase {
         }
       }
 
-    public void setDriveRateCommand(double xSpeed, double ySpeed, double rSpeed){
+    public void setDriveRate(double xSpeed, double ySpeed){
         driveRateCommand.setSpeeds(xSpeed, ySpeed);
-        rotationRateCommand.setRotationRate(rSpeed);
         if (linearDriveCommands.getCurrentCommand() != driveRateCommand) driveRateCommand.schedule();
+    }
+
+    public void setRotationRate(double rSpeed){
+        rotationRateCommand.setRotationRate(rSpeed);
         if (rotationDriveCommands.getCurrentCommand() != rotationRateCommand) rotationRateCommand.schedule();
+    }
+
+    public void setAngleAlign(Rotation2d angle){
+        angleAlignCommand.setAngle(angle);
+        if (rotationDriveCommands.getCurrentCommand() != angleAlignCommand) angleAlignCommand.schedule();
     }
 
     @Override
