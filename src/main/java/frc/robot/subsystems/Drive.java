@@ -32,7 +32,11 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
+import java.sql.Driver;
 import java.util.Optional;
+
+import org.opencv.core.Point;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
@@ -72,6 +76,7 @@ public class Drive extends SubsystemBase {
     private boolean fieldRelative = false;
     private ChassisSpeeds chassisSpeeds;
     private PIDController angleAlignPID;
+    private PIDController driveAlignPID;
 
     // Shuffleboard
     private GenericEntry sb_posEstX;
@@ -106,6 +111,13 @@ public class Drive extends SubsystemBase {
     
 
     public class LinearDriveCommands extends SubsystemBase{
+        private final DriveRateCommand driveRateCommand;
+
+        public LinearDriveCommands(){
+            driveRateCommand = new DriveRateCommand(0, 0);
+            setDefaultCommand(driveRateCommand);
+        }
+
         public class DriveRateCommand extends Command{
             double xSpeed;
             double ySpeed;
@@ -130,6 +142,17 @@ public class Drive extends SubsystemBase {
     }
 
     public class RotationDriveCommands extends SubsystemBase{
+        private final RotationRateCommand rotationRateCommand;
+        private final AngleAlignCommand angleAlignCommand;
+        private final PointAlignCommand pointAlignCommand;
+
+        public RotationDriveCommands(){
+            angleAlignCommand = new AngleAlignCommand(new Rotation2d());
+            pointAlignCommand = new PointAlignCommand(new Translation2d(0, 0), new Rotation2d());
+            rotationRateCommand = new RotationRateCommand(0);
+            setDefaultCommand(rotationRateCommand);
+        }
+
         public class RotationRateCommand extends Command{
             double rSpeed;
 
@@ -191,12 +214,7 @@ public class Drive extends SubsystemBase {
     //Command classes
     private final LinearDriveCommands linearDriveCommands;
     private final RotationDriveCommands rotationDriveCommands;
-
-    //Commands
-    private final DriveRateCommand driveRateCommand;
-    private final RotationRateCommand rotationRateCommand;
-    private final AngleAlignCommand angleAlignCommand;
-    private final PointAlignCommand pointAlignCommand;
+    
 
     /**
      * Constructor
@@ -240,6 +258,8 @@ public class Drive extends SubsystemBase {
                 Constants.angleAlignPID.kD);
         
         angleAlignPID.enableContinuousInput(-Math.PI, Math.PI);
+
+        driveAlignPID = new PIDController(0, 0, 0);
 
         // Initialize pose estimation
         swerveDrivePoseEstimator = new SwerveDrivePoseEstimator(
@@ -290,13 +310,7 @@ public class Drive extends SubsystemBase {
         //Make instance of Command Classes
         linearDriveCommands = new LinearDriveCommands();
         rotationDriveCommands = new RotationDriveCommands();
-        
-        //Make instances of Commands
-        driveRateCommand = linearDriveCommands.new DriveRateCommand(0, 0);
-        rotationRateCommand = rotationDriveCommands.new RotationRateCommand(0);
-        angleAlignCommand = rotationDriveCommands.new AngleAlignCommand(Rotation2d.fromDegrees(0));
-        pointAlignCommand = rotationDriveCommands.new PointAlignCommand(new Translation2d(0, 0), new Rotation2d());
-        
+                
     }
 
     public void shuffleBoardInit(){
@@ -518,6 +532,9 @@ public class Drive extends SubsystemBase {
     public void goToPoint(Pose2d point){
         Pose2d currentPose = getEstimatedPos();
         Transform2d distance = point.minus(currentPose);
+        double xDistance = distance.getX();
+        double yDistance = distance.getY();
+
     }
 
 
@@ -530,9 +547,10 @@ public class Drive extends SubsystemBase {
         sb_speedR.setDouble(rSpeed);
         field2d.setRobotPose(swerveDrivePoseEstimator.getEstimatedPosition());
         field2d.getObject("fieldTargetPoint").setPose(targetPoint.getX(), targetPoint.getY(), Rotation2d.fromDegrees(0));
-        var currentCommand = Drive.getInstance().getCurrentCommand().getName();
-        if (currentCommand == null) currentCommand = "null";
-        SmartDashboard.putString("Current Drive Command", currentCommand);
+        var currentCommand = Drive.getInstance().rotationDriveCommands.getCurrentCommand();
+        String curCommandName = "null";
+        if (currentCommand != null) curCommandName = currentCommand.getName();
+        SmartDashboard.putString("Current Drive Command", curCommandName);
     }
 
     private void updateScope() {
@@ -575,23 +593,27 @@ public class Drive extends SubsystemBase {
       }
 
     public void setDriveRate(double xSpeed, double ySpeed){
-        driveRateCommand.setSpeeds(xSpeed, ySpeed);
-        if (linearDriveCommands.getCurrentCommand() != driveRateCommand) driveRateCommand.schedule();
+        DriveRateCommand driveRate = linearDriveCommands.driveRateCommand;
+        driveRate.setSpeeds(xSpeed, ySpeed);
+        if (linearDriveCommands.getCurrentCommand() != driveRate) driveRate.schedule();
     }
 
     public void setRotationRate(double rSpeed){
-        rotationRateCommand.setRotationRate(rSpeed);
-        if (rotationDriveCommands.getCurrentCommand() != rotationRateCommand) rotationRateCommand.schedule();
+        RotationRateCommand rotationRate = rotationDriveCommands.rotationRateCommand;
+        rotationRate.setRotationRate(rSpeed);
+        if (rotationDriveCommands.getCurrentCommand() != rotationRate) rotationRate.schedule();
     }
 
     public void setAngleAlign(Rotation2d targetAngle){
-        angleAlignCommand.setAngle(targetAngle);
-        if (rotationDriveCommands.getCurrentCommand() != angleAlignCommand) angleAlignCommand.schedule();
+        AngleAlignCommand rotationCommand = rotationDriveCommands.angleAlignCommand;
+        rotationCommand.setAngle(targetAngle);
+        if (rotationDriveCommands.getCurrentCommand() != rotationCommand) rotationCommand.schedule();
     }
 
     public void setPointAlign(Translation2d targetPoint, Rotation2d rotationOffset){
-        pointAlignCommand.setPoint(targetPoint, rotationOffset);
-        if (rotationDriveCommands.getCurrentCommand() != pointAlignCommand) pointAlignCommand.schedule();
+        PointAlignCommand pointAlign = rotationDriveCommands.pointAlignCommand;
+        pointAlign.setPoint(targetPoint, rotationOffset);
+        if (rotationDriveCommands.getCurrentCommand() != pointAlign) pointAlign.schedule();
     }
 
     @Override
