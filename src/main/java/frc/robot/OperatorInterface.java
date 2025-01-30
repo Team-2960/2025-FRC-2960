@@ -155,16 +155,7 @@ public class OperatorInterface extends SubsystemBase {
 
         double xSpeed = MathUtil.applyDeadband(driverController.getRawAxis(1), 0.05) * maxSpeed * alliance_dir;
         double ySpeed = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.05) * maxSpeed * alliance_dir;
-        double rSpeed = MathUtil.applyDeadband(driverController.getRawAxis(4), 0.05) * maxAngleRate * -1;
-        if (driverController.getRawButton(1)) {
-            drive.setTargetAngle(Rotation2d.fromDegrees(-90));
-        } else if (driverController.getRawButton(2)) {
-            drive.setTargetPoint(FieldLayout.getSpeakerPose().getTranslation(), FieldLayout.getSpeakerPose().getRotation());
-        } else if (driverController.getRawButton(3)){
-            drive.setTargetPoint(new Translation2d(0,0), Rotation2d.fromDegrees(180));
-        } else {
-            drive.setAngleRate(rSpeed);
-        }
+        double rSpeed = MathUtil.applyDeadband(driverController.getRawAxis(4), 0.1) * maxAngleRate * -1;
 
         Climber climber = Climber.getInstance();
 
@@ -172,13 +163,37 @@ public class OperatorInterface extends SubsystemBase {
             drive.presetPosition(new Pose2d(0.0, 0.0, new Rotation2d()));
         }
 
+<<<<<<< HEAD
 
+=======
+        if (driverController.getRawButton(6)) {
+            IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.SHOOT);
+        }
+        if (driverController.getRawButton(8)) {
+            climber.setClimbState(ClimberStates.CLIMB);
+        }
+        if (driverController.getRawAxis(3) > .1) {
+            IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.INTAKE);
+        }
+>>>>>>> 28045ccc741ca2b61e141659c788711d79bd5619
 
         
         climber.setRatchet(driverController.getRawButton((5)));
 
-        drive.setfieldRelative(fieldRelative);
-        drive.setSpeed(xSpeed, ySpeed);
+        drive.setDriveRate(xSpeed, ySpeed);
+
+        if (Math.abs(driverController.getRawAxis(4)) > 0.1){
+            drive.setRotationRate(rSpeed);
+
+        }
+        else if (driverController.getRawButton(1)) {
+            drive.setAngleAlign(Rotation2d.fromDegrees(-90));
+
+        }
+        else if (driverController.getRawButton(2)){
+            drive.setPointAlign(new Translation2d(0, 0), Rotation2d.fromDegrees(0));
+
+        }
 
         // Update Shuffleboard
         sb_driveX.setDouble(xSpeed);
@@ -195,15 +210,21 @@ public class OperatorInterface extends SubsystemBase {
 
         // Set Arm Presets
         if (operatorController.getRawButton(1)) {
-            arm.setState("Speaker");
+            arm.setStateCommand("Speaker");
         } else if (operatorController.getRawButton(2)) {
-            arm.setState("lineSpeaker");
+            arm.setStateCommand("lineSpeaker");
         } else if (operatorController.getRawButton(3)) {
-            arm.setState("Amp");// amp
+            arm.setStateCommand("Amp");// amp
         } else if (operatorController.getRawButton(4)) {
+<<<<<<< HEAD
             arm.setState("Intake");
+=======
+            arm.setStateCommand("Intake");
+        } else if (operatorController.getPOV() == 90 && operatorController.getPOV() != 270) {
+            arm.armAutoAlign();
+>>>>>>> 28045ccc741ca2b61e141659c788711d79bd5619
         } else if (operatorController.getPOV() == 270 && operatorController.getPOV() != 90) {
-            arm.setState("home");
+            arm.setStateCommand("home");
         }
 
         // TODO Map Podium shot preset
@@ -211,16 +232,14 @@ public class OperatorInterface extends SubsystemBase {
         // Manual Arm Angle Control
         double armManual = operatorController.getRawAxis(1);
         double armManualRate = armManual * Constants.maxArmSpeed;
+        double tolerance = .1;
 
-        if (Math.abs(armManual) > .1) {
-            arm.setArmRate(armManualRate);
-        } else if (arm.getControlMode() == Arm.ArmControlMode.MANUAL_RATE) {
-            arm.setArmRate(0);
-        } else if (arm.getControlMode() == Arm.ArmControlMode.MANUAL_VOLT) {
-            arm.setArmVolt(0);
+        if (Math.abs(armManual) > tolerance) {
+            arm.setTolRateCommand(armManualRate, (tolerance + 0.3)* Constants.maxArmSpeed);
         }
 
         sb_armRate.setDouble(armManualRate);
+<<<<<<< HEAD
 
         // Manual Arm Extension control
         int opPOVAngle = operatorController.getPOV();
@@ -228,6 +247,8 @@ public class OperatorInterface extends SubsystemBase {
 
         // Update shuffleboard
         sb_armExtendManual.setInteger(opPOVAngle);
+=======
+>>>>>>> 28045ccc741ca2b61e141659c788711d79bd5619
     }
 
     /**

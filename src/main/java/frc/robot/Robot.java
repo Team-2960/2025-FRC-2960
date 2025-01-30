@@ -37,8 +37,13 @@ public class Robot extends TimedRobot {
     private Camera camera;
     private Arm arm;
     private Climber climber;
+<<<<<<< HEAD
     private Intake intake;
     private Pneumatics pneumatics;
+=======
+    private IntakePizzaBox intake;
+    //private Pneumatics pneumatics;
+>>>>>>> 28045ccc741ca2b61e141659c788711d79bd5619
     private RobotContainer robotContainer;
     private Command autonomousCommand;
 
@@ -49,8 +54,13 @@ public class Robot extends TimedRobot {
         //camera = Camera.getInstance();
         arm = Arm.getInstance();
         climber = Climber.getInstance();
+<<<<<<< HEAD
         intake = Intake.getInstance();
         pneumatics = Pneumatics.getInstance();
+=======
+        intake = IntakePizzaBox.getInstance();
+        //pneumatics = Pneumatics.getInstance();
+>>>>>>> 28045ccc741ca2b61e141659c788711d79bd5619
         robotContainer = new RobotContainer();
 
         CameraServer.startAutomaticCapture();

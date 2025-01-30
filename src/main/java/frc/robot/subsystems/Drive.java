@@ -3,10 +3,11 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.Nat;
+import frc.robot.subsystems.Drive.LinearDriveCommands.DriveRateCommand;
+import frc.robot.subsystems.Drive.RotationDriveCommands.AngleAlignCommand;
+import frc.robot.subsystems.Drive.RotationDriveCommands.PointAlignCommand;
+import frc.robot.subsystems.Drive.RotationDriveCommands.RotationRateCommand;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -21,29 +22,22 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.NetworkTableValue;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.ComplexWidget;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.WidgetType;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-import java.util.Optional;
-import java.util.function.Supplier;
-
-import javax.swing.text.html.Option;
-
-import java.lang.reflect.Field;
 import java.sql.Driver;
+import java.util.Optional;
+
+import org.opencv.core.Point;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.commands.FollowPathCommand;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
@@ -76,15 +70,13 @@ public class Drive extends SubsystemBase {
 
     private final SwerveDriveKinematics kinematics;
 
-    private double xSpeed = 0;
-    private double ySpeed = 0;
-    private double rSpeed = 0;
-    private Rotation2d targetAngle = new Rotation2d();
+    private double rSpeed;
     private Translation2d targetPoint = new Translation2d();
     private AngleControlMode angleMode = AngleControlMode.AngleRate;
     private boolean fieldRelative = false;
     private ChassisSpeeds chassisSpeeds;
     private PIDController angleAlignPID;
+    private PIDController driveAlignPID;
 
     // Shuffleboard
     private GenericEntry sb_posEstX;
@@ -96,7 +88,6 @@ public class Drive extends SubsystemBase {
     private GenericEntry sb_speedR;
     private GenericEntry sb_robotTargetAngle;
     private GenericEntry sb_speedTargetR;
-    private double robotTargetAngle;
 
     private ComplexWidget sb_field2d;
     
@@ -112,11 +103,118 @@ public class Drive extends SubsystemBase {
     public AutoBuilder autoBuilder;
 
     // AdvantageScope
-    private final SwerveDrivePoseEstimator odometeryPoseEstimator;
     private SwerveModuleState[] swerveModuleStates;
     private StructPublisher<Pose2d> odometryPose;
     private StructArrayPublisher<Pose2d> arrayPose;
     private StructArrayPublisher<SwerveModuleState> swerveModules;
+
+    
+
+    public class LinearDriveCommands extends SubsystemBase{
+        private final DriveRateCommand driveRateCommand;
+
+        public LinearDriveCommands(){
+            driveRateCommand = new DriveRateCommand(0, 0);
+            setDefaultCommand(driveRateCommand);
+        }
+
+        public class DriveRateCommand extends Command{
+            double xSpeed;
+            double ySpeed;
+            Translation2d point;
+        
+            public DriveRateCommand(double xSpeed, double ySpeed){
+                this.xSpeed = xSpeed;
+                this.ySpeed = ySpeed;
+                addRequirements(LinearDriveCommands.this);
+            } 
+    
+            public void setSpeeds(double xSpeed, double ySpeed){
+                this.xSpeed = xSpeed;
+                this.ySpeed = ySpeed;
+            }
+
+            @Override
+            public void execute(){
+                updateKinematics(xSpeed, ySpeed);
+            }
+        }
+    }
+
+    public class RotationDriveCommands extends SubsystemBase{
+        private final RotationRateCommand rotationRateCommand;
+        private final AngleAlignCommand angleAlignCommand;
+        private final PointAlignCommand pointAlignCommand;
+
+        public RotationDriveCommands(){
+            angleAlignCommand = new AngleAlignCommand(new Rotation2d());
+            pointAlignCommand = new PointAlignCommand(new Translation2d(0, 0), new Rotation2d());
+            rotationRateCommand = new RotationRateCommand(0);
+            setDefaultCommand(rotationRateCommand);
+        }
+
+        public class RotationRateCommand extends Command{
+            double rSpeed;
+
+            public RotationRateCommand(double rSpeed){
+                this.rSpeed = rSpeed;
+                addRequirements(RotationDriveCommands.this);
+            }
+
+            public void setRotationRate(double rSpeed){
+                this.rSpeed = rSpeed;
+            }
+
+            @Override
+            public void execute(){
+                setAngleRate(rSpeed);
+            }
+        }
+
+        public class AngleAlignCommand extends Command{
+            Rotation2d angle;
+
+            public AngleAlignCommand(Rotation2d angle){
+                this.angle = angle;
+                addRequirements(RotationDriveCommands.this);
+            }
+
+            public void setAngle(Rotation2d angle){
+                this.angle = angle;
+            }
+
+            @Override
+            public void execute(){
+                calcRateToAngle(angle);
+            }
+        }
+
+        public class PointAlignCommand extends Command{
+            Translation2d point;
+            Rotation2d rotationOffset;
+
+            public PointAlignCommand(Translation2d point, Rotation2d rotationOffset){
+                this.point = point;
+                this.rotationOffset = rotationOffset;
+                addRequirements(RotationDriveCommands.this);
+            }
+
+            public void setPoint(Translation2d point, Rotation2d rotationOffset){
+                this.point = point;
+                this.rotationOffset = rotationOffset;
+            }
+
+            @Override
+            public void execute(){
+                calcRateToPoint(targetPoint, rotationOffset);
+            }
+        }
+    }
+
+    //Command classes
+    private final LinearDriveCommands linearDriveCommands;
+    private final RotationDriveCommands rotationDriveCommands;
+    
 
     /**
      * Constructor
@@ -149,14 +247,19 @@ public class Drive extends SubsystemBase {
         navx = new AHRS(NavXComType.kMXP_SPI);
         navx.reset();
         targetSeen = false;
-        robotTargetAngle = 0;
         field2d = new Field2d();
         field2d.getObject("fieldTargetPoint").setPose(targetPoint.getX(), targetPoint.getY(), Rotation2d.fromDegrees(0));
 
         chassisSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, 0, new Rotation2d());
 
+        rSpeed = 0;
+
         angleAlignPID = new PIDController(Constants.angleAlignPID.kP, Constants.angleAlignPID.kI,
                 Constants.angleAlignPID.kD);
+        
+        angleAlignPID.enableContinuousInput(-Math.PI, Math.PI);
+
+        driveAlignPID = new PIDController(0, 0, 0);
 
         // Initialize pose estimation
         swerveDrivePoseEstimator = new SwerveDrivePoseEstimator(
@@ -201,25 +304,16 @@ public class Drive extends SubsystemBase {
 
         );
 
-        // Using AdvantageScope
-        swerveModuleStates = new SwerveModuleState[] {
-                frontLeft.getState(),
-                frontRight.getState(),
-                backLeft.getState(),
-                backRight.getState()
-        };
-        odometeryPoseEstimator = new SwerveDrivePoseEstimator(kinematics,
-                navx.getRotation2d(),
-                new SwerveModulePosition[] {
-                        frontLeft.getPosition(),
-                        frontRight.getPosition(),
-                        backLeft.getPosition(),
-                        backRight.getPosition()
-                },
-                new Pose2d(),
-                VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(5)),
-                VecBuilder.fill(0.5, 0.5, Units.degreesToRadians(30)));
+        //Call method to initialize shuffleboard
+        shuffleBoardInit();
 
+        //Make instance of Command Classes
+        linearDriveCommands = new LinearDriveCommands();
+        rotationDriveCommands = new RotationDriveCommands();
+                
+    }
+
+    public void shuffleBoardInit(){
         odometryPose = NetworkTableInstance.getDefault()
                 .getStructTopic("Odometry Pose", Pose2d.struct).publish();
         arrayPose = NetworkTableInstance.getDefault()
@@ -244,7 +338,6 @@ public class Drive extends SubsystemBase {
         sb_speedTargetR = pose_layout.add("Target Speed R", 0).getEntry();
 
         sb_field2d = Shuffleboard.getTab("Drive").add(field2d).withWidget("Field");
-        
     }
 
     /*
@@ -265,8 +358,7 @@ public class Drive extends SubsystemBase {
      * @param ySpeed speed of along the y-axis
      */
     public void setSpeed(double xSpeed, double ySpeed) {
-        this.xSpeed = xSpeed;
-        this.ySpeed = ySpeed;
+        updateKinematics(xSpeed, ySpeed);
     }
 
     /**
@@ -291,32 +383,6 @@ public class Drive extends SubsystemBase {
      */
     public void setAngleRate(double rSpeed) {
         this.rSpeed = rSpeed;
-        this.angleMode = AngleControlMode.AngleRate;
-    }
-
-    /**
-     * Sets the target angle of the robot and sets the robot to Angle angle
-     * control mode.
-     * 
-     * 
-     * @param angle target angle for the robot.
-     */
-    public void setTargetAngle(Rotation2d angle) {
-        this.targetAngle = angle;
-        this.angleMode = AngleControlMode.Angle;
-    }
-
-    /**
-     * Sets the target point of the robot and sets the robot to LookAtPoint
-     * angle control mode.
-     * 
-     * @param point  point to look at
-     * @param offset offset angle for the robot orientation
-     */
-    public void setTargetPoint(Translation2d point, Rotation2d offset) {
-        this.targetPoint = point;
-        this.targetAngle = offset;
-        this.angleMode = AngleControlMode.LookAtPoint;
     }
 
     /**
@@ -356,36 +422,19 @@ public class Drive extends SubsystemBase {
     }
 
     /**
-     * Subsystem periodic method
-     */
-    @Override
-    public void periodic() {
-        if (DriverStation.isAutonomous()) {
-            fieldRelative = false;
-        } else if (DriverStation.isTeleop()) {
-            fieldRelative = true;
-        }
-        update_kinematics();
-        update_odometry();
-        updateUI();
-        updateScope();
-    }
-
-    /**
      * Updates the robot swerve kinematics
      */
-    private void update_kinematics() {
+    private void updateKinematics(double xSpeed, double ySpeed) {
         ChassisSpeeds speeds;
 
-        double xSpeed = this.xSpeed;
-        double ySpeed = this.ySpeed;
+        // double xSpeed = this.xSpeed;
+        // double ySpeed = this.ySpeed;
+
         double autonRSpeed = chassisSpeeds.omegaRadiansPerSecond;
         /*if (targetSeen && fieldRelative) {
             xSpeed *= -1;
             ySpeed *= -1;
         }*/
-
-        rSpeed = getAngleRate();
         
         if (fieldRelative) {
             Pose2d robot_pose = getEstimatedPos();
@@ -440,31 +489,18 @@ public class Drive extends SubsystemBase {
         this.chassisSpeeds = chassisSpeeds;
     }
 
-    private double calcRateToAngle(Rotation2d targetAngle) { 
+    private void calcRateToAngle(Rotation2d targetAngle) { 
         // Get current angle position
         Pose2d pose = getEstimatedPos();
         Rotation2d currentAngle = pose.getRotation();
 
-        return calcRateToAngle(targetAngle, currentAngle);
+        calcRateToAngle(targetAngle, currentAngle);
     }
 
-    private double calcRateToAngle(Rotation2d targetAngle, Rotation2d currentAngle) {
-        Rotation2d rampDistance = Rotation2d.fromRadians(0.5);    // TODO move to constants
-
-        // Determine minimum error distance
-        double error = currentAngle.minus(targetAngle).getRadians();
-        double compError = 2 * Math.PI - Math.abs(error);
-        double minError = Math.min(Math.abs(error), Math.abs(compError));
-
-        // Calculate ramp down speed
-        double speed = Math.min(minError * rampDistance.getRadians(), Constants.maxAngularSpeed);
+    private void calcRateToAngle(Rotation2d targetAngle, Rotation2d currentAngle) {
+        double speed = angleAlignPID.calculate(currentAngle.getRadians(), targetAngle.getRadians());
         
-        // Set direction
-        double direction = error > 0 ? 1 : -1;
-        if (minError == compError)  direction *= -1;
-        speed *= direction;
-
-        return speed;
+        this.rSpeed = speed;
     }
 
     /**
@@ -472,12 +508,12 @@ public class Drive extends SubsystemBase {
      * @param   point   target point
      * @param   offset  target orientation offset
      */
-    private double calcRateToPoint(Translation2d point, Rotation2d offset) {
+    private void calcRateToPoint(Translation2d point, Rotation2d offset) {
         Pose2d pose = getEstimatedPos();
         Translation2d targetOffset = targetPoint.minus(pose.getTranslation());
         Rotation2d targetAngle = targetOffset.getAngle().plus(offset);
 
-        return calcRateToAngle(targetAngle, pose.getRotation());
+        calcRateToAngle(targetAngle, pose.getRotation());
     }
 
     /**
@@ -491,52 +527,16 @@ public class Drive extends SubsystemBase {
                         backLeft.getPosition(),
                         backRight.getPosition()
                 });
-        odometeryPoseEstimator.update(navx.getRotation2d(),
-                new SwerveModulePosition[] {
-                        frontLeft.getPosition(),
-                        frontRight.getPosition(),
-                        backLeft.getPosition(),
-                        backRight.getPosition()
-                });
     }
 
-    /**
-     * Calculates the target angular rate for the robot
-     * 
-     * @return target angular rate for the robot based on current angle
-     *         control mode and settings
-     */
-    private double getAngleRate() {
-        switch (angleMode) {
-            case LookAtPoint:
-                return calcRateToPoint(targetPoint, targetAngle);
-            case Angle:
-                return calcRateToAngle(targetAngle);
-            case AngleRate:
-            default:
-                return rSpeed;
-        }
+    public void goToPoint(Pose2d point){
+        Pose2d currentPose = getEstimatedPos();
+        Transform2d distance = point.minus(currentPose);
+        double xDistance = distance.getX();
+        double yDistance = distance.getY();
+
     }
 
-    /**
-     * Calculates the angle rate to reach a target angle
-     * 
-     * @param targetAngle target robot angle
-     */
-
-    /**
-     * Calculates the angle rate to reach a target angle
-     * 
-     * @param targetAngle  target robot angle
-     * @param currentAngle current robot angle
-     */
-
-    /**
-     * Calculates the angle rate to look at a target point
-     * 
-     * @param point  target point
-     * @param offset target orientation offset
-     */
 
     private void updateUI() {
         Pose2d pose = getEstimatedPos();
@@ -544,21 +544,16 @@ public class Drive extends SubsystemBase {
         sb_posEstY.setDouble(pose.getY());
         sb_posEstR.setDouble(pose.getRotation().getDegrees());
 
-        sb_speedX.setDouble(xSpeed);
-        sb_speedY.setDouble(ySpeed);
         sb_speedR.setDouble(rSpeed);
-        sb_robotTargetAngle.setDouble(robotTargetAngle);
-
         field2d.setRobotPose(swerveDrivePoseEstimator.getEstimatedPosition());
         field2d.getObject("fieldTargetPoint").setPose(targetPoint.getX(), targetPoint.getY(), Rotation2d.fromDegrees(0));
+        var currentCommand = Drive.getInstance().rotationDriveCommands.getCurrentCommand();
+        String curCommandName = "null";
+        if (currentCommand != null) curCommandName = currentCommand.getName();
+        SmartDashboard.putString("Current Drive Command", curCommandName);
     }
 
     private void updateScope() {
-        odometryPose.set(odometeryPoseEstimator.getEstimatedPosition());
-        arrayPose.set(new Pose2d[] {
-                odometeryPoseEstimator.getEstimatedPosition(),
-                swerveDrivePoseEstimator.getEstimatedPosition()
-        });
         swerveModules.set(new SwerveModuleState[] {
                 frontLeft.getState(),
                 frontRight.getState(),
@@ -597,7 +592,41 @@ public class Drive extends SubsystemBase {
         }
       }
 
-    
+    public void setDriveRate(double xSpeed, double ySpeed){
+        DriveRateCommand driveRate = linearDriveCommands.driveRateCommand;
+        driveRate.setSpeeds(xSpeed, ySpeed);
+        if (linearDriveCommands.getCurrentCommand() != driveRate) driveRate.schedule();
+    }
+
+    public void setRotationRate(double rSpeed){
+        RotationRateCommand rotationRate = rotationDriveCommands.rotationRateCommand;
+        rotationRate.setRotationRate(rSpeed);
+        if (rotationDriveCommands.getCurrentCommand() != rotationRate) rotationRate.schedule();
+    }
+
+    public void setAngleAlign(Rotation2d targetAngle){
+        AngleAlignCommand rotationCommand = rotationDriveCommands.angleAlignCommand;
+        rotationCommand.setAngle(targetAngle);
+        if (rotationDriveCommands.getCurrentCommand() != rotationCommand) rotationCommand.schedule();
+    }
+
+    public void setPointAlign(Translation2d targetPoint, Rotation2d rotationOffset){
+        PointAlignCommand pointAlign = rotationDriveCommands.pointAlignCommand;
+        pointAlign.setPoint(targetPoint, rotationOffset);
+        if (rotationDriveCommands.getCurrentCommand() != pointAlign) pointAlign.schedule();
+    }
+
+    @Override
+    public void periodic() {
+        if (DriverStation.isAutonomous()) {
+            fieldRelative = false;
+        } else if (DriverStation.isTeleop()) {
+            fieldRelative = true;
+        }
+        update_odometry();
+        updateUI();
+        updateScope();
+    }
 
     /**
      * Static Initializer

@@ -5,6 +5,7 @@ import frc.robot.Util.FieldLayout;
 
 import java.util.Map;
 
+<<<<<<< HEAD
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
@@ -12,6 +13,10 @@ import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
+=======
+import com.ctre.phoenix6.controls.VoltageOut;
+import com.ctre.phoenix6.hardware.TalonFX;
+>>>>>>> 28045ccc741ca2b61e141659c788711d79bd5619
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -22,6 +27,7 @@ import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Arm extends SubsystemBase {
@@ -50,7 +56,12 @@ public class Arm extends SubsystemBase {
         }
     }
 
+<<<<<<< HEAD
     private SparkFlex armMotor;
+=======
+    private TalonFX armMotor1;
+    private TalonFX armMotor2;
+>>>>>>> 28045ccc741ca2b61e141659c788711d79bd5619
 
     private Encoder quadArmEncoder;
 
@@ -60,7 +71,11 @@ public class Arm extends SubsystemBase {
 
     private PIDController armPID;
 
+<<<<<<< HEAD
     private ArmFeedforward armFF;
+=======
+    private ArmFeedforward armFFS0;
+>>>>>>> 28045ccc741ca2b61e141659c788711d79bd5619
 
     private final ArmStateValues defaultState = new ArmStateValues(Rotation2d.fromDegrees(15));
 
@@ -68,15 +83,29 @@ public class Arm extends SubsystemBase {
 
     private ArmStateValues targetState = defaultState;
 
-    private double manual_volt;
-    private double manual_rate;
-    private int manual_ext;
+    private double armVolt;
+    private double armRate;
 
     private Map<String, ArmStateValues> armStates = Map.of(
+<<<<<<< HEAD
             "home", new ArmStateValues(Rotation2d.fromDegrees(0)),
             "levelTrough", new ArmStateValues(Rotation2d.fromDegrees(0)),
             "levelMid", new ArmStateValues(Rotation2d.fromDegrees(0)),
             "level4", new ArmStateValues(Rotation2d.fromDegrees(0))
+=======
+            "Match Start", new ArmStateValues(Rotation2d.fromDegrees(60)),
+            "Home", defaultState,
+            "Intake", new ArmStateValues(Rotation2d.fromDegrees(7)),
+            "Speaker", new ArmStateValues(Rotation2d.fromDegrees(46)),
+            "lineSpeaker", new ArmStateValues(Rotation2d.fromDegrees(56)),
+            "longShot", new ArmStateValues(Rotation2d.fromDegrees(67.5)),
+            "Amp", new ArmStateValues(Rotation2d.fromDegrees(102)),
+            "Climb", new ArmStateValues(Rotation2d.fromDegrees(97.38)),
+            "AmpSideShoot", new ArmStateValues(Rotation2d.fromDegrees(47)),
+            "home", new ArmStateValues(Rotation2d.fromDegrees(23))
+            //"Climb Balance", new ArmStateValues(Rotation2d.fromDegrees(97.38), 0),
+            //"Trap Score", new ArmStateValues(Rotation2d.fromDegrees(70), 2)
+>>>>>>> 28045ccc741ca2b61e141659c788711d79bd5619
         );
 
     private GenericEntry sb_armMode;
@@ -87,21 +116,131 @@ public class Arm extends SubsystemBase {
     private GenericEntry sb_angleRateError;
     private GenericEntry sb_angleM1Volt;
     private GenericEntry sb_angleTargetVolt;
+<<<<<<< HEAD
     private GenericEntry sb_extState;
+=======
+>>>>>>> 28045ccc741ca2b61e141659c788711d79bd5619
     private GenericEntry sb_brakeModeDisabled;
-    private GenericEntry sb_armClearOfClimber;
     private GenericEntry sb_anglePosRotations;
     private GenericEntry sb_atAngle;
     private GenericEntry sb_atTarget;
+    private GenericEntry sb_currentArmCommand;
+
+    public class ArmVoltageCommand extends Command{
+        private double targetVoltage;
+
+        public ArmVoltageCommand(double targetVoltage){
+            this.targetVoltage = targetVoltage;
+
+            addRequirements(Arm.this);
+        }
+
+        @Override
+        public void execute(){
+            setMotorVolt(targetVoltage);
+        }
+
+        public void setVoltage(double targetVoltage){
+            this.targetVoltage = targetVoltage;
+        }
+
+    }
+
+    public class ArmRateCommand extends Command{
+        private double targetRate;
+        private double tolerance;
+
+        public ArmRateCommand(double targetRate, double tolerance){
+            this.targetRate = targetRate;
+            this.tolerance = tolerance;
+            addRequirements(Arm.this);
+        }
+
+        public void setRate(double targetRate){
+            this.targetRate = targetRate;
+        }
+
+        public void setToleranceRate(double targetRate, double tolerance){
+            SmartDashboard.putNumber("Arm tolerance", targetRate);
+            this.targetRate = targetRate;
+            this.tolerance = tolerance;
+        }
+        
+        @Override
+        public void execute(){
+            setArmRate(targetRate);
+        }
+
+        @Override
+        public boolean isFinished(){
+            return targetRate == 0 || Math.abs(targetRate) <= tolerance;
+        }
+    }
+
+    public class ArmHoldCommand extends Command{
+        private Rotation2d target;
+
+        public ArmHoldCommand(){
+            target = new Rotation2d();
+            addRequirements(Arm.this);
+        }
+
+        @Override
+        public void initialize(){
+            System.out.println("Command initialized");
+            target = getArmAngle();
+        }
+
+        @Override
+        public void execute(){
+            setArmAngle(target);
+        }
+    }
+
+    public class ArmAngleCommand extends Command{
+        private Rotation2d armAngle;
+        
+        public ArmAngleCommand(Rotation2d armAngle){
+            this.armAngle = armAngle;
+            addRequirements(Arm.this);
+        }
+
+        public void setAngle(Rotation2d armAngle){
+            this.armAngle = armAngle;
+        }
+
+        @Override
+        public void execute(){
+            setArmAngle(armAngle);
+        }
+        
+        @Override
+        public boolean isFinished(){
+            return atAngle(armAngle, Rotation2d.fromDegrees(2));
+        }
+    }
+
+    public class ArmBrakeModeCommand extends Command{
+        
+    }
+
+
+    private final ArmVoltageCommand armVoltageCommand;
+    private final ArmRateCommand armRateCommand;
+    private final ArmAngleCommand armAngleCommand;
+    private final ArmHoldCommand armHoldCommand;
 
     /**
      * Constructor
      */
-    private Arm() {
-        //unused channels
-        
+    private Arm() {        
 
+<<<<<<< HEAD
         armMotor = new SparkFlex(Constants.armMotor, MotorType.kBrushless);
+=======
+        armMotor1 = new TalonFX(Constants.armMotor1);
+        armMotor2 = new TalonFX(Constants.armMotor2);
+>>>>>>> 28045ccc741ca2b61e141659c788711d79bd5619
 
         absoluteArmEncoder = new DutyCycleEncoder(Constants.armDCEncoderPort);
 
@@ -112,19 +251,40 @@ public class Arm extends SubsystemBase {
 
         armPID = new PIDController(Constants.armPIDS0.kP, Constants.armPIDS0.kP, Constants.armPIDS0.kP);
 
+<<<<<<< HEAD
         armFF = new ArmFeedforward(Constants.armFFS0.kS, Constants.armFFS0.kG, Constants.armFFS0.kV);
 
         armPID.enableContinuousInput(-Math.PI, Math.PI);
+=======
+        armFFS0 = new ArmFeedforward(Constants.armFFS0.kS, Constants.armFFS0.kG, Constants.armFFS0.kV);
+>>>>>>> 28045ccc741ca2b61e141659c788711d79bd5619
 
         //Auton Positions
         // TODO Set abs encoder offset
 
         // Set control mode
         control_mode = ArmControlMode.MANUAL_VOLT;
-        manual_volt = 0;
-        manual_rate = 0;
-        manual_ext = 0;
+        armVolt = 0;
+        armRate = 0;
 
+<<<<<<< HEAD
+=======
+        // Set target state to current state
+        targetState = new ArmStateValues(getArmAngle());
+
+        // Initialize Timer        
+        shuffleBoardInit();
+
+        armVoltageCommand = new ArmVoltageCommand(0);
+        armRateCommand = new ArmRateCommand(0, 0);
+        armAngleCommand = new ArmAngleCommand(Rotation2d.fromDegrees(0));
+        armHoldCommand = new ArmHoldCommand();
+
+        setDefaultCommand(new ArmHoldCommand());
+    }
+
+    public void shuffleBoardInit(){
+>>>>>>> 28045ccc741ca2b61e141659c788711d79bd5619
         // Setup Shuffleboard
         var layout = Shuffleboard.getTab("Status")
                 .getLayout("Arm", BuiltInLayouts.kList)
@@ -138,13 +298,20 @@ public class Arm extends SubsystemBase {
         sb_angleRateError = layout.add("Angle Rate Error", 0).getEntry();
         sb_angleM1Volt = layout.add("Angle Motor 1 Voltage", 0).getEntry();
         sb_angleTargetVolt = layout.add("Angle Target Voltage", 0).getEntry();
+<<<<<<< HEAD
         sb_extState = layout.add("Ext State", manual_ext).getEntry();
+=======
+>>>>>>> 28045ccc741ca2b61e141659c788711d79bd5619
         sb_brakeModeDisabled = layout.add("Brake Mode Disabled", brakeModeDisableBtn.get()).getEntry();
-        sb_armClearOfClimber = layout.add("Arm clear of climber", false).getEntry();
         sb_anglePosRotations = layout.add("Arm Encoder Rotations Output", 0).getEntry();
+<<<<<<< HEAD
         
+=======
+>>>>>>> 28045ccc741ca2b61e141659c788711d79bd5619
         sb_atAngle = layout.add("At Angle", false).getEntry();
         sb_atTarget = layout.add("At Target", false).getEntry();
+        //sb_currentArmCommand = layout.add("Current Arm Command", getCurrentCommand().getName()).getEntry();
+
     }
 
     /**
@@ -167,6 +334,7 @@ public class Arm extends SubsystemBase {
         return quadArmEncoder.getRate();
     }
 
+<<<<<<< HEAD
     /**
      * Checks the current extension state
      * 
@@ -198,16 +366,16 @@ public class Arm extends SubsystemBase {
 
         control_mode = ArmControlMode.MANUAL_RATE;
     }
+=======
+>>>>>>> 28045ccc741ca2b61e141659c788711d79bd5619
 
     /**
      * Check if the arm is at its target angle
      * 
      * @return true if the angle are at their target
      */
-    public boolean atAngle() {
+    public boolean atAngle(Rotation2d targetAngle, Rotation2d angleTol) {
         Rotation2d currentAngle = getArmAngle();
-        Rotation2d targetAngle = targetState.targetAngle;
-        Rotation2d angleTol = targetState.angleTol;
 
         return Math.abs(targetAngle.getDegrees() - currentAngle.getDegrees()) < angleTol.getDegrees();
     }
@@ -217,6 +385,7 @@ public class Arm extends SubsystemBase {
      * 
      * @return true if the angle and extension are at their targets
      */
+<<<<<<< HEAD
     public boolean atTarget() {
         return atAngle();
     }
@@ -260,13 +429,26 @@ public class Arm extends SubsystemBase {
 
         return targetState;
     }
+=======
+    public boolean atTarget(ArmStateValues armState) {
+        return atAngle(armState.targetAngle, armState.angleTol);
+    }
+
+
+>>>>>>> 28045ccc741ca2b61e141659c788711d79bd5619
 
     /**
      * Determines the current target arm control rate
      * 
      * @return target arm control rate based on current settings
      */
+<<<<<<< HEAD
     private double getTargetArmRate() {
+=======
+
+    /* 
+     private double getTargetArmRate() {
+>>>>>>> 28045ccc741ca2b61e141659c788711d79bd5619
         double targetSpeed = 0;
 
         switch (control_mode) {
@@ -283,18 +465,19 @@ public class Arm extends SubsystemBase {
 
         return targetSpeed;
     }
+    */
 
     /**
      * Calculate the trapezoidal control rate for the current arm target position
      * 
      * @return target arm control rate
      */
-    private double calcTrapezoidalRate() {
+    private void setArmAngle(Rotation2d targetAngle) {
         
         // Calculate trapezoidal profile
         Rotation2d currentAngle = getArmAngle();
-        Rotation2d targetAngle = targetState.targetAngle;
         double maxAngleRate = Constants.maxArmAutoSpeed;
+<<<<<<< HEAD
 
         // Keep arm in package
         if (currentAngle.getDegrees() <= Constants.minArmS2Angle.getDegrees()) {
@@ -303,6 +486,8 @@ public class Arm extends SubsystemBase {
 
         }
 
+=======
+>>>>>>> 28045ccc741ca2b61e141659c788711d79bd5619
         Rotation2d angleError = targetAngle.minus(currentAngle);
 
         double targetSpeed = maxAngleRate * (angleError.getRadians() > 0 ? 1 : +-1);
@@ -310,8 +495,14 @@ public class Arm extends SubsystemBase {
 
         if (Math.abs(rampDownSpeed) < Math.abs(targetSpeed))
             targetSpeed = rampDownSpeed;
+        
+        setArmRate(targetSpeed);
+    }
 
-        return targetSpeed;
+    private void setArmState(ArmStateValues armState){
+        Rotation2d targetAngle = armState.targetAngle;
+
+        setArmAngle(targetAngle);
     }
 
     /**
@@ -319,29 +510,41 @@ public class Arm extends SubsystemBase {
      * 
      * @param targetSpeed target
      */
-    private double getAngleControlVolt(double targetSpeed) {
-        double result = this.manual_volt;
+    private void setArmRate(double targetSpeed) {
+        double result = this.armRate;
 
+<<<<<<< HEAD
         if (this.control_mode != ArmControlMode.MANUAL_VOLT) {
             if (getArmAngle().getDegrees() <= Constants.minArmS2Angle.getDegrees()) {
                 targetSpeed = Math.max(0, targetSpeed);
             }
+=======
+        Rotation2d currentAngle = getArmAngle();
+        double angleRate = getArmVelocity();
+>>>>>>> 28045ccc741ca2b61e141659c788711d79bd5619
 
-            Rotation2d currentAngle = getArmAngle();
-            double angleRate = getArmVelocity();
+        ArmFeedforward armFF = armFFS0;
 
+<<<<<<< HEAD
             armPID.setPID(Constants.armPIDS0.kP, Constants.armPIDS0.kI, Constants.armPIDS0.kD);
+=======
+        armPID.setPID(Constants.armPIDS0.kP, Constants.armPIDS0.kI, Constants.armPIDS0.kD);
+        armFF = armFFS0;
+            
 
-            sb_angleRateError.setDouble(angleRate - targetSpeed);
+        sb_angleRateError.setDouble(angleRate - targetSpeed);
 
-            // Calculate motor voltage output
-            double calcPID = armPID.calculate(angleRate, targetSpeed);
-            double calcFF = armFF.calculate(currentAngle.getRadians(), targetSpeed);
+        // Calculate motor voltage output
+        double calcPID = armPID.calculate(angleRate, targetSpeed);
+        double calcFF = armFF.calculate(currentAngle.getRadians(), targetSpeed);
+>>>>>>> 28045ccc741ca2b61e141659c788711d79bd5619
 
-            result = calcPID + calcFF;
-        }
-
-        return result;
+        result = calcPID + calcFF;
+        
+        setMotorVolt(result);
+        
+        //Shuffleboard display
+        this.armRate = result;
     }
 
     /**
@@ -351,10 +554,26 @@ public class Arm extends SubsystemBase {
      * @param voltage desired motor voltage
      */
     private void setMotorVolt(double voltage) {
+<<<<<<< HEAD
         // Set Motors
         //VoltageOut settings = new VoltageOut(voltage);
         //settings.EnableFOC = true;
         armMotor.setVoltage(voltage);
+=======
+        // Set soft limits
+        if (absoluteArmEncoder.get() < Constants.upperEncLimit) {
+            voltage = Math.min(0, voltage);
+        }
+        // Set Motors
+        VoltageOut settings = new VoltageOut(voltage);
+        settings.EnableFOC = true;
+        armMotor1.setControl(settings);
+        armMotor2.setControl(settings);
+        
+        //Shuffleboard display
+        this.armVolt = settings.Output;
+        
+>>>>>>> 28045ccc741ca2b61e141659c788711d79bd5619
     }
 
     /*
@@ -372,9 +591,15 @@ public class Arm extends SubsystemBase {
         }
         new Rotation2d();
         ArmStateValues targetState = new ArmStateValues(Rotation2d.fromDegrees(desiredAngle));
+<<<<<<< HEAD
         setState(targetState); 
     }
     */
+=======
+        setArmState(targetState);
+    }
+
+>>>>>>> 28045ccc741ca2b61e141659c788711d79bd5619
 
     public ArmStateValues getState(){
         return targetState;
@@ -384,11 +609,20 @@ public class Arm extends SubsystemBase {
      * Updates the brake mode control of the
      */
     private void updateBrakeMode() {
+<<<<<<< HEAD
         //var motorConfigs = new MotorOutputConfigs();
         var motorConfigs = new SparkFlexConfig();
         
         SparkBaseConfig config = motorConfigs.idleMode(!brakeModeDisableBtn.get() ? IdleMode.kCoast : IdleMode.kBrake);
         armMotor.configure(config, com.revrobotics.spark.SparkBase.ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+=======
+        // var motorConfigs = new MotorOutputConfigs();
+
+        // motorConfigs.NeutralMode = !brakeModeDisableBtn.get() ? NeutralModeValue.Coast : NeutralModeValue.Brake;
+
+        // armMotor1.getConfigurator().apply(motorConfigs);
+        // armMotor2.getConfigurator().apply(motorConfigs);
+>>>>>>> 28045ccc741ca2b61e141659c788711d79bd5619
     }
 
     /**
@@ -402,18 +636,54 @@ public class Arm extends SubsystemBase {
         sb_angleRateSetPoint.setDouble(targetRate);
         sb_angleM1Volt.setDouble(armMotor.getBusVoltage());
         sb_angleTargetVolt.setDouble(targetVolt);
+<<<<<<< HEAD
         sb_extState.setInteger(manual_ext);
         sb_brakeModeDisabled.setBoolean(!brakeModeDisableBtn.get());
         sb_anglePosRotations.setDouble(absoluteArmEncoder.get());
         sb_atAngle.setBoolean(atAngle());
         sb_atTarget.setBoolean(atTarget());
     }
+=======
+        sb_brakeModeDisabled.setBoolean(!brakeModeDisableBtn.get());
+        sb_anglePosRotations.setDouble(absoluteArmEncoder.get());
+        //sb_currentArmCommand.setString(getCurrentCommand().getName());
+    }
+
+    public void setRateCommand(double rate){
+        armRateCommand.setRate(rate);
+        if(getCurrentCommand() != armRateCommand) armRateCommand.schedule();
+    }
+
+    public void setTolRateCommand(double rate, double tolerance){
+        armRateCommand.setToleranceRate(rate, tolerance);
+        if(getCurrentCommand() != armRateCommand) armRateCommand.schedule();
+    }
+
+    public void setAngleCommand(Rotation2d angle){
+        armAngleCommand.setAngle(angle);
+        if(getCurrentCommand() != armAngleCommand) armAngleCommand.schedule();
+    }
+
+    public void setStateCommand(String stateName){
+        ArmStateValues state = armStates.get(stateName);
+        setAngleCommand(state.targetAngle);
+    }
+
+    public void setHoldCommand(){
+        if(getCurrentCommand() != armHoldCommand) new ArmHoldCommand().schedule();
+    }
+
+    public Command getArmCommand(){
+        return getCurrentCommand();
+    }
+>>>>>>> 28045ccc741ca2b61e141659c788711d79bd5619
     
     /**
      * Subsystem periodic method
      */
     @Override
     public void periodic() {
+<<<<<<< HEAD
         double targetArmRate = getTargetArmRate();
         double voltage = getAngleControlVolt(targetArmRate);
         updateBrakeMode();
@@ -421,6 +691,18 @@ public class Arm extends SubsystemBase {
         updateUI(targetArmRate, voltage);
     }
     
+=======
+        SmartDashboard.putNumber("SpeakerPosition", FieldLayout.getSpeakerPose().getX());
+        updateUI(armRate, armVolt);
+        var currentCommand = getCurrentCommand();
+        String curCommandName = "null";
+        if (currentCommand != null) curCommandName = currentCommand.getName();
+        
+        SmartDashboard.putString("Current Command", curCommandName);
+    }
+
+
+>>>>>>> 28045ccc741ca2b61e141659c788711d79bd5619
     /**
      * Static initializer for the arm class
      */

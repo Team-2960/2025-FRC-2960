@@ -10,7 +10,6 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
-import com.ctre.phoenix6.signals.MotorOutputStatusValue;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkLimitSwitch;
 import com.revrobotics.spark.SparkMax;
@@ -68,12 +67,12 @@ public class Climber extends SubsystemBase {
         
         //Initialize Configurations
         winchConfig = new SparkMaxConfig().idleMode(IdleMode.kBrake);
-        winchEncoderConfig = new EncoderConfig().positionConversionFactor(Constants.winchCircum);
+        //winchEncoderConfig = new EncoderConfig().positionConversionFactor(Constants.winchRatchedDelay);
         winchLimitConfig = new LimitSwitchConfig().forwardLimitSwitchType(Type.kNormallyOpen).forwardLimitSwitchEnabled(false);
 
         //Configure the winch motors, limit switch, encoder
         winchL.configure(winchConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-        winchR.configure(winchConfig.inverted(true).apply(winchEncoderConfig), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        winchR.configure(winchConfig.inverted(true), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         // Initialize Encoder
         winchEncoder = winchR.getEncoder();
@@ -183,6 +182,10 @@ public class Climber extends SubsystemBase {
                 retractClimber(1, true);
                 break;
             case CLIMB_START:
+<<<<<<< HEAD
+=======
+                //extendClimber();
+>>>>>>> 28045ccc741ca2b61e141659c788711d79bd5619
                 break;
             case IDLE:
             default:
@@ -205,8 +208,29 @@ public class Climber extends SubsystemBase {
             setMotor(0, true);
         } else {
             setMotor(winchSpeed, true);
+<<<<<<< HEAD
         }
     }
+=======
+
+        }
+    }
+
+    /**
+     * Extends the climber to the max height
+     */
+    // private void extendClimber() {
+    //     // Check if the arm is clear of the climber
+    //     if (!Arm.getInstance().isInClimberZone()) {
+    //         // Check if the climber is at its max extention
+    //         if (getExtension() < Constants.winchMaxExtension) {
+    //             setMotor(-.5, true);
+    //         } else {
+    //             setMotor(0, true);
+    //         }
+    //     }
+    // }
+>>>>>>> 28045ccc741ca2b61e141659c788711d79bd5619
 
     private void setMotor(double value, boolean enableLimit) {
         winchLimitConfig.forwardLimitSwitchEnabled(enableLimit);
