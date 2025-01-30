@@ -163,8 +163,6 @@ public class OperatorInterface extends SubsystemBase {
             drive.presetPosition(new Pose2d(0.0, 0.0, new Rotation2d()));
         }
 
-
-
         if (driverController.getRawButton(6)) {
             IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.SHOOT);
         }
@@ -183,9 +181,14 @@ public class OperatorInterface extends SubsystemBase {
         if (Math.abs(driverController.getRawAxis(4)) > 0.05){
             drive.setAngleRate(rSpeed);
 
-        } else if (driverController.getRawButton(1)) {
+        }
+        if (driverController.getRawButton(1)) {
             drive.setAngleAlign(Rotation2d.fromDegrees(-90));
-            
+
+        }
+        if (driverController.getRawButton(2)){
+            drive.setPointAlign(new Translation2d(0, 0), Rotation2d.fromDegrees(0));
+
         }
 
         // Update Shuffleboard

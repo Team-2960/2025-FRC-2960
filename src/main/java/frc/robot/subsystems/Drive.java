@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.Drive.LinearDriveCommands.DriveRateCommand;
 import frc.robot.subsystems.Drive.RotationDriveCommands.AngleAlignCommand;
+import frc.robot.subsystems.Drive.RotationDriveCommands.PointAlignCommand;
 import frc.robot.subsystems.Drive.RotationDriveCommands.RotationRateCommand;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
@@ -164,6 +165,27 @@ public class Drive extends SubsystemBase {
                 calcRateToAngle(angle);
             }
         }
+
+        public class PointAlignCommand extends Command{
+            Translation2d point;
+            Rotation2d rotationOffset;
+
+            public PointAlignCommand(Translation2d point, Rotation2d rotationOffset){
+                this.point = point;
+                this.rotationOffset = rotationOffset;
+                addRequirements(RotationDriveCommands.this);
+            }
+
+            public void setPoint(Translation2d point, Rotation2d rotationOffset){
+                this.point = point;
+                this.rotationOffset = rotationOffset;
+            }
+
+            @Override
+            public void execute(){
+                calcRateToPoint(targetPoint, rotationOffset);
+            }
+        }
     }
 
     //Command classes
@@ -174,6 +196,7 @@ public class Drive extends SubsystemBase {
     private final DriveRateCommand driveRateCommand;
     private final RotationRateCommand rotationRateCommand;
     private final AngleAlignCommand angleAlignCommand;
+    private final PointAlignCommand pointAlignCommand;
 
     /**
      * Constructor
@@ -272,6 +295,7 @@ public class Drive extends SubsystemBase {
         driveRateCommand = linearDriveCommands.new DriveRateCommand(0, 0);
         rotationRateCommand = rotationDriveCommands.new RotationRateCommand(0);
         angleAlignCommand = rotationDriveCommands.new AngleAlignCommand(Rotation2d.fromDegrees(0));
+        pointAlignCommand = rotationDriveCommands.new PointAlignCommand(new Translation2d(0, 0), new Rotation2d());
         
     }
 
@@ -494,7 +518,6 @@ public class Drive extends SubsystemBase {
     public void goToPoint(Pose2d point){
         Pose2d currentPose = getEstimatedPos();
         Transform2d distance = point.minus(currentPose);
-        
     }
 
 
@@ -564,6 +587,11 @@ public class Drive extends SubsystemBase {
     public void setAngleAlign(Rotation2d targetAngle){
         angleAlignCommand.setAngle(targetAngle);
         if (rotationDriveCommands.getCurrentCommand() != angleAlignCommand) angleAlignCommand.schedule();
+    }
+
+    public void setPointAlign(Translation2d targetPoint, Rotation2d rotationOffset){
+        pointAlignCommand.setPoint(targetPoint, rotationOffset);
+        if (rotationDriveCommands.getCurrentCommand() != pointAlignCommand) pointAlignCommand.schedule();
     }
 
     @Override
