@@ -153,7 +153,10 @@ public class OperatorInterface extends SubsystemBase {
         var alliance = DriverStation.getAlliance();
         double alliance_dir = alliance.isPresent() && alliance.get() == Alliance.Red ? 1 : -1;
 
+        double xAxis = MathUtil.applyDeadband(driverController.getRawAxis(1), 0.05);
+        double yAxis = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.05);
         double rAxis = MathUtil.applyDeadband(driverController.getRawAxis(4), 0.1);
+
         double xSpeed = MathUtil.applyDeadband(driverController.getRawAxis(1), 0.05) * maxSpeed * alliance_dir;
         double ySpeed = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.05) * maxSpeed * alliance_dir;
         double rSpeed = rAxis * maxAngleRate * -1;
@@ -177,7 +180,13 @@ public class OperatorInterface extends SubsystemBase {
         
         climber.setRatchet(driverController.getRawButton((5)));
 
-        drive.setDriveRate(xSpeed, ySpeed);
+        if (Math.abs(xAxis) > 0.05 || Math.abs(yAxis) > 0.05 ){
+            drive.setDriveRate(xSpeed, ySpeed);
+
+        } else if (driverController.getRawButton(3)){
+            drive.setGoToPoint(new Translation2d(0, 0));
+        }
+        
 
         if (Math.abs(rAxis) > 0.1){
             drive.setRotationRate(rSpeed);

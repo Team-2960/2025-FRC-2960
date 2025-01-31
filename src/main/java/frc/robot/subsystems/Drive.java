@@ -112,16 +112,17 @@ public class Drive extends SubsystemBase {
 
     public class LinearDriveCommands extends SubsystemBase{
         private final DriveRateCommand driveRateCommand;
+        private final GoToPointCommand goToPointCommand;
 
         public LinearDriveCommands(){
             driveRateCommand = new DriveRateCommand(0, 0);
+            goToPointCommand = new GoToPointCommand(new Translation2d(0, 0));
             setDefaultCommand(driveRateCommand);
         }
 
         public class DriveRateCommand extends Command{
             double xSpeed;
             double ySpeed;
-            Translation2d point;
         
             public DriveRateCommand(double xSpeed, double ySpeed){
                 this.xSpeed = xSpeed;
@@ -138,6 +139,25 @@ public class Drive extends SubsystemBase {
             public void execute(){
                 updateKinematics(xSpeed, ySpeed);
             }
+        }
+
+        public class GoToPointCommand() extends Command{
+            Translation2d point;
+
+            public goTopPointCommand(Translation2d point){
+                this.point = point;
+                addRequirements(LinearDriveCommands.this)
+            }
+
+            public void setPoint(Translation2d point){
+                this.point = point
+            }
+
+            @Override
+            public void execute(){
+                calcToPoint(point)
+            }
+
         }
     }
 
@@ -259,7 +279,7 @@ public class Drive extends SubsystemBase {
         
         angleAlignPID.enableContinuousInput(-Math.PI, Math.PI);
 
-        driveAlignPID = new PIDController(0, 0, 0);
+        driveAlignPID = new PIDController(1, 0, 0);
 
         // Initialize pose estimation
         swerveDrivePoseEstimator = new SwerveDrivePoseEstimator(
@@ -529,12 +549,14 @@ public class Drive extends SubsystemBase {
                 });
     }
 
-    public void goToPoint(Pose2d point){
+    public void calcToPoint(Translation2d point){
         Pose2d currentPose = getEstimatedPos();
         Transform2d distance = point.minus(currentPose);
-        double xDistance = distance.getX();
-        double yDistance = distance.getY();
-
+        double xPoint = point.getX();
+        double yPoint = point.getY()
+        double xSpeed = distanceController.calculate(currentPose.getX(), xPoint);
+        double ySpeed = distanceController.calculate(currentPose.getX(), yPoint);
+        updateKinematics(xSpeed, ySpeed);
     }
 
 
@@ -614,6 +636,12 @@ public class Drive extends SubsystemBase {
         PointAlignCommand pointAlign = rotationDriveCommands.pointAlignCommand;
         pointAlign.setPoint(targetPoint, rotationOffset);
         if (rotationDriveCommands.getCurrentCommand() != pointAlign) pointAlign.schedule();
+    }
+
+    public void setGoToPoint(Translation2d targetPoint){
+        GoToPointCommand goToPointCommand = linearDriveCommands.goToPointCommand;
+        goToPointCommand.setPoint(targetPoint);
+        if (linearDriveCommands.getCurrentCommand() != goToPointCommand) goToPointCommand.schedule()
     }
 
     @Override
