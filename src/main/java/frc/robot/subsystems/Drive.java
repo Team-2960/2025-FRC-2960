@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.Drive.LinearDriveCommands.DriveRateCommand;
+import frc.robot.subsystems.Drive.LinearDriveCommands.GoToPointCommand;
 import frc.robot.subsystems.Drive.RotationDriveCommands.AngleAlignCommand;
 import frc.robot.subsystems.Drive.RotationDriveCommands.PointAlignCommand;
 import frc.robot.subsystems.Drive.RotationDriveCommands.RotationRateCommand;
@@ -141,21 +142,20 @@ public class Drive extends SubsystemBase {
             }
         }
 
-        public class GoToPointCommand() extends Command{
+        public class GoToPointCommand extends Command{
             Translation2d point;
-
-            public goTopPointCommand(Translation2d point){
+            
+            public GoToPointCommand(Translation2d point){
                 this.point = point;
-                addRequirements(LinearDriveCommands.this)
             }
 
             public void setPoint(Translation2d point){
-                this.point = point
+                this.point = point;
             }
 
             @Override
             public void execute(){
-                calcToPoint(point)
+                calcToPoint(point);
             }
 
         }
@@ -551,11 +551,10 @@ public class Drive extends SubsystemBase {
 
     public void calcToPoint(Translation2d point){
         Pose2d currentPose = getEstimatedPos();
-        Transform2d distance = point.minus(currentPose);
         double xPoint = point.getX();
-        double yPoint = point.getY()
-        double xSpeed = distanceController.calculate(currentPose.getX(), xPoint);
-        double ySpeed = distanceController.calculate(currentPose.getX(), yPoint);
+        double yPoint = point.getY();
+        double xSpeed = driveAlignPID.calculate(currentPose.getX(), xPoint);
+        double ySpeed = driveAlignPID.calculate(currentPose.getX(), yPoint);
         updateKinematics(xSpeed, ySpeed);
     }
 
@@ -641,7 +640,7 @@ public class Drive extends SubsystemBase {
     public void setGoToPoint(Translation2d targetPoint){
         GoToPointCommand goToPointCommand = linearDriveCommands.goToPointCommand;
         goToPointCommand.setPoint(targetPoint);
-        if (linearDriveCommands.getCurrentCommand() != goToPointCommand) goToPointCommand.schedule()
+        if (linearDriveCommands.getCurrentCommand() != goToPointCommand) goToPointCommand.schedule();
     }
 
     @Override
