@@ -669,13 +669,13 @@ public class Drive extends SubsystemBase {
         }
     }
 
-    public void pathOnTheFly(List<Pose2d> poseList){
+    public void pathOnTheFly(List<Pose2d> poseList, GoalEndState endState){
         wayPoints = poseList;
         storeWaypoints = PathPlannerPath.waypointsFromPoses(poseList);
         PathPlannerPath path = new PathPlannerPath(storeWaypoints, 
             pathConstraints, 
             null, 
-            new GoalEndState(0, Rotation2d.fromDegrees(0)));
+            endState);
         Command pathCommand = AutoBuilder.followPath(path);
         followPath(pathCommand);
     }

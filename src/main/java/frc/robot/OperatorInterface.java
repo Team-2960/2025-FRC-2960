@@ -10,6 +10,8 @@ import frc.robot.subsystems.Climber.ClimberStates;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.pathplanner.lib.path.GoalEndState;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -193,7 +195,7 @@ public class OperatorInterface extends SubsystemBase {
             List<Pose2d> points = new ArrayList<Pose2d>();
             points.add(drive.getEstimatedPos());
             points.add(new Pose2d());
-            drive.pathOnTheFly(points);
+            drive.pathOnTheFly(points, new GoalEndState(0, Rotation2d.fromDegrees(0)));
         }
         
 
