@@ -34,6 +34,8 @@ import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import java.sql.Driver;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.opencv.core.Point;
@@ -42,7 +44,10 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.path.GoalEndState;
+import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.path.Waypoint;
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 
@@ -108,6 +113,11 @@ public class Drive extends SubsystemBase {
     private StructPublisher<Pose2d> odometryPose;
     private StructArrayPublisher<Pose2d> arrayPose;
     private StructArrayPublisher<SwerveModuleState> swerveModules;
+
+    List<Waypoint> storeWaypoints;
+    List<Pose2d> wayPoints;
+    PathConstraints pathConstraints;
+
 
     
 
@@ -330,7 +340,14 @@ public class Drive extends SubsystemBase {
         //Make instance of Command Classes
         linearDriveCommands = new LinearDriveCommands();
         rotationDriveCommands = new RotationDriveCommands();
-                
+
+        wayPoints.add(new Pose2d());
+
+        storeWaypoints = PathPlannerPath.waypointsFromPoses(
+            wayPoints
+        );
+
+        pathConstraints = PathConstraints.unlimitedConstraints(12);
     }
 
     public void shuffleBoardInit(){
@@ -642,6 +659,27 @@ public class Drive extends SubsystemBase {
         goToPointCommand.setPoint(targetPoint);
         if (linearDriveCommands.getCurrentCommand() != goToPointCommand) goToPointCommand.schedule();
     }
+
+    public void followPath(Command path){
+        if (getCurrentCommand() != path){
+            linearDriveCommands.getCurrentCommand().cancel();
+            rotationDriveCommands.getCurrentCommand().cancel();
+            path.addRequirements(Drive.this);
+            path.schedule();
+        }
+    }
+
+    public void pathOnTheFly(List<Pose2d> poseList){
+        wayPoints = poseList;
+        storeWaypoints = PathPlannerPath.waypointsFromPoses(poseList);
+        PathPlannerPath path = new PathPlannerPath(storeWaypoints, 
+            pathConstraints, 
+            null, 
+            new GoalEndState(0, Rotation2d.fromDegrees(0)));
+        Command pathCommand = AutoBuilder.followPath(path);
+        followPath(pathCommand);
+    }
+
 
     @Override
     public void periodic() {

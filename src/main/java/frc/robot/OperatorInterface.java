@@ -7,6 +7,9 @@ import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.IntakePizzaBox;
 import frc.robot.subsystems.Climber.ClimberStates;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -185,6 +188,12 @@ public class OperatorInterface extends SubsystemBase {
 
         } else if (driverController.getRawButton(3)){
             drive.setGoToPoint(new Translation2d(0, 0));
+
+        } else if (driverController.getRawButton(4)){
+            List<Pose2d> points = new ArrayList<Pose2d>();
+            points.add(drive.getEstimatedPos());
+            points.add(new Pose2d());
+            drive.pathOnTheFly(points);
         }
         
 
