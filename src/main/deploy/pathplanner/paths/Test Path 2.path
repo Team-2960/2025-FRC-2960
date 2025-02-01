@@ -3,32 +3,37 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.053371710526315,
-        "y": 7.527302631578947
+        "x": 5.147615131578947,
+        "y": 5.1411184210526315
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.053371710526315,
-        "y": 7.527302631578947
+        "x": 4.295470015332266,
+        "y": 5.611403077640995
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Test Path 1 End"
     },
     {
       "anchor": {
-        "x": 5.3208059210526315,
-        "y": 7.527302631578947
+        "x": 1.500986842105263,
+        "y": 7.257894736842105
       },
       "prevControl": {
-        "x": 6.114524144380237,
-        "y": 7.527302631578947
+        "x": 2.365328086190358,
+        "y": 6.815359571238531
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Test Human Player"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.6747279322853635,
+      "rotationDegrees": -54.0
+    }
+  ],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [],
@@ -42,13 +47,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": -54.0
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": -119.99999999999999
   },
   "useDefaultConstraints": true
 }

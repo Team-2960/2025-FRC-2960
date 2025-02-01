@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.0,
-        "y": 7.0
+        "x": 1.500986842105263,
+        "y": 7.257894736842105
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.0,
-        "y": 7.0
+        "x": 1.9309076721325997,
+        "y": 6.881849836641253
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Test Human Player"
     },
     {
       "anchor": {
-        "x": 4.166200657894737,
-        "y": 6.266858552631579
+        "x": 3.8294407894736837,
+        "y": 5.1411184210526315
       },
       "prevControl": {
-        "x": 3.166200657894737,
-        "y": 6.266858552631579
+        "x": 3.2639418915444285,
+        "y": 5.629179254290936
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Test Reef"
     }
   ],
   "rotationTargets": [],
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": -59.99999999999999
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": -54.0
   },
   "useDefaultConstraints": true
 }
