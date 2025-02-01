@@ -196,6 +196,8 @@ public class OperatorInterface extends SubsystemBase {
             points.add(drive.getEstimatedPos());
             points.add(new Pose2d());
             drive.pathOnTheFly(points, new GoalEndState(0, Rotation2d.fromDegrees(0)));
+        }else{
+            drive.setDriveRate(0, 0);
         }
         
 
@@ -210,6 +212,8 @@ public class OperatorInterface extends SubsystemBase {
         else if (driverController.getRawButton(2)){
             drive.setPointAlign(new Translation2d(0, 0), Rotation2d.fromDegrees(0));
 
+        }else{
+            drive.setRotationRate(0);
         }
 
         // Update Shuffleboard
