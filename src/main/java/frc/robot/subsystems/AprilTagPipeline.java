@@ -1,12 +1,15 @@
 package frc.robot.subsystems;
 
+import java.util.List;
 import java.util.Optional;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.*;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.numbers.*;
 import edu.wpi.first.networktables.*;
 import edu.wpi.first.wpilibj.shuffleboard.*;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Util.AprilTagPipelineSettings;
 import edu.wpi.first.wpilibj.Timer;
@@ -14,6 +17,7 @@ import edu.wpi.first.wpilibj.Timer;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.targeting.PhotonPipelineResult;
 
 /**
  * Manages connection to a single PhotonVision AprilTag Pipeline
@@ -37,14 +41,13 @@ public class AprilTagPipeline extends SubsystemBase {
     /**
      * Constructor
      * @param   settings    Pipeline settings
-     * @param   dt          Drivetrain object to update
      */
     public AprilTagPipeline(AprilTagPipelineSettings settings, String cameraName, String name) {
         this.settings = settings;
        // TODO: Find non-depricated method to get April Tag Field Locations
         camera = new PhotonCamera(cameraName);
         pose_est = new PhotonPoseEstimator(
-            settings.field_layout.loadAprilTagLayoutField(), 
+            AprilTagFieldLayout.loadField(settings.field_layout), 
             settings.pose_strategy, 
             settings.robot_to_camera
         );
@@ -117,12 +120,12 @@ public class AprilTagPipeline extends SubsystemBase {
                     if(tag_count > 1 || avg_dist < settings.max_dist) {
                         // TODO Add average distance scaler to settings
                         est_std = est_std.times(1 + (avg_dist * avg_dist / 30));
-
-                        drive.addVisionPose(est_pose, est_timestamp, est_std);
                         
                         last_pose = est_pose;
                         last_timestamp = est_timestamp;
+                        drive.setVisionPose(est_pose, est_timestamp);
                     }
+                    
                 }
             }
         }
@@ -138,5 +141,10 @@ public class AprilTagPipeline extends SubsystemBase {
         sb_PoseR.setDouble(last_pose.getRotation().getDegrees());
         sb_lastTimestamp.setDouble(last_timestamp);
         sb_lastUpdatePeriod.setDouble(Timer.getFPGATimestamp() - last_timestamp);
+        SmartDashboard.putBoolean("AprilTag Present", camera.getLatestResult().hasTargets());
+    }
+
+    public List<PhotonPipelineResult> getInfo(){
+        return camera.getAllUnreadResults();
     }
 }

@@ -58,11 +58,15 @@ public class Robot extends TimedRobot {
 
         CameraServer.startAutomaticCapture();
         //autonCommand = AutonList.getDefaultCommands();
+
+        
+
     }
 
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
+
     }
 
     @Override

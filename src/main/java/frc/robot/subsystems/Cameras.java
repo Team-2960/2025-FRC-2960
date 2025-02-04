@@ -11,6 +11,7 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Util.AprilTagPipelineSettings;
@@ -20,17 +21,17 @@ public class Cameras extends SubsystemBase{
     private edu.wpi.first.math.Vector<N3> singleStds;
     private edu.wpi.first.math.Vector<N3> multiStds;
 
-    private AprilTagPipeline camera01;
+    private AprilTagPipeline camera03;
     private static Cameras cameras = null;
 
     public Cameras(){
-        singleStds = VecBuilder.fill(0, 0, 0);
-        multiStds = VecBuilder.fill(0, 0, 0);
+        singleStds = VecBuilder.fill(1, 1, 1);
+        multiStds = VecBuilder.fill(1, 1, 1);
         aprilTagPipeline = new AprilTagPipelineSettings(AprilTagFields.k2025Reefscape,
             new Transform3d(Constants.robotLength/2, Constants.robotWidth/2, 0.254, new Rotation3d(0, 60, 45)),
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, 4, singleStds , multiStds);
         
-        camera01 = new AprilTagPipeline(aprilTagPipeline, "Camera03", "AprilTagPipeline");
+        camera03 = new AprilTagPipeline(aprilTagPipeline, "Camera03", "AprilTagPipeline");
     }
 
     @Override
