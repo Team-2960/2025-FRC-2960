@@ -34,13 +34,15 @@ public class Robot extends TimedRobot {
 
     private Drive drive;
     private OperatorInterface oi;
-    private Camera camera;
+    //private Camera camera;
     private Arm arm;
     private Climber climber;
     private IntakePizzaBox intake;
+    private Cameras cameras;
     //private Pneumatics pneumatics;
     private RobotContainer robotContainer;
     private Command autonomousCommand;
+    
 
     @Override
     public void robotInit() {
@@ -50,20 +52,17 @@ public class Robot extends TimedRobot {
         arm = Arm.getInstance();
         climber = Climber.getInstance();
         intake = IntakePizzaBox.getInstance();
+        cameras = Cameras.getInstance();
         //pneumatics = Pneumatics.getInstance();
         robotContainer = new RobotContainer();
 
         CameraServer.startAutomaticCapture();
         //autonCommand = AutonList.getDefaultCommands();
-
-        
-
     }
 
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
-
     }
 
     @Override

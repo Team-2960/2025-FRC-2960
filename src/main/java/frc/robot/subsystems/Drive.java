@@ -10,6 +10,7 @@ import frc.robot.subsystems.Drive.RotationDriveCommands.AngleAlignCommand;
 import frc.robot.subsystems.Drive.RotationDriveCommands.PointAlignCommand;
 import frc.robot.subsystems.Drive.RotationDriveCommands.RotationRateCommand;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -20,6 +21,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -48,6 +50,7 @@ import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.Waypoint;
+import com.pathplanner.lib.trajectory.PathPlannerTrajectory;
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 
@@ -114,8 +117,6 @@ public class Drive extends SubsystemBase {
     private StructArrayPublisher<Pose2d> arrayPose;
     private StructArrayPublisher<SwerveModuleState> swerveModules;
 
-    List<Waypoint> storeWaypoints;
-    List<Pose2d> wayPoints;
     PathConstraints pathConstraints;
 
 
@@ -124,6 +125,7 @@ public class Drive extends SubsystemBase {
     public class LinearDriveCommands extends SubsystemBase{
         private final DriveRateCommand driveRateCommand;
         private final GoToPointCommand goToPointCommand;
+        private static LinearDriveCommands linearCommands = null;
 
         public LinearDriveCommands(){
             driveRateCommand = new DriveRateCommand(0, 0);
@@ -157,6 +159,7 @@ public class Drive extends SubsystemBase {
             
             public GoToPointCommand(Translation2d point){
                 this.point = point;
+                addRequirements(LinearDriveCommands.this);
             }
 
             public void setPoint(Translation2d point){
@@ -169,12 +172,22 @@ public class Drive extends SubsystemBase {
             }
 
         }
+
+        public static LinearDriveCommands getInstance() {
+            if (linearCommands == null) {
+                linearCommands = drive.new LinearDriveCommands();
+            }
+    
+            return linearCommands;
+        }
+        
     }
 
     public class RotationDriveCommands extends SubsystemBase{
         private final RotationRateCommand rotationRateCommand;
         private final AngleAlignCommand angleAlignCommand;
         private final PointAlignCommand pointAlignCommand;
+        private static RotationDriveCommands rotationCommands = null;
 
         public RotationDriveCommands(){
             angleAlignCommand = new AngleAlignCommand(new Rotation2d());
@@ -239,11 +252,20 @@ public class Drive extends SubsystemBase {
                 calcRateToPoint(targetPoint, rotationOffset);
             }
         }
+
+        public static RotationDriveCommands getInstance() {
+            if (rotationCommands == null) {
+                rotationCommands = drive.new RotationDriveCommands();
+            }
+    
+            return rotationCommands;
+        }
     }
 
     //Command classes
     private final LinearDriveCommands linearDriveCommands;
     private final RotationDriveCommands rotationDriveCommands;
+
     
 
     /**
@@ -289,7 +311,7 @@ public class Drive extends SubsystemBase {
         
         angleAlignPID.enableContinuousInput(-Math.PI, Math.PI);
 
-        driveAlignPID = new PIDController(1, 0, 0);
+        driveAlignPID = new PIDController(1.5, 0, 0);
 
         // Initialize pose estimation
         swerveDrivePoseEstimator = new SwerveDrivePoseEstimator(
@@ -340,12 +362,6 @@ public class Drive extends SubsystemBase {
         //Make instance of Command Classes
         linearDriveCommands = new LinearDriveCommands();
         rotationDriveCommands = new RotationDriveCommands();
-
-        wayPoints.add(new Pose2d());
-
-        storeWaypoints = PathPlannerPath.waypointsFromPoses(
-            wayPoints
-        );
 
         pathConstraints = PathConstraints.unlimitedConstraints(12);
     }
@@ -570,8 +586,9 @@ public class Drive extends SubsystemBase {
         Pose2d currentPose = getEstimatedPos();
         double xPoint = point.getX();
         double yPoint = point.getY();
-        double xSpeed = driveAlignPID.calculate(currentPose.getX(), xPoint);
-        double ySpeed = driveAlignPID.calculate(currentPose.getX(), yPoint);
+        Transform2d distance = currentPose.minus(new Pose2d(point, Rotation2d.fromDegrees(0)));
+        double xSpeed = driveAlignPID.calculate(distance.getX());
+        double ySpeed = driveAlignPID.calculate(distance.getY());
         updateKinematics(xSpeed, ySpeed);
     }
 
@@ -598,6 +615,12 @@ public class Drive extends SubsystemBase {
                 backLeft.getState(),
                 backRight.getState()
         });
+    }
+    
+    //estPos is the estimated pose from the cameras. timeStamp is the time stamp that the April Tag was detected. 
+    //estStd is the estimated Standard Deviation from the Camera/ for the camera/
+    public void addVisionPose(Pose2d estPose, double timeStamp, Vector<N3> estStd){
+        swerveDrivePoseEstimator.addVisionMeasurement(estPose, timeStamp, estStd);
     }
 
     public void ignoreCamera(boolean ignore) {
@@ -664,19 +687,15 @@ public class Drive extends SubsystemBase {
         if (getCurrentCommand() != path){
             linearDriveCommands.getCurrentCommand().cancel();
             rotationDriveCommands.getCurrentCommand().cancel();
-            path.addRequirements(Drive.this);
+            path.addRequirements(LinearDriveCommands.getInstance(), RotationDriveCommands.getInstance());
             path.schedule();
         }
     }
 
-    public void pathOnTheFly(List<Pose2d> poseList, GoalEndState endState){
-        wayPoints = poseList;
-        storeWaypoints = PathPlannerPath.waypointsFromPoses(poseList);
-        PathPlannerPath path = new PathPlannerPath(storeWaypoints, 
-            pathConstraints, 
-            null, 
-            endState);
-        Command pathCommand = AutoBuilder.followPath(path);
+    public void pathOnTheFly(){
+        //this.wayPoints = poseList;
+        //this.storeWaypoints = PathPlannerPath.waypointsFromPoses(getEstimatedPos(), new Pose2d(0, 0, Rotation2d.fromDegrees(0)));
+        Command pathCommand = AutoBuilder.pathfindToPose(new Pose2d(), pathConstraints);
         followPath(pathCommand);
     }
 

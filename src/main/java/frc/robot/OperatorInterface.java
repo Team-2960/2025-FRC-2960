@@ -185,35 +185,38 @@ public class OperatorInterface extends SubsystemBase {
         
         climber.setRatchet(driverController.getRawButton((5)));
 
-        if (Math.abs(xAxis) > 0.05 || Math.abs(yAxis) > 0.05 ){
-            drive.setDriveRate(xSpeed, ySpeed);
+        if (!driverController.getRawButton(3)){
+            if (Math.abs(xAxis) > 0.05 || Math.abs(yAxis) > 0.05 ){
+                drive.setDriveRate(xSpeed, ySpeed);
 
-        } else if (driverController.getRawButton(3)){
+            } else if (driverController.getRawButton(3)){
+                drive.setGoToPoint(new Translation2d(0, 0));
+
+            } else if (driverController.getRawButton(4)){
+
+                drive.pathOnTheFly();
+            }else{
+                drive.setDriveRate(0, 0);
+            }
+
+
+            if (Math.abs(rAxis) > 0.1){
+                drive.setRotationRate(rSpeed);
+
+            }
+            else if (driverController.getRawButton(1)) {
+                drive.setAngleAlign(Rotation2d.fromDegrees(-90));
+
+            }
+            else if (driverController.getRawButton(2)){
+                drive.setPointAlign(new Translation2d(0, 0), Rotation2d.fromDegrees(0));
+
+            }else{
+                drive.setRotationRate(0);
+            }
+        }else{
             drive.setGoToPoint(new Translation2d(0, 0));
-
-        } else if (driverController.getRawButton(4)){
-            List<Pose2d> points = new ArrayList<Pose2d>();
-            points.add(drive.getEstimatedPos());
-            points.add(new Pose2d());
-            drive.pathOnTheFly(points, new GoalEndState(0, Rotation2d.fromDegrees(0)));
-        }else{
-            drive.setDriveRate(0, 0);
-        }
-        
-
-        if (Math.abs(rAxis) > 0.1){
-            drive.setRotationRate(rSpeed);
-
-        }
-        else if (driverController.getRawButton(1)) {
-            drive.setAngleAlign(Rotation2d.fromDegrees(-90));
-
-        }
-        else if (driverController.getRawButton(2)){
-            drive.setPointAlign(new Translation2d(0, 0), Rotation2d.fromDegrees(0));
-
-        }else{
-            drive.setRotationRate(0);
+            drive.setAngleAlign(Rotation2d.fromDegrees(90));
         }
 
         // Update Shuffleboard
