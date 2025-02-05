@@ -31,10 +31,8 @@ public class Robot extends TimedRobot {
      * initialization code.
      */
     private Optional<Command> autonCommand;
-
     private Drive drive;
     private OperatorInterface oi;
-    //private Camera camera;
     private Arm arm;
     private Climber climber;
     private IntakePizzaBox intake;
@@ -48,8 +46,6 @@ public class Robot extends TimedRobot {
     public void robotInit() {
         drive = Drive.getInstance();
         oi = OperatorInterface.getInstance();
-        //camera = Camera.getInstance();
-        arm = Arm.getInstance();
         climber = Climber.getInstance();
         intake = IntakePizzaBox.getInstance();
         cameras = Cameras.getInstance();

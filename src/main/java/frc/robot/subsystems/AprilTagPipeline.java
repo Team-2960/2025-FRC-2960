@@ -39,6 +39,10 @@ public class AprilTagPipeline extends SubsystemBase {
     private GenericEntry sb_lastTimestamp;
     private GenericEntry sb_lastUpdatePeriod;
 
+    //Test Values
+    private double displayNum;
+    private String resultsList;
+    private boolean tagPresent;
 
     /**
      * Constructor
@@ -67,6 +71,12 @@ public class AprilTagPipeline extends SubsystemBase {
         sb_PoseR = layout.add("Pose R", 0).getEntry();
         sb_lastTimestamp = layout.add("Last Timestamp", last_timestamp).getEntry();
         sb_lastUpdatePeriod = layout.add("Time Since Last Update", 0).getEntry();
+
+        //Test Values
+        //TODO Delete after testing
+        displayNum = -1;
+        resultsList = "";
+        tagPresent = false;
     }
 
     /**
@@ -147,5 +157,8 @@ public class AprilTagPipeline extends SubsystemBase {
         sb_PoseR.setDouble(last_pose.getRotation().getDegrees());
         sb_lastTimestamp.setDouble(last_timestamp);
         sb_lastUpdatePeriod.setDouble(Timer.getFPGATimestamp() - last_timestamp);
+        SmartDashboard.putBoolean("AprilTag Present", tagPresent);
+        SmartDashboard.putNumber("AprilTag ID", displayNum);
+        SmartDashboard.putString("April Tag List", resultsList);
     }
 }
