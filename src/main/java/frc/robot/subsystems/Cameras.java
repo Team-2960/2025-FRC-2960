@@ -30,6 +30,7 @@ public class Cameras extends SubsystemBase{
         aprilTagPipeline = new AprilTagPipelineSettings(AprilTagFields.k2025Reefscape,
             new Transform3d(Constants.robotLength/2, Constants.robotWidth/2, 0.254, new Rotation3d(0, 60, 45)),
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, 4, singleStds , multiStds);
+        //aprilTagPipeline = new AprilTagPipelineSettings(new Transform3d(Constants.robotLength/2, Constants.robotWidth/2, 0.254, new Rotation3d(0, 60, 45)));
         
         camera03 = new AprilTagPipeline(aprilTagPipeline, "Camera03", "AprilTagPipeline");
     }

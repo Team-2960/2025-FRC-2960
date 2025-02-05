@@ -8,6 +8,7 @@ import edu.wpi.first.math.*;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.numbers.*;
 import edu.wpi.first.networktables.*;
+import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj.shuffleboard.*;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -38,6 +39,7 @@ public class AprilTagPipeline extends SubsystemBase {
     private GenericEntry sb_lastTimestamp;
     private GenericEntry sb_lastUpdatePeriod;
 
+
     /**
      * Constructor
      * @param   settings    Pipeline settings
@@ -54,6 +56,7 @@ public class AprilTagPipeline extends SubsystemBase {
 
         last_pose = new Pose2d();
         last_timestamp = 0;
+        
 
         // Setup Shuffleboard
         var layout = Shuffleboard.getTab("AprilTags")
@@ -81,14 +84,17 @@ public class AprilTagPipeline extends SubsystemBase {
     private void updatePose() {
         Optional<EstimatedRobotPose> visionEst = Optional.empty();
         Drive drive = Drive.getInstance();
-        for(var change : camera.getAllUnreadResults()) {
+        var unreadResults = camera.getAllUnreadResults();
+        
+        for(var change : unreadResults) {
             // Get Estimated Position
-            var vision_est = pose_est.update(change);
+            visionEst = pose_est.update(change);
 
             // Check if a pose was estimated
-            if(!visionEst.isEmpty()) {
-                Pose2d est_pose = vision_est.get().estimatedPose.toPose2d();
-                double est_timestamp = vision_est.get().timestampSeconds;
+            if(visionEst.isPresent()) {
+                
+                Pose2d est_pose = visionEst.get().estimatedPose.toPose2d();
+                double est_timestamp = visionEst.get().timestampSeconds;
 
                 double avg_dist = 0;
                 int tag_count = 0;
@@ -141,10 +147,5 @@ public class AprilTagPipeline extends SubsystemBase {
         sb_PoseR.setDouble(last_pose.getRotation().getDegrees());
         sb_lastTimestamp.setDouble(last_timestamp);
         sb_lastUpdatePeriod.setDouble(Timer.getFPGATimestamp() - last_timestamp);
-        SmartDashboard.putBoolean("AprilTag Present", camera.getLatestResult().hasTargets());
-    }
-
-    public List<PhotonPipelineResult> getInfo(){
-        return camera.getAllUnreadResults();
     }
 }
