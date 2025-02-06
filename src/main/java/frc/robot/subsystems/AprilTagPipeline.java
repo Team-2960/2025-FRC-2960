@@ -46,10 +46,10 @@ public class AprilTagPipeline extends SubsystemBase {
     private GenericEntry sb_lastUpdatePeriod;
 
     //Camera Simulation
-    VisionSystemSim visionSim;
-    TargetModel targetModel;
-    SimCameraProperties cameraProp;
-    PhotonCameraSim cameraSim;
+    // VisionSystemSim visionSim;
+    // TargetModel targetModel;
+    // SimCameraProperties cameraProp;
+    // PhotonCameraSim cameraSim;
     //VisionTargetSim visionTargetSim;
 
     //Test Values
@@ -86,16 +86,16 @@ public class AprilTagPipeline extends SubsystemBase {
         sb_lastUpdatePeriod = layout.add("Time Since Last Update" + cameraName, 0).getEntry();
 
         //Vision Simulation
-        visionSim = new VisionSystemSim("main");
-        visionSim.addAprilTags(AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape));
-        targetModel = TargetModel.kAprilTag16h5;
-        cameraProp = new SimCameraProperties();
-        cameraProp.setFPS(60);
-        cameraProp.setCalibration(640, 480, Rotation2d.fromDegrees(70));
-        cameraSim = new PhotonCameraSim(camera, cameraProp);
-        //visionTargetSim = new VisionTargetSim(AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape).getTagPose(17).get(), targetModel);
-        visionSim.addCamera(cameraSim, settings.robot_to_camera);
-        cameraSim.enableDrawWireframe(true);
+        // visionSim = new VisionSystemSim("main");
+        // visionSim.addAprilTags(AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape));
+        // targetModel = TargetModel.kAprilTag16h5;
+        // cameraProp = new SimCameraProperties();
+        // cameraProp.setFPS(60);
+        // cameraProp.setCalibration(640, 480, Rotation2d.fromDegrees(70));
+        // cameraSim = new PhotonCameraSim(camera, cameraProp);
+        // //visionTargetSim = new VisionTargetSim(AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape).getTagPose(17).get(), targetModel);
+        // visionSim.addCamera(cameraSim, settings.robot_to_camera);
+        // cameraSim.enableDrawWireframe(true);
 
         //Test Values
         //TODO Delete after testing
@@ -120,7 +120,7 @@ public class AprilTagPipeline extends SubsystemBase {
         Optional<EstimatedRobotPose> visionEst = Optional.empty();
         Drive drive = Drive.getInstance();
         var unreadResults = camera.getAllUnreadResults();
-        visionSim.update(new Pose2d(17.526/2, 8.05/2, new Rotation2d()));
+        // visionSim.update(new Pose2d(17.526/2, 8.05/2, new Rotation2d()));
         
         for(var change : unreadResults) {
             // Get Estimated Position
@@ -165,7 +165,7 @@ public class AprilTagPipeline extends SubsystemBase {
                         
                         last_pose = est_pose;
                         last_timestamp = est_timestamp;
-                        drive.setVisionPose(est_pose, est_timestamp);
+                        drive.addVisionPose(est_pose, est_timestamp, est_std);
                     }
                     
                 }
@@ -183,8 +183,5 @@ public class AprilTagPipeline extends SubsystemBase {
         sb_PoseR.setDouble(last_pose.getRotation().getDegrees());
         sb_lastTimestamp.setDouble(last_timestamp);
         sb_lastUpdatePeriod.setDouble(Timer.getFPGATimestamp() - last_timestamp);
-        SmartDashboard.putBoolean("AprilTag Present", tagPresent);
-        SmartDashboard.putNumber("AprilTag ID", displayNum);
-        SmartDashboard.putString("April Tag List", resultsList);
     }
 }

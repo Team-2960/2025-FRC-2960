@@ -194,13 +194,13 @@ public class OperatorInterface extends SubsystemBase {
 
             } else if (driverController.getRawButton(4)){
 
-                drive.pathOnTheFly();
+                //drive.pathOnTheFly();
             }else{
                 drive.setDriveRate(0, 0);
             }
 
 
-            if (Math.abs(rAxis) > 0.1){
+            if (Math.abs(rAxis) > 0.05){
                 drive.setRotationRate(rSpeed);
 
             }

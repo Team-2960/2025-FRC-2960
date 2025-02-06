@@ -593,6 +593,11 @@ public class Drive extends SubsystemBase {
         updateKinematics(xSpeed, ySpeed);
     }
 
+    //Calculates the angle the robot should go at to align with the reef.
+    public void reefAngleCalc(Rotation2d offset){
+        Rotation2d curAngle = getEstimatedPos().getRotation();
+    }
+
 
     private void updateUI() {
         Pose2d pose = getEstimatedPos();
