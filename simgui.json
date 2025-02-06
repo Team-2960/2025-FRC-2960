@@ -26,21 +26,38 @@
         "left": 150,
         "right": 2961,
         "top": 79,
-        "width": 16.541748046875
+        "width": 16.541748046875,
+        "window": {
+          "visible": true
+        }
       }
     }
   },
   "NetworkTables": {
     "transitory": {
       "CameraPublisher": {
-        "Camera01-processed": {
-          "open": true
-        }
-      },
-      "Shuffleboard": {
+        "Camera02-processed": {
+          "string[]##v_/CameraPublisher/Camera02-processed/streams": {
+            "open": true
+          }
+        },
         "open": true
       },
+      "Shuffleboard": {
+        "AprilTags": {
+          "AprilTagPipeline": {
+            "open": true
+          }
+        }
+      },
       "SmartDashboard": {
+        "VisionSystemSim-main": {
+          "Sim Field": {
+            "open": true
+          }
+        }
+      },
+      "photonvision": {
         "open": true
       }
     }

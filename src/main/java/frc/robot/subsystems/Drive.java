@@ -621,7 +621,8 @@ public class Drive extends SubsystemBase {
     //estPos is the estimated pose from the cameras. timeStamp is the time stamp that the April Tag was detected. 
     //estStd is the estimated Standard Deviation from the Camera/ for the camera/
     public void addVisionPose(Pose2d estPose, double timeStamp, Vector<N3> estStd){
-        swerveDrivePoseEstimator.addVisionMeasurement(estPose, timeStamp, estStd);
+        Pose2d poseResult = new Pose2d(estPose.getX(), estPose.getY(), getEstimatedPos().getRotation());
+        swerveDrivePoseEstimator.addVisionMeasurement(poseResult, timeStamp, estStd);
     }
 
     public void ignoreCamera(boolean ignore) {

@@ -32,19 +32,19 @@ public class Cameras extends SubsystemBase{
         singleStds = VecBuilder.fill(1, 1, 1);
         multiStds = VecBuilder.fill(1, 1, 1);
         pipeline01 = new AprilTagPipelineSettings(AprilTagFields.k2025Reefscape,
-            new Transform3d(-Constants.robotLength/2, 0, 0.254, new Rotation3d(0, 60, 180)),
+            new Transform3d(-Constants.robotLength/2, 0, 0.254, new Rotation3d(Math.toRadians(0), Math.toRadians(-30), Math.toRadians(180))),
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, 4, singleStds , multiStds);
         
         pipeline02 = new AprilTagPipelineSettings(AprilTagFields.k2025Reefscape,
-            new Transform3d(Constants.robotLength/2, -Constants.robotWidth/2, 0.254, new Rotation3d(0, 60, -45)),
+            new Transform3d(Constants.robotLength/2, -Constants.robotWidth/2, 0.254, new Rotation3d(Math.toRadians(0), Math.toRadians(-30), Math.toRadians(-45))),
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, 4, singleStds , multiStds);
 
         pipeline03 = new AprilTagPipelineSettings(AprilTagFields.k2025Reefscape,
-            new Transform3d(Constants.robotLength/2, Constants.robotWidth/2, 0.254, new Rotation3d(0, 60, 45)),
+            new Transform3d(Constants.robotLength/2, Constants.robotWidth/2, 0.254, new Rotation3d(Math.toRadians(0), Math.toRadians(-30), Math.toRadians(45))),
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, 4, singleStds , multiStds);
         
         camera01 = new AprilTagPipeline(pipeline01, "Camera01", "AprilTagPipeline");
-        camera02 = new AprilTagPipeline(pipeline03, "Camera02", "AprilTagPipeline");
+        camera02 = new AprilTagPipeline(pipeline02, "Camera02", "AprilTagPipeline");
         camera03 = new AprilTagPipeline(pipeline03, "Camera03", "AprilTagPipeline");
     }
 

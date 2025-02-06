@@ -50,7 +50,7 @@ public class AprilTagPipeline extends SubsystemBase {
     TargetModel targetModel;
     SimCameraProperties cameraProp;
     PhotonCameraSim cameraSim;
-    VisionTargetSim visionTargetSim;
+    //VisionTargetSim visionTargetSim;
 
     //Test Values
     private double displayNum;
@@ -76,7 +76,7 @@ public class AprilTagPipeline extends SubsystemBase {
         
 
         // Setup Shuffleboard
-        var layout = Shuffleboard.getTab("AprilTags")
+        var layout = Shuffleboard.getTab("AprilTags" + camera)
                 .getLayout(name, BuiltInLayouts.kList)
                 .withSize(1, 4);
         sb_PoseX = layout.add("Pose X" + cameraName, 0).getEntry();
@@ -93,8 +93,9 @@ public class AprilTagPipeline extends SubsystemBase {
         cameraProp.setFPS(10);
         cameraProp.setCalibration(640, 480, Rotation2d.fromDegrees(70));
         cameraSim = new PhotonCameraSim(camera, cameraProp);
-        visionTargetSim = new VisionTargetSim(AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape).getTagPose(17).get(), targetModel);
+        //visionTargetSim = new VisionTargetSim(AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape).getTagPose(17).get(), targetModel);
         visionSim.addCamera(cameraSim, settings.robot_to_camera);
+        cameraSim.enableDrawWireframe(true);
 
         //Test Values
         //TODO Delete after testing
@@ -119,7 +120,7 @@ public class AprilTagPipeline extends SubsystemBase {
         Optional<EstimatedRobotPose> visionEst = Optional.empty();
         Drive drive = Drive.getInstance();
         var unreadResults = camera.getAllUnreadResults();
-        visionSim.update(drive.getEstimatedPos());
+        visionSim.update(new Pose2d(17.526/2, 8.05/2, new Rotation2d()));
         
         for(var change : unreadResults) {
             // Get Estimated Position
