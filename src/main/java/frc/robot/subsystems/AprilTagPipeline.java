@@ -90,7 +90,7 @@ public class AprilTagPipeline extends SubsystemBase {
         visionSim.addAprilTags(AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape));
         targetModel = TargetModel.kAprilTag16h5;
         cameraProp = new SimCameraProperties();
-        cameraProp.setFPS(10);
+        cameraProp.setFPS(60);
         cameraProp.setCalibration(640, 480, Rotation2d.fromDegrees(70));
         cameraSim = new PhotonCameraSim(camera, cameraProp);
         //visionTargetSim = new VisionTargetSim(AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape).getTagPose(17).get(), targetModel);
