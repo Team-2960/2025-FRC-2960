@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.*;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.numbers.*;
@@ -18,6 +19,11 @@ import edu.wpi.first.wpilibj.Timer;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.estimation.TargetModel;
+import org.photonvision.simulation.PhotonCameraSim;
+import org.photonvision.simulation.SimCameraProperties;
+import org.photonvision.simulation.VisionSystemSim;
+import org.photonvision.simulation.VisionTargetSim;
 import org.photonvision.targeting.PhotonPipelineResult;
 
 /**
@@ -38,6 +44,13 @@ public class AprilTagPipeline extends SubsystemBase {
     private GenericEntry sb_PoseR;
     private GenericEntry sb_lastTimestamp;
     private GenericEntry sb_lastUpdatePeriod;
+
+    //Camera Simulation
+    VisionSystemSim visionSim;
+    TargetModel targetModel;
+    SimCameraProperties cameraProp;
+    PhotonCameraSim cameraSim;
+    VisionTargetSim visionTargetSim;
 
     //Test Values
     private double displayNum;
@@ -66,11 +79,22 @@ public class AprilTagPipeline extends SubsystemBase {
         var layout = Shuffleboard.getTab("AprilTags")
                 .getLayout(name, BuiltInLayouts.kList)
                 .withSize(1, 4);
-        sb_PoseX = layout.add("Pose X", 0).getEntry();
-        sb_PoseY = layout.add("Pose Y", 0).getEntry();
-        sb_PoseR = layout.add("Pose R", 0).getEntry();
-        sb_lastTimestamp = layout.add("Last Timestamp", last_timestamp).getEntry();
-        sb_lastUpdatePeriod = layout.add("Time Since Last Update", 0).getEntry();
+        sb_PoseX = layout.add("Pose X" + cameraName, 0).getEntry();
+        sb_PoseY = layout.add("Pose Y" + cameraName, 0).getEntry();
+        sb_PoseR = layout.add("Pose R" + cameraName, 0).getEntry();
+        sb_lastTimestamp = layout.add("Last Timestamp" + cameraName, last_timestamp).getEntry();
+        sb_lastUpdatePeriod = layout.add("Time Since Last Update" + cameraName, 0).getEntry();
+
+        //Vision Simulation
+        visionSim = new VisionSystemSim("main");
+        visionSim.addAprilTags(AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape));
+        targetModel = TargetModel.kAprilTag16h5;
+        cameraProp = new SimCameraProperties();
+        cameraProp.setFPS(10);
+        cameraProp.setCalibration(640, 480, Rotation2d.fromDegrees(70));
+        cameraSim = new PhotonCameraSim(camera, cameraProp);
+        visionTargetSim = new VisionTargetSim(AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape).getTagPose(17).get(), targetModel);
+        visionSim.addCamera(cameraSim, settings.robot_to_camera);
 
         //Test Values
         //TODO Delete after testing
@@ -95,6 +119,7 @@ public class AprilTagPipeline extends SubsystemBase {
         Optional<EstimatedRobotPose> visionEst = Optional.empty();
         Drive drive = Drive.getInstance();
         var unreadResults = camera.getAllUnreadResults();
+        visionSim.update(drive.getEstimatedPos());
         
         for(var change : unreadResults) {
             // Get Estimated Position

@@ -4,16 +4,44 @@
       "/FMSInfo": "FMSInfo",
       "/Shuffleboard/Drive/Field": "Field2d",
       "/SmartDashboard/Alerts": "Alerts",
-      "/SmartDashboard/Choose Auto": "String Chooser"
+      "/SmartDashboard/Choose Auto": "String Chooser",
+      "/SmartDashboard/VisionSystemSim-main/Sim Field": "Field2d"
     },
     "windows": {
       "/Shuffleboard/Drive/Field": {
+        "bottom": 1638,
+        "builtin": "2025 Reefscape",
+        "height": 8.051901817321777,
+        "left": 534,
+        "right": 3466,
+        "top": 291,
+        "width": 17.54825210571289,
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/VisionSystemSim-main/Sim Field": {
         "bottom": 1476,
         "height": 8.210550308227539,
         "left": 150,
         "right": 2961,
         "top": 79,
         "width": 16.541748046875
+      }
+    }
+  },
+  "NetworkTables": {
+    "transitory": {
+      "CameraPublisher": {
+        "Camera01-processed": {
+          "open": true
+        }
+      },
+      "Shuffleboard": {
+        "open": true
+      },
+      "SmartDashboard": {
+        "open": true
       }
     }
   },

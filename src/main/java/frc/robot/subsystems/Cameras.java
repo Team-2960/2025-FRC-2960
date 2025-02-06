@@ -18,14 +18,14 @@ import frc.robot.Util.AprilTagPipelineSettings;
 
 public class Cameras extends SubsystemBase{
     private AprilTagPipelineSettings pipeline01;
-    //private AprilTagPipelineSettings pipeline02;
-    //private AprilTagPipelineSettings pipeline03;
+    private AprilTagPipelineSettings pipeline02;
+    private AprilTagPipelineSettings pipeline03;
     private edu.wpi.first.math.Vector<N3> singleStds;
     private edu.wpi.first.math.Vector<N3> multiStds;
 
     private AprilTagPipeline camera01;
-    //private AprilTagPipeline camera02;
-    //private AprilTagPipeline camera03;
+    private AprilTagPipeline camera02;
+    private AprilTagPipeline camera03;
     private static Cameras cameras = null;
 
     public Cameras(){
@@ -35,18 +35,17 @@ public class Cameras extends SubsystemBase{
             new Transform3d(-Constants.robotLength/2, 0, 0.254, new Rotation3d(0, 60, 180)),
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, 4, singleStds , multiStds);
         
-        // pipeline02 = new AprilTagPipelineSettings(AprilTagFields.k2025Reefscape,
-        //     new Transform3d(Constants.robotLength/2, -Constants.robotWidth/2, 0.254, new Rotation3d(0, 60, -45)),
-        //     PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, 4, singleStds , multiStds);
+        pipeline02 = new AprilTagPipelineSettings(AprilTagFields.k2025Reefscape,
+            new Transform3d(Constants.robotLength/2, -Constants.robotWidth/2, 0.254, new Rotation3d(0, 60, -45)),
+            PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, 4, singleStds , multiStds);
 
-        // pipeline03 = new AprilTagPipelineSettings(AprilTagFields.k2025Reefscape,
-        //     new Transform3d(Constants.robotLength/2, Constants.robotWidth/2, 0.254, new Rotation3d(0, 60, 45)),
-        //     PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, 4, singleStds , multiStds);
+        pipeline03 = new AprilTagPipelineSettings(AprilTagFields.k2025Reefscape,
+            new Transform3d(Constants.robotLength/2, Constants.robotWidth/2, 0.254, new Rotation3d(0, 60, 45)),
+            PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, 4, singleStds , multiStds);
         
         camera01 = new AprilTagPipeline(pipeline01, "Camera01", "AprilTagPipeline");
-        //camera02 = new AprilTagPipeline(pipeline03, "Camera02", "AprilTagPipeline");
-        //camera03 = new AprilTagPipeline(pipeline03, "Camera03", "AprilTagPipeline");
-
+        camera02 = new AprilTagPipeline(pipeline03, "Camera02", "AprilTagPipeline");
+        camera03 = new AprilTagPipeline(pipeline03, "Camera03", "AprilTagPipeline");
     }
 
     @Override
