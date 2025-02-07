@@ -186,12 +186,12 @@ public class FieldLayout {
     }
 
     /**
-     * Gets the pose of the nearest stage for the current alliance
+     * Gets the pose of the nearest reef face for the current alliance
      * 
      * @param pos current position
-     * @return pose of the nearest stage for the current alliance
+     * @return pose of the nearest reef face for the current alliance
      */
-    public static Pose2d getNearestReef(Pose2d pose) {
+    public static Pose2d getNearestReefFace(Pose2d pose) {
         
         List<Pose2d> reeflist = bReefFaces;
         var alliance = DriverStation.getAlliance();

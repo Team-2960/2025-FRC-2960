@@ -196,7 +196,7 @@ public class OperatorInterface extends SubsystemBase {
                 drive.setGoToPoint(new Translation2d(0, 0));
                 
             } else if (driverController.getRawButton(4)){
-                drive.goToReef(0, 0, new Rotation2d());
+                drive.goToReef(-Constants.robotLength/2, 0, new Rotation2d());
 
             }else{
                 drive.setDriveRate(0, 0);

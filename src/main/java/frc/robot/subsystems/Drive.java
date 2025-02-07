@@ -649,8 +649,17 @@ public class Drive extends SubsystemBase {
     }
 
     public void goToReef(double xOffset, double yOffset, Rotation2d rotOffset){
-        Pose2d nearestReefFace = FieldLayout.getInstance().getNearestReef(getEstimatedPos());
-        this.nearestReefFace = nearestReefFace;
+        FieldLayout fieldLayout = FieldLayout.getInstance();
+        Pose2d nearestReefFace = fieldLayout.getNearestReefFace(getEstimatedPos());
+        Pose2d zeroFace = fieldLayout.getReef(ReefFace.ZERO);
+        Translation2d poseOffset = new Translation2d(zeroFace.getX() + xOffset, zeroFace.getY() + yOffset)
+            .rotateAround(fieldLayout.getReef(ReefFace.CENTER).getTranslation(), 
+                nearestReefFace.getRotation());
+        Pose2d finalReefFace = new Pose2d(poseOffset, nearestReefFace.getRotation());
+        this.nearestReefFace = finalReefFace;
+
+        calcToPoint(finalReefFace.getTranslation());
+        calcRateToAngle(finalReefFace.getRotation().plus(rotOffset));
     }
 
 
@@ -661,7 +670,7 @@ public class Drive extends SubsystemBase {
         sb_posEstR.setDouble(pose.getRotation().getDegrees());
 
         sb_speedR.setDouble(rSpeed);
-        field2d.setRobotPose(swerveDrivePoseEstimator.getEstimatedPosition());
+        field2d.setRobotPose(getEstimatedPos());
         field2d.getObject("fieldTargetPoint").setPose(targetPoint.getX(), targetPoint.getY(), Rotation2d.fromDegrees(0));
         field2d.getObject("nearestReefFace").setPose(nearestReefFace);
         var currentCommand = Drive.getInstance().rotationDriveCommands.getCurrentCommand();
