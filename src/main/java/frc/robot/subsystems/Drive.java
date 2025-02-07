@@ -40,6 +40,8 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
+import java.lang.reflect.Field;
+import java.nio.channels.FileLock;
 import java.sql.Driver;
 import java.util.ArrayList;
 import java.util.List;
@@ -104,6 +106,7 @@ public class Drive extends SubsystemBase {
     private GenericEntry sb_speedTargetR;
 
     private ComplexWidget sb_field2d;
+    private Pose2d nearestReefFace;
     
 
     private boolean targetSeen;
@@ -326,6 +329,8 @@ public class Drive extends SubsystemBase {
         targetSeen = false;
         field2d = new Field2d();
         field2d.getObject("fieldTargetPoint").setPose(targetPoint.getX(), targetPoint.getY(), Rotation2d.fromDegrees(0));
+        nearestReefFace = new Pose2d();
+        field2d.getObject("nearestReefFace").setPose(nearestReefFace);
 
         chassisSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, 0, new Rotation2d());
 
@@ -643,6 +648,11 @@ public class Drive extends SubsystemBase {
         SmartDashboard.putNumber("calcRotation", calcRotation.getDegrees());
     }
 
+    public void goToReef(double xOffset, double yOffset, Rotation2d rotOffset){
+        Pose2d nearestReefFace = FieldLayout.getInstance().getNearestReef(getEstimatedPos());
+        this.nearestReefFace = nearestReefFace;
+    }
+
 
     private void updateUI() {
         Pose2d pose = getEstimatedPos();
@@ -653,6 +663,7 @@ public class Drive extends SubsystemBase {
         sb_speedR.setDouble(rSpeed);
         field2d.setRobotPose(swerveDrivePoseEstimator.getEstimatedPosition());
         field2d.getObject("fieldTargetPoint").setPose(targetPoint.getX(), targetPoint.getY(), Rotation2d.fromDegrees(0));
+        field2d.getObject("nearestReefFace").setPose(nearestReefFace);
         var currentCommand = Drive.getInstance().rotationDriveCommands.getCurrentCommand();
         String curCommandName = "null";
         if (currentCommand != null) curCommandName = currentCommand.getName();

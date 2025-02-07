@@ -16,6 +16,7 @@ import com.pathplanner.lib.path.GoalEndState;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -171,7 +172,7 @@ public class OperatorInterface extends SubsystemBase {
 
         if (driverController.getPOV() == 0){
             //drive.presetPosition(new Pose2d(0.0, 0.0, new Rotation2d()));
-            drive.presetPosition(FieldLayout.getReef(ReefFace.ZERO));
+            drive.presetPosition(FieldLayout.getReef(ReefFace.ZERO).plus(new Transform2d(-Constants.robotLength/2, 0, new Rotation2d())));
         }
 
         if (driverController.getRawButton(6)) {
@@ -193,6 +194,9 @@ public class OperatorInterface extends SubsystemBase {
 
             } else if (driverController.getRawButton(3)){
                 drive.setGoToPoint(new Translation2d(0, 0));
+                
+            } else if (driverController.getRawButton(4)){
+                drive.goToReef(0, 0, new Rotation2d());
 
             }else{
                 drive.setDriveRate(0, 0);
@@ -210,8 +214,8 @@ public class OperatorInterface extends SubsystemBase {
             else if (driverController.getRawButton(2)){
                 drive.setPointAlign(new Translation2d(0, 0), Rotation2d.fromDegrees(0));
 
-            } else if (driverController.getRawButton(4)){
-                drive.setReefAlign(new Rotation2d());
+            // } else if (driverController.getRawButton(4)){
+            //     drive.setReefAlign(new Rotation2d());
 
             } else{
                 drive.setRotationRate(0);

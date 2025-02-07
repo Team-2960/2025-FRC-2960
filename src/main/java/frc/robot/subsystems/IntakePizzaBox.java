@@ -116,7 +116,8 @@ public class IntakePizzaBox extends SubsystemBase {
     /**2
      * Checks if a game piece is present
      * 
-     * @return true if a gamepiece is present, false otherwise
+     * @return true if
+     *  a gamepiece is present, false otherwise
      */
     public void runShooter(double voltage){
         shooterTop.setVoltage(voltage);

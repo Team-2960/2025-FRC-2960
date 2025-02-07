@@ -1,5 +1,8 @@
 package frc.robot.Util;
 
+import java.sql.Driver;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import javax.sql.rowset.spi.TransactionalWriter;
@@ -9,6 +12,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.Constants;
 
 public class FieldLayout {
+    private static FieldLayout fieldLayout = null;
     public enum StageFace {
         AMP,
         SOURCE,
@@ -82,6 +86,28 @@ public class FieldLayout {
     public static final Pose2d rCageMiddle = new Pose2d(8.76, 6.169, Rotation2d.fromDegrees(0));
     public static final Pose2d rCageTable = new Pose2d(8.76, 7.26, Rotation2d.fromDegrees(0));
 
+    public static final List<Pose2d> bReefFaces = new ArrayList<>();
+    public static final List<Pose2d> rReefFaces = new ArrayList<>();
+
+    public FieldLayout(){
+        //Fill Blue Reef Faces ArrayList with reef face poses
+        bReefFaces.add(bReefCenter);
+        bReefFaces.add(bReef0);
+        bReefFaces.add(bReef60);
+        bReefFaces.add(bReef120);
+        bReefFaces.add(bReef180);
+        bReefFaces.add(bReef240);
+        bReefFaces.add(bReef300);
+
+        //Fill Red Reef Faces ArrayList with reef face poses
+        rReefFaces.add(rReefCenter);
+        rReefFaces.add(rReef0);
+        rReefFaces.add(rReef60);
+        rReefFaces.add(rReef120);
+        rReefFaces.add(rReef180);
+        rReefFaces.add(rReef240);
+        rReefFaces.add(rReef300);
+    }
 
     public static final Map<ReefFace, Pose2d> bReef = Map.of(
             ReefFace.CENTER, bReefCenter,
@@ -150,31 +176,45 @@ public class FieldLayout {
         }
     }
 
+    public static List<Pose2d> getReefList(){
+        var alliance = DriverStation.getAlliance();
+        if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
+            return rReefFaces;
+        } else {
+            return bReefFaces;
+        }
+    }
+
     /**
      * Gets the pose of the nearest stage for the current alliance
      * 
      * @param pos current position
      * @return pose of the nearest stage for the current alliance
      */
-    public static Pose2d getNearestReef(Pose2d pos) {
-        Map<ReefFace, Pose2d> stage_list = bReef;
+    public static Pose2d getNearestReef(Pose2d pose) {
+        
+        List<Pose2d> reeflist = bReefFaces;
         var alliance = DriverStation.getAlliance();
         Pose2d nearest = null;
         if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
-            stage_list = rReef;
-
-            double min_dist = Double.MAX_VALUE;
-
-            for (var pose : stage_list.entrySet()) {
-                double distance = pos.getTranslation().getDistance(pose.getValue().getTranslation());
-                if (distance < min_dist) {
-                    min_dist = distance;
-                    nearest = pose.getValue();
-                }
-            }
+            reeflist = rReefFaces;
+        } else {
+            reeflist = bReefFaces;
         }
 
-        return nearest;
+        return pose.nearest(reeflist);
+        //     double min_dist = Double.MAX_VALUE;
+
+        //     for (var pose : stage_list.entrySet()) {
+        //         double distance = pos.getTranslation().getDistance(pose.getValue().getTranslation());
+        //         if (distance < min_dist) {
+        //             min_dist = distance;
+        //             nearest = pose.getValue();
+        //         }
+        //     }
+        // }
+
+        // return nearest;
     }
 
     public static Translation2d getNoteOffset(AlgaeType algaeType, double x, double y){
@@ -237,4 +277,12 @@ public class FieldLayout {
             return Rotation2d.fromDegrees(0);
         }
     }
+
+    public static FieldLayout getInstance(){
+        if (fieldLayout == null){
+            fieldLayout = new FieldLayout();
+        }
+        return fieldLayout;
+    }
+
 }
