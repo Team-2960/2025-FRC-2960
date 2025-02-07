@@ -15,6 +15,22 @@ public class FieldLayout {
         FAR
     }
 
+    public enum ReefFace {
+        CENTER,
+        ZERO,
+        SIXTY,
+        ONETWENTY,
+        ONEEIGHTY,
+        TWOFOURTY,
+        THREEHUNDRED,
+    }
+
+    public enum AlgaeType {
+        LEFT,
+        MIDDLE,
+        RIGHT
+    }
+
     public enum NoteType {
         NEAR_STAGE,
         NEAR_SPEAKER,
@@ -26,68 +42,78 @@ public class FieldLayout {
         FAR_AMP2
     }
 
-    public static final Pose2d rSpeaker = new Pose2d(16.578875, 5.548275, Rotation2d.fromDegrees(180));
-    public static final Pose2d bSpeaker = new Pose2d(0.037125, 5.548275, Rotation2d.fromDegrees(0));
-
-    public static final Pose2d rShootSpeaker = new Pose2d(16.170875, 5.548275, Rotation2d.fromDegrees(180));
-    public static final Pose2d bShootSpeaker = new Pose2d(0.370875, 5.548275, Rotation2d.fromDegrees(0));
+    public static final Pose2d bProcessor = new Pose2d(5.973, 0, Rotation2d.fromDegrees(0));
+    public static final Pose2d bHPRight = new Pose2d(0.838, 0.657, Rotation2d.fromDegrees(54));
+    public static final Pose2d bHPLeft = new Pose2d(0.838, 7.395, Rotation2d.fromDegrees(-54));
     
+    public static final Pose2d bReefCenter = new Pose2d(4.475, 4.026, Rotation2d.fromDegrees(0));
+    public static final Pose2d bReef0 = new Pose2d(3.643, 4.026, Rotation2d.fromDegrees(0));
+    public static final Pose2d bReef60 = new Pose2d(4.059, 3.306, Rotation2d.fromDegrees(60));
+    public static final Pose2d bReef120 = new Pose2d(4.891, 3.306, Rotation2d.fromDegrees(120));
+    public static final Pose2d bReef180 = new Pose2d(5.662, 4.026, Rotation2d.fromDegrees(180));
+    public static final Pose2d bReef240 = new Pose2d(5.096, 5.054, Rotation2d.fromDegrees(-60));
+    public static final Pose2d bReef300 = new Pose2d(4.059, 4.746, Rotation2d.fromDegrees(-120));
 
-    public static final Pose2d rAmp = new Pose2d(14.700875, 8.204275, Rotation2d.fromDegrees(270));
-    public static final Pose2d bAmp = new Pose2d(1.840875, 8.204275, Rotation2d.fromDegrees(270));
+    public static final Pose2d bAlgaeLeft = new Pose2d(1.205, 2.197, Rotation2d.fromDegrees(0));
+    public static final Pose2d bAlgaeMiddle = new Pose2d(1.205, 4.026, Rotation2d.fromDegrees(0));
+    public static final Pose2d bAlgaeRight = new Pose2d(0.838, 5.855, Rotation2d.fromDegrees(0));
 
-    public static final Pose2d rStageAmp = new Pose2d(11.904875, 4.492, Rotation2d.fromDegrees(60));
-    public static final Pose2d rStageSource = new Pose2d(11.904875, 3.706, Rotation2d.fromDegrees(300));
-    public static final Pose2d rStageFar = new Pose2d(11.219875, 4.099, Rotation2d.fromDegrees(180));
+    public static final Pose2d rProcessor = new Pose2d(11.54, 8.051, Rotation2d.fromDegrees(0));
+    public static final Pose2d rAlgaeLeft = new Pose2d(16.315, 2.197, Rotation2d.fromDegrees(0));
+    public static final Pose2d rAlgaeMiddle = new Pose2d(16.315, 4.026, Rotation2d.fromDegrees(0));
+    public static final Pose2d rAlgaeRight = new Pose2d(16.315, 5.855, Rotation2d.fromDegrees(0));
+    
+    public static final Pose2d rHPRight = new Pose2d(16.681, 7.395, Rotation2d.fromDegrees(54));
+    public static final Pose2d rHPLeft = new Pose2d(16.681, 0.657, Rotation2d.fromDegrees(-54));
+    
+    public static final Pose2d rReefCenter = new Pose2d(13.045, 4.026, Rotation2d.fromDegrees(0));
+    public static final Pose2d rReef0 = new Pose2d(13.876, 4.026, Rotation2d.fromDegrees(0));
+    public static final Pose2d rReef60 = new Pose2d(13.46, 4.746, Rotation2d.fromDegrees(60));
+    public static final Pose2d rReef120 = new Pose2d(12.629, 4.746, Rotation2d.fromDegrees(120));
+    public static final Pose2d rReef180 = new Pose2d(12.213, 4.026, Rotation2d.fromDegrees(180));
+    public static final Pose2d rReef240 = new Pose2d(12.629, 3.306, Rotation2d.fromDegrees(-60));
+    public static final Pose2d rReef300 = new Pose2d(13.461, 3.306, Rotation2d.fromDegrees(-120));
+      
+    public static final Pose2d bCageProcessor = new Pose2d(8.76, 0.792, Rotation2d.fromDegrees(0));
+    public static final Pose2d bCageMiddle = new Pose2d(8.76, 1.883, Rotation2d.fromDegrees(0));
+    public static final Pose2d bCageTable = new Pose2d(8.76, 2.973, Rotation2d.fromDegrees(0));
 
-    public static final Pose2d bStageAmp = new Pose2d(4.636875, 4.492, Rotation2d.fromDegrees(120));
-    public static final Pose2d bStageSource = new Pose2d(4.636875, -3.706, Rotation2d.fromDegrees(240));
-    public static final Pose2d bStageFar = new Pose2d(5.321875,4.099, Rotation2d.fromDegrees(0));
-    public static final double stageHeight = 2.06; //In meters
+    public static final Pose2d rCageProcessor = new Pose2d(8.76, 5.078, Rotation2d.fromDegrees(0));
+    public static final Pose2d rCageMiddle = new Pose2d(8.76, 6.169, Rotation2d.fromDegrees(0));
+    public static final Pose2d rCageTable = new Pose2d(8.76, 7.26, Rotation2d.fromDegrees(0));
 
-    public static final Map<StageFace, Pose2d> rStage = Map.of(
-            StageFace.AMP, rStageAmp,
-            StageFace.SOURCE, rStageSource,
-            StageFace.FAR, rStageFar);
 
-    public static final Map<StageFace, Pose2d> bStage = Map.of(
-            StageFace.AMP, bStageAmp,
-            StageFace.SOURCE, bStageSource,
-            StageFace.FAR, bStageFar);
+    public static final Map<ReefFace, Pose2d> bReef = Map.of(
+            ReefFace.CENTER, bReefCenter,
+            ReefFace.ZERO, bReef0,
+            ReefFace.SIXTY, bReef60,
+            ReefFace.ONETWENTY, bReef120,
+            ReefFace.ONEEIGHTY, bReef180,
+            ReefFace.TWOFOURTY, bReef240,
+            ReefFace.THREEHUNDRED, bReef300
+        );
+        
+    public static final Map<ReefFace, Pose2d> rReef = Map.of(
+            ReefFace.CENTER, rReefCenter,
+            ReefFace.ZERO, rReef0,
+            ReefFace.SIXTY, rReef60,
+            ReefFace.ONETWENTY, rReef120,
+            ReefFace.ONEEIGHTY, rReef180,
+            ReefFace.TWOFOURTY, rReef240,
+            ReefFace.THREEHUNDRED, rReef300
+        );
 
-    public static final Translation2d rNoteStage = new Translation2d(13.455875, 4.099);
-    public static final Translation2d rNoteSpeaker = new Translation2d(13.455875, 5.496);
-    public static final Translation2d rNoteAmp = new Translation2d(13.455875, 6.892);
-
-    public static final Translation2d bNoteStage = new Translation2d(3.085875, 4.099);
-    public static final Translation2d bNoteSpeaker = new Translation2d(3.085875, 5.496);
-    public static final Translation2d bNoteAmp = new Translation2d(3.085875, 6.892);
-
-    public static final Translation2d cNoteSource2 = new Translation2d(8.270875, 0);
-    public static final Translation2d cNoteSource1 = new Translation2d(8.270875, 0);
-    public static final Translation2d cNoteMid = new Translation2d(8.270875, 0);
-    public static final Translation2d cNoteAmp1 = new Translation2d(8.270875, 0);
-    public static final Translation2d cNoteAmp2 = new Translation2d(8.270875, 0);
-
-    public static final Map<NoteType, Translation2d> rNotes = Map.of(
-            NoteType.NEAR_STAGE, rNoteStage,
-            NoteType.NEAR_SPEAKER, rNoteSpeaker,
-            NoteType.NEAR_AMP, rNoteAmp,
-            NoteType.FAR_SOURCE2, cNoteSource2,
-            NoteType.FAR_SOURCE1, cNoteSource1,
-            NoteType.FAR_MID, cNoteMid,
-            NoteType.FAR_AMP1, cNoteAmp1,
-            NoteType.FAR_AMP2, cNoteAmp2);
-
-    public static final Map<NoteType, Translation2d> bNotes = Map.of(
-            NoteType.NEAR_STAGE, bNoteStage,
-            NoteType.NEAR_SPEAKER, bNoteSpeaker,
-            NoteType.NEAR_AMP, bNoteAmp,
-            NoteType.FAR_SOURCE2, cNoteSource2,
-            NoteType.FAR_SOURCE1, cNoteSource1,
-            NoteType.FAR_MID, cNoteMid,
-            NoteType.FAR_AMP1, cNoteAmp1,
-            NoteType.FAR_AMP2, cNoteAmp2);
+    public static final Map<AlgaeType, Pose2d> bAlgaeType = Map.of(
+            AlgaeType.LEFT, bAlgaeLeft,
+            AlgaeType.MIDDLE, bAlgaeMiddle,
+            AlgaeType.RIGHT, bAlgaeRight
+        );
+    
+    public static final Map<AlgaeType, Pose2d> rAlgaeType = Map.of(
+            AlgaeType.LEFT, bAlgaeLeft,
+            AlgaeType.MIDDLE, bAlgaeMiddle,
+            AlgaeType.RIGHT, bAlgaeRight
+        );
 
     public static final double rAutoLineX = 6.137 + Constants.fieldCenterOffset.getX(); // Meters
     public static final double bAutoLineX = -6.137 + Constants.fieldCenterOffset.getX(); // Meters
@@ -96,39 +122,16 @@ public class FieldLayout {
     public static final double bWingLineX = -2.338 + Constants.fieldCenterOffset.getX(); // Meters
 
     /**
-     * Gets the pose of the speaker for the current alliance
-     * 
-     * @return pose of the speaker for the current alliance
-     */
-    public static Pose2d getSpeakerPose() {
-        var alliance = DriverStation.getAlliance();
-        if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
-            return rSpeaker;
-        } else {
-            return bSpeaker;
-        }
-    }
-
-    public static Pose2d getShootSpeakerPose() {
-        var alliance = DriverStation.getAlliance();
-        if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
-            return rShootSpeaker;
-        } else {
-            return bShootSpeaker;
-        }
-    }
-
-    /**
      * Gets the pose of the amp for the current alliance
      * 
      * @return pose of the amp for the current alliance
      */
-    public static Pose2d getAmpPose() {
+    public static Pose2d getAlgaeType(AlgaeType type) {
         var alliance = DriverStation.getAlliance();
         if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
-            return rAmp;
+            return rAlgaeType.get(type);
         } else {
-            return bAmp;
+            return rAlgaeType.get(type);
         }
     }
 
@@ -138,12 +141,12 @@ public class FieldLayout {
      * @param face face to retrieve
      * @return pose of the stage for the current alliance
      */
-    public static Pose2d getStage(StageFace face) {
+    public static Pose2d getReef(ReefFace face) {
         var alliance = DriverStation.getAlliance();
         if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
-            return rStage.get(face);
+            return rReef.get(face);
         } else {
-            return bStage.get(face);
+            return bReef.get(face);
         }
     }
 
@@ -153,17 +156,17 @@ public class FieldLayout {
      * @param pos current position
      * @return pose of the nearest stage for the current alliance
      */
-    public static Pose2d getNearestStage(Translation2d pos) {
-        Map<StageFace, Pose2d> stage_list = bStage;
+    public static Pose2d getNearestReef(Pose2d pos) {
+        Map<ReefFace, Pose2d> stage_list = bReef;
         var alliance = DriverStation.getAlliance();
         Pose2d nearest = null;
         if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
-            stage_list = rStage;
+            stage_list = rReef;
 
             double min_dist = Double.MAX_VALUE;
 
             for (var pose : stage_list.entrySet()) {
-                double distance = pos.getDistance(pose.getValue().getTranslation());
+                double distance = pos.getTranslation().getDistance(pose.getValue().getTranslation());
                 if (distance < min_dist) {
                     min_dist = distance;
                     nearest = pose.getValue();
@@ -174,24 +177,9 @@ public class FieldLayout {
         return nearest;
     }
 
-    /**
-     * Gets the position of a pre-staged note
-     * 
-     * @param note_type id for the desired pre-staged notes
-     * @return position of the selected note
-     */
-    public static Translation2d getNote(NoteType note_type) {
-        var alliance = DriverStation.getAlliance();
-        if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
-            return rNotes.get(note_type);
-        } else {
-            return bNotes.get(note_type);
-        }
-    }
-
-    public static Translation2d getNoteOffset(NoteType noteType, double x, double y){
-        var notePos = getNote(noteType);
-        return new Translation2d(notePos.getX() + x, notePos.getY() + y);
+    public static Translation2d getNoteOffset(AlgaeType algaeType, double x, double y){
+        var algaePos = getAlgaeType(algaeType);
+        return new Translation2d(algaePos.getX() + x, algaePos.getY() + y);
     }
 
     /**

@@ -1,6 +1,7 @@
 package frc.robot;
 
 import frc.robot.Util.FieldLayout;
+import frc.robot.Util.FieldLayout.ReefFace;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Drive;
@@ -169,7 +170,8 @@ public class OperatorInterface extends SubsystemBase {
         Climber climber = Climber.getInstance();
 
         if (driverController.getPOV() == 0){
-            drive.presetPosition(new Pose2d(0.0, 0.0, new Rotation2d()));
+            //drive.presetPosition(new Pose2d(0.0, 0.0, new Rotation2d()));
+            drive.presetPosition(FieldLayout.getReef(ReefFace.ZERO));
         }
 
         if (driverController.getRawButton(6)) {
@@ -192,9 +194,6 @@ public class OperatorInterface extends SubsystemBase {
             } else if (driverController.getRawButton(3)){
                 drive.setGoToPoint(new Translation2d(0, 0));
 
-            } else if (driverController.getRawButton(4)){
-
-                //drive.pathOnTheFly();
             }else{
                 drive.setDriveRate(0, 0);
             }
@@ -205,13 +204,16 @@ public class OperatorInterface extends SubsystemBase {
 
             }
             else if (driverController.getRawButton(1)) {
-                drive.setAngleAlign(Rotation2d.fromDegrees(-90));
+                drive.setAngleAlign(Rotation2d.fromDegrees(0));
 
             }
             else if (driverController.getRawButton(2)){
                 drive.setPointAlign(new Translation2d(0, 0), Rotation2d.fromDegrees(0));
 
-            }else{
+            } else if (driverController.getRawButton(4)){
+                drive.setReefAlign(new Rotation2d());
+
+            } else{
                 drive.setRotationRate(0);
             }
         }else{

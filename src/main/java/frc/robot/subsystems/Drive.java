@@ -5,10 +5,12 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Util.FieldLayout;
+import frc.robot.Util.FieldLayout.ReefFace;
 import frc.robot.subsystems.Drive.LinearDriveCommands.DriveRateCommand;
 import frc.robot.subsystems.Drive.LinearDriveCommands.GoToPointCommand;
 import frc.robot.subsystems.Drive.RotationDriveCommands.AngleAlignCommand;
 import frc.robot.subsystems.Drive.RotationDriveCommands.PointAlignCommand;
+import frc.robot.subsystems.Drive.RotationDriveCommands.ReefAlignCommand;
 import frc.robot.subsystems.Drive.RotationDriveCommands.RotationRateCommand;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
@@ -18,6 +20,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Twist2d;
+import edu.wpi.first.math.geometry.struct.Rotation2dStruct;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -188,12 +192,14 @@ public class Drive extends SubsystemBase {
         private final RotationRateCommand rotationRateCommand;
         private final AngleAlignCommand angleAlignCommand;
         private final PointAlignCommand pointAlignCommand;
+        private final ReefAlignCommand reefAlignCommand;
         private static RotationDriveCommands rotationCommands = null;
 
         public RotationDriveCommands(){
             angleAlignCommand = new AngleAlignCommand(new Rotation2d());
             pointAlignCommand = new PointAlignCommand(new Translation2d(0, 0), new Rotation2d());
             rotationRateCommand = new RotationRateCommand(0);
+            reefAlignCommand = new ReefAlignCommand(new Rotation2d());
             setDefaultCommand(rotationRateCommand);
         }
 
@@ -251,6 +257,24 @@ public class Drive extends SubsystemBase {
             @Override
             public void execute(){
                 calcRateToPoint(targetPoint, rotationOffset);
+            }
+        }
+
+        public class ReefAlignCommand extends Command{
+            Rotation2d offset;
+
+            public ReefAlignCommand(Rotation2d offset){
+                this.offset = offset;
+                addRequirements(RotationDriveCommands.this);
+            }
+
+            public void alignReef(Rotation2d offset){
+                this.offset = offset;
+            }
+
+            @Override
+            public void execute(){
+                reefAngleCalc(offset);
             }
         }
 
@@ -595,7 +619,28 @@ public class Drive extends SubsystemBase {
 
     //Calculates the angle the robot should go at to align with the reef.
     public void reefAngleCalc(Rotation2d offset){
-        Rotation2d curAngle = getEstimatedPos().getRotation();
+        Pose2d curPose = getEstimatedPos();
+        Pose2d reef = FieldLayout.getReef(ReefFace.CENTER);
+        Transform2d calcPose = curPose.minus(reef);
+        Rotation2d calcRotation = new Rotation2d(calcPose.getX(), calcPose.getY()).rotateBy(Rotation2d.fromDegrees(180));
+        Rotation2d targetAngle = new Rotation2d();
+        if (calcRotation.getDegrees() >= -30 && calcRotation.getDegrees() < 30){
+            targetAngle = Rotation2d.fromDegrees(0);
+        } else if (calcRotation.getDegrees() >= 30 && calcRotation.getDegrees() < 90){
+            targetAngle = Rotation2d.fromDegrees(60);
+        } else if (calcRotation.getDegrees() >= 90 && calcRotation.getDegrees() <= 150){
+            targetAngle = Rotation2d.fromDegrees(120);
+        } else if (calcRotation.getDegrees() >= 150 && calcRotation.getDegrees() <= 180){
+            targetAngle = Rotation2d.fromDegrees(180);
+        }else if(calcRotation.getDegrees() >= -180 && calcRotation.getDegrees() < -150){
+            targetAngle = Rotation2d.fromDegrees(180);
+        } else if (calcRotation.getDegrees() >= -150 && calcRotation.getDegrees() < -90){
+            targetAngle = Rotation2d.fromDegrees(-120);
+        } else if (calcRotation.getDegrees() >= -90 && calcRotation.getDegrees() < -30){
+            targetAngle = Rotation2d.fromDegrees(-60);
+        }
+        calcRateToAngle(targetAngle);
+        SmartDashboard.putNumber("calcRotation", calcRotation.getDegrees());
     }
 
 
@@ -697,6 +742,12 @@ public class Drive extends SubsystemBase {
             path.addRequirements(LinearDriveCommands.getInstance(), RotationDriveCommands.getInstance());
             path.schedule();
         }
+    }
+
+    public void setReefAlign(Rotation2d offset){
+        ReefAlignCommand reefAlignCommand = rotationDriveCommands.reefAlignCommand;
+        reefAlignCommand.alignReef(offset);
+        if (rotationDriveCommands.getCurrentCommand() != reefAlignCommand) reefAlignCommand.schedule();
     }
 
     public void pathOnTheFly(){

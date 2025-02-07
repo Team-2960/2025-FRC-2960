@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import frc.robot.Constants;
 import frc.robot.Util.FieldLayout;
+import frc.robot.Util.FieldLayout.ReefFace;
 
 import java.util.Map;
 
@@ -415,11 +416,13 @@ public class Arm extends SubsystemBase {
         
     }
 
+
+    //TODO Adjust for 2025 Field and uses
     public void armAutoAlign(){
         Drive drive = Drive.getInstance();
-        double distance = Math.abs(FieldLayout.getShootSpeakerPose().getX() - drive.getEstimatedPos().getX()) + 
+        double distance = Math.abs(FieldLayout.getReef(ReefFace.CENTER).getX() - drive.getEstimatedPos().getX()) + 
             ((Math.cos(getArmAngle().minus(Rotation2d.fromDegrees(11)).getRadians()) * Constants.armLength) + 0.2413);
-        double height =  FieldLayout.stageHeight - Constants.armHeightOffset - (Math.sin(getArmAngle().minus(Rotation2d.fromDegrees(11)).getRadians()) * Constants.armLength);
+        double height =  /*change this value ->*/0 - Constants.armHeightOffset - (Math.sin(getArmAngle().minus(Rotation2d.fromDegrees(11)).getRadians()) * Constants.armLength);
         double desiredAngle = 90 - Math.toDegrees(Math.atan2(height, distance));
         control_mode = ArmControlMode.AUTOMATIC;
         if(desiredAngle < 23){
@@ -499,7 +502,6 @@ public class Arm extends SubsystemBase {
      */
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("SpeakerPosition", FieldLayout.getSpeakerPose().getX());
         updateUI(armRate, armVolt);
         var currentCommand = getCurrentCommand();
         String curCommandName = "null";
