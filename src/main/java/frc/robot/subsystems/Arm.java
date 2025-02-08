@@ -99,26 +99,33 @@ public class Arm extends SubsystemBase {
     private GenericEntry sb_atTarget;
     private GenericEntry sb_currentArmCommand;
 
+
+    //Command to set the voltage of the Arm
     public class ArmVoltageCommand extends Command{
         private double targetVoltage;
 
         public ArmVoltageCommand(double targetVoltage){
             this.targetVoltage = targetVoltage;
 
+            //Makes the Arm Subsystem required for the command
             addRequirements(Arm.this);
         }
 
         @Override
         public void execute(){
+            //Actually executes the command aka sets the voltage
             setMotorVolt(targetVoltage);
         }
 
+        //Method used after creating the command to set the voltage
         public void setVoltage(double targetVoltage){
             this.targetVoltage = targetVoltage;
         }
 
     }
 
+    //Command to send values to the PID + Feed Forward
+    //This Controls the rate aka velocity of the arm, NOT The position
     public class ArmRateCommand extends Command{
         private double targetRate;
         private double tolerance;
@@ -126,19 +133,23 @@ public class Arm extends SubsystemBase {
         public ArmRateCommand(double targetRate, double tolerance){
             this.targetRate = targetRate;
             this.tolerance = tolerance;
+            
+            //Make Arm Subsystem required for this command
             addRequirements(Arm.this);
         }
 
+        //Just sets rate
         public void setRate(double targetRate){
             this.targetRate = targetRate;
         }
 
+        //Sets both rate and tolerance
         public void setToleranceRate(double targetRate, double tolerance){
-            SmartDashboard.putNumber("Arm tolerance", targetRate);
             this.targetRate = targetRate;
             this.tolerance = tolerance;
         }
         
+        //What actually sets the rate/ execute the action to set the rate
         @Override
         public void execute(){
             setArmRate(targetRate);
@@ -160,7 +171,6 @@ public class Arm extends SubsystemBase {
 
         @Override
         public void initialize(){
-            System.out.println("Command initialized");
             target = getArmAngle();
         }
 
@@ -241,7 +251,7 @@ public class Arm extends SubsystemBase {
         armAngleCommand = new ArmAngleCommand(Rotation2d.fromDegrees(0));
         armHoldCommand = new ArmHoldCommand();
 
-        setDefaultCommand(new ArmHoldCommand());
+        setDefaultCommand(armHoldCommand);
     }
 
     public void shuffleBoardInit(){
@@ -400,6 +410,7 @@ public class Arm extends SubsystemBase {
      * 
      * @param voltage desired motor voltage
      */
+    //TODO Change to use Spark Flex
     private void setMotorVolt(double voltage) {
         // Set soft limits
         if (absoluteArmEncoder.get() < Constants.upperEncLimit) {
