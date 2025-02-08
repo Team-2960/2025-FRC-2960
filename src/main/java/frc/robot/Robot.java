@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Relay.Value;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.Auton.RobotContainer;
 //import frc.robot.Auton.AutonList;
 import frc.robot.subsystems.*;
 
@@ -35,9 +34,7 @@ public class Robot extends TimedRobot {
     private OperatorInterface oi;
     private Arm arm;
     private Climber climber;
-    private IntakePizzaBox intake;
     private Cameras cameras;
-    private RobotContainer robotContainer;
     private Command autonomousCommand;
     
 
@@ -46,10 +43,8 @@ public class Robot extends TimedRobot {
         drive = Drive.getInstance();
         oi = OperatorInterface.getInstance();
         climber = Climber.getInstance();
-        intake = IntakePizzaBox.getInstance();
         arm = Arm.getInstance();
         cameras = Cameras.getInstance();
-        robotContainer = new RobotContainer();
 
         CameraServer.startAutomaticCapture();
         //autonCommand = AutonList.getDefaultCommands();
@@ -67,7 +62,6 @@ public class Robot extends TimedRobot {
     @Override
     public void autonomousInit() {
         //if (autonCommand.isPresent()) autonCommand.get().schedule();
-        autonomousCommand = robotContainer.getAutonomousCommand();
 
         if(autonomousCommand != null){
             autonomousCommand.schedule();

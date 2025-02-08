@@ -5,7 +5,6 @@ import frc.robot.Util.FieldLayout.ReefFace;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Drive;
-import frc.robot.subsystems.IntakePizzaBox;
 import frc.robot.subsystems.Climber.ClimberStates;
 
 import java.util.ArrayList;
@@ -140,7 +139,6 @@ public class OperatorInterface extends SubsystemBase {
         if (DriverStation.isTeleop()) {
             updateDrive();
             updateArm();
-            updatePizzabox();
             updateClimber();
             updateDriverFeedback();
         }
@@ -175,14 +173,9 @@ public class OperatorInterface extends SubsystemBase {
             drive.presetPosition(FieldLayout.getReef(ReefFace.ZERO).plus(new Transform2d(-Constants.robotLength/2, 0, new Rotation2d())));
         }
 
-        if (driverController.getRawButton(6)) {
-            IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.SHOOT);
-        }
+
         if (driverController.getRawButton(8)) {
             climber.setClimbState(ClimberStates.CLIMB);
-        }
-        if (driverController.getRawAxis(3) > .1) {
-            IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.INTAKE);
         }
 
         
@@ -269,27 +262,6 @@ public class OperatorInterface extends SubsystemBase {
         sb_armRate.setDouble(armManualRate);
     }
 
-    /**
-     * Updates the controls for the Pizzabox
-     */
-    private void updatePizzabox() {
-        IntakePizzaBox intakePB = IntakePizzaBox.getInstance();
-
-        if (operatorController.getRawButton(6)) {
-            intakePB.setState(IntakePizzaBox.PizzaboxState.FAST_SHOOT);
-        } else if (operatorController.getRawAxis(3) > .1) {
-            intakePB.setState(IntakePizzaBox.PizzaboxState.SHOOT);
-        } else if (operatorController.getRawButton(5)) {
-            intakePB.setState(IntakePizzaBox.PizzaboxState.INTAKE);
-        } else if (operatorController.getRawAxis(2) > .2) {
-
-            intakePB.setState(IntakePizzaBox.PizzaboxState.REVERSE);
-        } else if (operatorController.getRawAxis(5) > .1) {
-            intakePB.setState(IntakePizzaBox.PizzaboxState.SHOOT_PREP);
-        } else {
-            intakePB.setState(IntakePizzaBox.PizzaboxState.IDLE);
-        }
-    }
 
     /**
      * Updates the controls for the climber
@@ -312,24 +284,11 @@ public class OperatorInterface extends SubsystemBase {
      */
     private void updateDriverFeedback() {
         double rumblePower = 0;
-        IntakePizzaBox intakePB = IntakePizzaBox.getInstance();
+        
         AddressableLEDBuffer ledColor = led_idle;
 
         boolean isEndGame = DriverStation.isTeleop() && DriverStation.getMatchTime() <= 50 && DriverStation.getMatchType() != MatchType.None;
 
-        // Rumble the controllers at half power for .5 seconds when a note is in the
-        // intake
-        if (intakePB.isNotePresent()) {
-            if (!lastIsNotePresent) {
-                rumbleTimer.restart();
-                ledTimer.restart();
-            }
-
-            if (rumbleTimer.get() < .5)
-                rumblePower = .5;
-
-            ledColor = led_note;
-        }
 
         // Rumble the controllers at full power for 1 second when the end game is about
         // to start
@@ -359,7 +318,6 @@ public class OperatorInterface extends SubsystemBase {
         leds.setData(ledColor);
 
         // Update state transition checks
-        lastIsNotePresent = intakePB.isNotePresent();
         lastIsEndGame = isEndGame;
 
         // Update UI
