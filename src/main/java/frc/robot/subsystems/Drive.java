@@ -623,28 +623,8 @@ public class Drive extends SubsystemBase {
 
     //Calculates the angle the robot should go at to align with the reef.
     public void reefAngleCalc(Rotation2d offset){
-        Pose2d curPose = getEstimatedPos();
-        Pose2d reef = FieldLayout.getReef(ReefFace.CENTER);
-        Transform2d calcPose = curPose.minus(reef);
-        Rotation2d calcRotation = new Rotation2d(calcPose.getX(), calcPose.getY()).rotateBy(Rotation2d.fromDegrees(180));
-        Rotation2d targetAngle = new Rotation2d();
-        if (calcRotation.getDegrees() >= -30 && calcRotation.getDegrees() < 30){
-            targetAngle = Rotation2d.fromDegrees(0);
-        } else if (calcRotation.getDegrees() >= 30 && calcRotation.getDegrees() < 90){
-            targetAngle = Rotation2d.fromDegrees(60);
-        } else if (calcRotation.getDegrees() >= 90 && calcRotation.getDegrees() <= 150){
-            targetAngle = Rotation2d.fromDegrees(120);
-        } else if (calcRotation.getDegrees() >= 150 && calcRotation.getDegrees() <= 180){
-            targetAngle = Rotation2d.fromDegrees(180);
-        }else if(calcRotation.getDegrees() >= -180 && calcRotation.getDegrees() < -150){
-            targetAngle = Rotation2d.fromDegrees(180);
-        } else if (calcRotation.getDegrees() >= -150 && calcRotation.getDegrees() < -90){
-            targetAngle = Rotation2d.fromDegrees(-120);
-        } else if (calcRotation.getDegrees() >= -90 && calcRotation.getDegrees() < -30){
-            targetAngle = Rotation2d.fromDegrees(-60);
-        }
-        calcRateToAngle(targetAngle);
-        SmartDashboard.putNumber("calcRotation", calcRotation.getDegrees());
+        Rotation2d targetAngle = FieldLayout.getReefFaceZone(getEstimatedPos());
+        calcRateToAngle(targetAngle.plus(offset));
     }
 
     public void goToReef(Pose2d offset){
@@ -652,12 +632,13 @@ public class Drive extends SubsystemBase {
             offset = new Pose2d(-offset.getX(), -offset.getY(), offset.getRotation());
         }
         FieldLayout fieldLayout = FieldLayout.getInstance();
-        Pose2d nearestReefFace = fieldLayout.getNearestReefFace(getEstimatedPos());
+        //Pose2d nearestReefFace = fieldLayout.getNearestReefFace(getEstimatedPos());
+        Rotation2d reefFaceRotation = fieldLayout.getReefFaceZone(getEstimatedPos());
         Pose2d zeroFace = fieldLayout.getReef(ReefFace.ZERO);
         Translation2d poseOffset = new Translation2d(zeroFace.getX() + offset.getX(), zeroFace.getY() + offset.getY())
             .rotateAround(fieldLayout.getReef(ReefFace.CENTER).getTranslation(), 
-                nearestReefFace.getRotation());
-        Pose2d finalReefFace = new Pose2d(poseOffset, nearestReefFace.getRotation());
+                reefFaceRotation);
+        Pose2d finalReefFace = new Pose2d(poseOffset, reefFaceRotation);
         this.nearestReefFace = finalReefFace;
 
         setGoToPoint(finalReefFace.getTranslation());

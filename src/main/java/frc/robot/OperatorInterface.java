@@ -221,6 +221,7 @@ public class OperatorInterface extends SubsystemBase {
             if (driverController.getRawButton(3)){
                 drive.setGoToPoint(new Translation2d(0, 0));
                 drive.setAngleAlign(Rotation2d.fromDegrees(90));
+                
             } else if (driverController.getRawButton(4)){
                 drive.goToReef(new Pose2d(-Constants.robotLength/2, 0, new Rotation2d()));
             }
