@@ -45,6 +45,8 @@ public class Constants {
     // CAN IDs
     public static final int coralMotor = 0;//TODO set correct value
 
+    public static final int algaeMotor = 0;
+
     public static final int intakeRollers = 15;
 
     public static final int winchMotorL = 10;
@@ -182,6 +184,11 @@ public class Constants {
     public static final double coralEjectVolt = 12;
     public static final double coralIntakeVolt = 6;
     public static final double coralEjectTime = 1;
+
+    //Algae Roller
+    public static final double algaeEjectVolt = 6;
+    public static final double algaeIntakeVolt = 6;
+
 
     // Climber
     public static final double winchMaxExtension = 88;   // in.
