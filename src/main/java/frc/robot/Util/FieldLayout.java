@@ -217,6 +217,29 @@ public class FieldLayout {
         // return nearest;
     }
 
+    public static Rotation2d getReefFaceZone(Pose2d pose){
+        Pose2d reef = getReef(ReefFace.CENTER);
+        Transform2d calcPose = pose.minus(reef);
+        Rotation2d calcRotation = new Rotation2d(calcPose.getX(), calcPose.getY()).rotateBy(Rotation2d.fromDegrees(180));
+        Rotation2d targetAngle = new Rotation2d();
+        if (calcRotation.getDegrees() >= -30 && calcRotation.getDegrees() < 30){
+            targetAngle = Rotation2d.fromDegrees(0);
+        } else if (calcRotation.getDegrees() >= 30 && calcRotation.getDegrees() < 90){
+            targetAngle = Rotation2d.fromDegrees(60);
+        } else if (calcRotation.getDegrees() >= 90 && calcRotation.getDegrees() <= 150){
+            targetAngle = Rotation2d.fromDegrees(120);
+        } else if (calcRotation.getDegrees() >= 150 && calcRotation.getDegrees() <= 180){
+            targetAngle = Rotation2d.fromDegrees(180);
+        }else if(calcRotation.getDegrees() >= -180 && calcRotation.getDegrees() < -150){
+            targetAngle = Rotation2d.fromDegrees(180);
+        } else if (calcRotation.getDegrees() >= -150 && calcRotation.getDegrees() < -90){
+            targetAngle = Rotation2d.fromDegrees(-120);
+        } else if (calcRotation.getDegrees() >= -90 && calcRotation.getDegrees() < -30){
+            targetAngle = Rotation2d.fromDegrees(-60);
+        }
+        return targetAngle;
+    }
+
     public static Translation2d getNoteOffset(AlgaeType algaeType, double x, double y){
         var algaePos = getAlgaeType(algaeType);
         return new Translation2d(algaePos.getX() + x, algaePos.getY() + y);
