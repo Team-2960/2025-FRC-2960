@@ -188,16 +188,13 @@ public class OperatorInterface extends SubsystemBase {
         
         climber.setRatchet(driverController.getRawButton((5)));
 
-        if (!driverController.getRawButton(3)){
+        if (!driverController.getRawButton(3) && !driverController.getRawButton(4)){
             if (Math.abs(xAxis) > 0.05 || Math.abs(yAxis) > 0.05 ){
                 drive.setDriveRate(xSpeed, ySpeed);
 
             } else if (driverController.getRawButton(3)){
                 drive.setGoToPoint(new Translation2d(0, 0));
                 
-            } else if (driverController.getRawButton(4)){
-                drive.goToReef(-Constants.robotLength/2, 0, new Rotation2d());
-
             }else{
                 drive.setDriveRate(0, 0);
             }
@@ -221,8 +218,12 @@ public class OperatorInterface extends SubsystemBase {
                 drive.setRotationRate(0);
             }
         }else{
-            drive.setGoToPoint(new Translation2d(0, 0));
-            drive.setAngleAlign(Rotation2d.fromDegrees(90));
+            if (driverController.getRawButton(3)){
+                drive.setGoToPoint(new Translation2d(0, 0));
+                drive.setAngleAlign(Rotation2d.fromDegrees(90));
+            } else if (driverController.getRawButton(4)){
+                drive.goToReef(new Pose2d(-Constants.robotLength/2, 0, new Rotation2d()));
+            }
         }
 
         // Update Shuffleboard

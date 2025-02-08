@@ -33,6 +33,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.ComplexWidget;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -614,8 +615,6 @@ public class Drive extends SubsystemBase {
 
     public void calcToPoint(Translation2d point){
         Pose2d currentPose = getEstimatedPos();
-        double xPoint = point.getX();
-        double yPoint = point.getY();
         Transform2d distance = currentPose.minus(new Pose2d(point, Rotation2d.fromDegrees(0)));
         double xSpeed = driveAlignPID.calculate(distance.getX());
         double ySpeed = driveAlignPID.calculate(distance.getY());
@@ -648,18 +647,34 @@ public class Drive extends SubsystemBase {
         SmartDashboard.putNumber("calcRotation", calcRotation.getDegrees());
     }
 
-    public void goToReef(double xOffset, double yOffset, Rotation2d rotOffset){
+    public void goToReef(Pose2d offset){
+        if (getAlliance() == DriverStation.Alliance.Red){
+            offset = new Pose2d(-offset.getX(), -offset.getY(), offset.getRotation());
+        }
         FieldLayout fieldLayout = FieldLayout.getInstance();
         Pose2d nearestReefFace = fieldLayout.getNearestReefFace(getEstimatedPos());
         Pose2d zeroFace = fieldLayout.getReef(ReefFace.ZERO);
-        Translation2d poseOffset = new Translation2d(zeroFace.getX() + xOffset, zeroFace.getY() + yOffset)
+        Translation2d poseOffset = new Translation2d(zeroFace.getX() + offset.getX(), zeroFace.getY() + offset.getY())
             .rotateAround(fieldLayout.getReef(ReefFace.CENTER).getTranslation(), 
                 nearestReefFace.getRotation());
         Pose2d finalReefFace = new Pose2d(poseOffset, nearestReefFace.getRotation());
         this.nearestReefFace = finalReefFace;
 
-        calcToPoint(finalReefFace.getTranslation());
-        calcRateToAngle(finalReefFace.getRotation().plus(rotOffset));
+        setGoToPoint(finalReefFace.getTranslation());
+        setAngleAlign(finalReefFace.getRotation().plus(offset.getRotation()));
+    }
+
+    public Alliance getAlliance(){
+        var alliance = DriverStation.getAlliance();
+        if (alliance.isPresent()){
+            if (alliance.get() == DriverStation.Alliance.Red){
+                return DriverStation.Alliance.Red;
+            }else{
+                return DriverStation.Alliance.Blue;
+            }
+        }else{
+            return DriverStation.Alliance.Blue;
+        }
     }
 
 
@@ -776,6 +791,7 @@ public class Drive extends SubsystemBase {
         Command pathCommand = AutoBuilder.pathfindToPose(new Pose2d(), pathConstraints);
         followPath(pathCommand);
     }
+
 
 
     @Override
