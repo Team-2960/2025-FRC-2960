@@ -62,8 +62,8 @@ public class IntakePizzaBox extends SubsystemBase {
         intakeRollers = new TalonFX(Constants.intakeRollers);
 
         // Initialize Shooter Motors
-        shooterTop = new SparkFlex(Constants.shooterTop, MotorType.kBrushless);
-        shooterBot = new SparkFlex(Constants.shooterBot, MotorType.kBrushless);
+        shooterTop = new SparkFlex(0, MotorType.kBrushless);
+        shooterBot = new SparkFlex(1, MotorType.kBrushless);
         shooterTop.configure(new SparkFlexConfig().inverted(true), com.revrobotics.spark.SparkBase.ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         // Initialize Shooter Encoders

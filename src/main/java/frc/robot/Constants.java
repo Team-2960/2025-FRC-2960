@@ -43,8 +43,7 @@ public class Constants {
     public static final ModuleConfig moduleConfig = new ModuleConfig(0.0381, 5.450, 1, new DCMotor(12, 4.69, 257, 1.5, 106.33, 1), 257, 1);
 
     // CAN IDs
-    public static final int shooterTop = 14;
-    public static final int shooterBot = 13;
+    public static final int coralMotor = 0;//TODO set correct value
 
     public static final int intakeRollers = 15;
 
@@ -70,7 +69,7 @@ public class Constants {
     public static final int armDCEncoderPort = 0;
     public static final int armQuadEncoderAPort = 1;
     public static final int armQuadEncoderBPort = 2;
-    public static final int pbPhotoeyePort = 3;
+    public static final int coralPresentPE = 3;//TODO update port
     public static final int armBrakeModeBtn = 4;
 
     // PH Solenoid Port
@@ -179,11 +178,15 @@ public class Constants {
     public static final double shooterMinShootSpeed = 4000 ;     // rpm
     public static final double shooterFastShootSpeed = 5500;//rpm
 
+    //End Effector
+    public static final double coralEjectVolt = 12;
+    public static final double coralIntakeVolt = 6;
+    public static final double coralEjectTime = 1;
+
     // Climber
     public static final double winchMaxExtension = 88;   // in.
     public static final double winchMinLimit = 1.5; //in
-    public static final double 
-    winchRatchedDelay = .25;  // seconds
+    public static final double winchRatchedDelay = .25;  // seconds
 
     // Pneumatics
     public static final double minPressure = 100;
