@@ -342,7 +342,7 @@ public class Drive extends SubsystemBase {
         
         angleAlignPID.enableContinuousInput(-Math.PI, Math.PI);
 
-        driveAlignPID = new PIDController(1.5, 0, 0);
+        driveAlignPID = new PIDController(2, 0, 0);
 
         // Initialize pose estimation
         swerveDrivePoseEstimator = new SwerveDrivePoseEstimator(
@@ -618,6 +618,9 @@ public class Drive extends SubsystemBase {
         Transform2d distance = currentPose.minus(new Pose2d(point, Rotation2d.fromDegrees(0)));
         double xSpeed = driveAlignPID.calculate(distance.getX());
         double ySpeed = driveAlignPID.calculate(distance.getY());
+        SmartDashboard.putNumber("xSpeed PID", xSpeed);
+        SmartDashboard.putNumber("ySpeed PID", ySpeed);
+
         updateKinematics(xSpeed, ySpeed);
     }
 

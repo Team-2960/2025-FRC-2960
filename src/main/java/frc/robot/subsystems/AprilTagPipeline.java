@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,6 +26,7 @@ import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.simulation.VisionTargetSim;
 import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
 /**
  * Manages connection to a single PhotonVision AprilTag Pipeline
@@ -37,6 +39,7 @@ public class AprilTagPipeline extends SubsystemBase {
 
     private Pose2d last_pose;                       /**< Most recent estimated pose */
     private double last_timestamp;                  /**< Timestamp of the most recent pose estimation */
+    private double maxDistance;
 
     // Shuffleboard 
     private GenericEntry sb_PoseX;
@@ -73,6 +76,7 @@ public class AprilTagPipeline extends SubsystemBase {
 
         last_pose = new Pose2d();
         last_timestamp = 0;
+        maxDistance = settings.max_dist;
         
 
         // Setup Shuffleboard
@@ -123,51 +127,60 @@ public class AprilTagPipeline extends SubsystemBase {
         // visionSim.update(new Pose2d(17.526/2, 8.05/2, new Rotation2d()));
         
         for(var change : unreadResults) {
-            // Get Estimated Position
-            visionEst = pose_est.update(change);
-
-            // Check if a pose was estimated
-            if(visionEst.isPresent()) {
-                
-                Pose2d est_pose = visionEst.get().estimatedPose.toPose2d();
-                double est_timestamp = visionEst.get().timestampSeconds;
-
-                double avg_dist = 0;
-                int tag_count = 0;
-
-                // Get found tag count and average distance
-                for(var tag : visionEst.get().targetsUsed) {
-                    var tag_pose3d = pose_est.getFieldTags().getTagPose(tag.getFiducialId());
-                    
-                    if(!tag_pose3d.isEmpty()) {
-                        Pose2d tag_pose = tag_pose3d.get().toPose2d();
-                        
-                        avg_dist += tag_pose.getTranslation().getDistance(est_pose.getTranslation());
-                        tag_count++;
-                    }
+            List<PhotonTrackedTarget> targetList = new ArrayList<>();
+            for(var unfiltTag: change.getTargets()){
+                if (unfiltTag.getPoseAmbiguity() <= 0.3){
+                    targetList.add(unfiltTag);
                 }
+            }
+            PhotonPipelineResult updatedChange = new PhotonPipelineResult(change.metadata, targetList, change.multitagResult);
+            if (!targetList.isEmpty()){
+                // Get Estimated Position
+                visionEst = pose_est.update(updatedChange);
 
-                // Check if any targets were found
-                if(tag_count > 0) {
-                    Vector<N3> est_std = settings.single_tag_std;
-
-                    // Calculate average target distance
-                    avg_dist /= tag_count;
-
-                    // Decrease standard deviation if multiple tags are found
-                    if(tag_count > 1) est_std = settings.multi_tag_std;
-
-                    // Increase standard deviation based on average distance and ignore single 
-                    // target results over the settings.max_dist
-                    if(tag_count > 1 || avg_dist < settings.max_dist) {
-                        // TODO Add average distance scaler to settings
-                        est_std = est_std.times(1 + (avg_dist * avg_dist / 30));
-                        
-                        last_pose = est_pose;
-                        last_timestamp = est_timestamp;
-                        drive.addVisionPose(est_pose, est_timestamp, est_std);
-                    }
+                // Check if a pose was estimated
+                if(visionEst.isPresent()) {
                     
+                    Pose2d est_pose = visionEst.get().estimatedPose.toPose2d();
+                    double est_timestamp = visionEst.get().timestampSeconds;
+
+                    double avg_dist = 0;
+                    int tag_count = 0;
+
+                    // Get found tag count and average distance
+                    for(var tag : visionEst.get().targetsUsed) {
+                        var tag_pose3d = pose_est.getFieldTags().getTagPose(tag.getFiducialId());
+                        
+                        if(!tag_pose3d.isEmpty()) {
+                            Pose2d tag_pose = tag_pose3d.get().toPose2d();
+                            
+                            avg_dist += tag_pose.getTranslation().getDistance(est_pose.getTranslation());
+                            tag_count++;
+                        }
+                    }
+
+                    // Check if any targets were found
+                    if(tag_count > 0) {
+                        Vector<N3> est_std = settings.single_tag_std;
+
+                        // Calculate average target distance
+                        avg_dist /= tag_count;
+
+                        // Decrease standard deviation if multiple tags are found
+                        if(tag_count > 1) est_std = settings.multi_tag_std;
+
+                        // Increase standard deviation based on average distance and ignore single 
+                        // target results over the settings.max_dist
+                        if(tag_count > 1 || avg_dist < settings.max_dist) {
+                            // TODO Add average distance scaler to settings
+                            est_std = est_std.times(1 + (avg_dist * avg_dist / 30));
+                            
+                            last_pose = est_pose;
+                            last_timestamp = est_timestamp;
+                            drive.addVisionPose(est_pose, est_timestamp, est_std);
+                        }
+                        
+                    }
                 }
             }
         }

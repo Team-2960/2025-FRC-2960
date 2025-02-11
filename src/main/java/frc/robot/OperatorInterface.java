@@ -216,7 +216,15 @@ public class OperatorInterface extends SubsystemBase {
                 drive.setAngleAlign(Rotation2d.fromDegrees(90));
                 
             } else if (driverController.getRawButton(4)){
-                drive.goToReef(new Pose2d(-Constants.robotLength/2, 0, new Rotation2d()));
+                //Shuffle distance should be 0.15875
+                if (driverController.getRawButton(5)){
+                    drive.goToReef(new Pose2d(-Constants.robotLength/2, -0.3, new Rotation2d()));
+
+                } else if (driverController.getRawButton(6)){
+                    drive.goToReef(new Pose2d(-Constants.robotLength/2, 0.3, new Rotation2d()));
+                }else{
+                    drive.goToReef(new Pose2d(-Constants.robotLength/2, 0, new Rotation2d()));
+                }
             }
         }
 
