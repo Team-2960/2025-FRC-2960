@@ -43,9 +43,11 @@ public class Constants {
     public static final ModuleConfig moduleConfig = new ModuleConfig(0.0381, 5.450, 1, new DCMotor(12, 4.69, 257, 1.5, 106.33, 1), 257, 1);
 
     // CAN IDs
+    public static final int elevatorMotor = 0;//TODO set correct value
+
     public static final int coralMotor = 0;//TODO set correct value
 
-    public static final int algaeMotor = 0;
+    public static final int algaeMotor = 0;//TODO set correct value
 
     public static final int intakeRollers = 15;
 
@@ -161,6 +163,18 @@ public class Constants {
 
     public static final double armHeightOffset = 0.26;
 
+    //Elevator
+    public static PIDParam elevatorPIDS = new PIDParam(0.01, 0.0, 0.0);
+    public static FFParam elevatorFFS = FFParam.arm(.1, 2, 0.25, 0.0);
+    
+    public static final double elevatorScale = 1;
+    public static final double maxElevatorAutoSpeed = 1;
+    public static final double elevatorRampDownDist = 1;
+    public static final double elevatorDefTol = .5;
+    public static final double elevatorPosTol = .5;
+
+    public static final double elevatorHeightOffset = 0; //TODO change this value before running**
+    public static final double elevatorLength = 0; //TODO change this value before running**
     // STAGE1 SOFT LIMIT RANGE 46 - 78.1
     public static final double lowerEncLimit = .449;
     public static final double upperEncLimit = .184;
