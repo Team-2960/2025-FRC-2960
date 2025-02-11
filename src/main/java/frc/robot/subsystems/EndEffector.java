@@ -74,11 +74,6 @@ public class EndEffector extends SubsystemBase{
         }
 
         @Override
-        public boolean isFinished(){
-            return !coralPresentPE.get();
-        }
-
-        @Override
         public void end(boolean interupted){
             setStop();
         }
@@ -92,7 +87,7 @@ public class EndEffector extends SubsystemBase{
         coralPresentPE = new DigitalInput(Constants.coralPresentPE);
 
         intakeTrigger = new Trigger(coralPresentPE::get);
-        intakeTrigger.onTrue(new IntakeCmd());
+        intakeTrigger.whileTrue(new IntakeCmd());
 
         ejectCmd = new EjectCmd(Constants.coralEjectTime);
 
