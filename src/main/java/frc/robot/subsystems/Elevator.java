@@ -30,12 +30,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class Elevator extends SubsystemBase {
     private static Elevator elevator;
 
-    public enum ElevatorControlMode {
-        MANUAL_VOLT,
-        MANUAL_RATE,
-        AUTOMATIC
-    }
-
     /**
      * Defines an elevator position state
      */
