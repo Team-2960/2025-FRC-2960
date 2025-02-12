@@ -127,16 +127,9 @@ public class AprilTagPipeline extends SubsystemBase {
         // visionSim.update(new Pose2d(17.526/2, 8.05/2, new Rotation2d()));
         
         for(var change : unreadResults) {
-            List<PhotonTrackedTarget> targetList = new ArrayList<>();
-            for(var unfiltTag: change.getTargets()){
-                if (unfiltTag.getPoseAmbiguity() <= 0.3){
-                    targetList.add(unfiltTag);
-                }
-            }
-            PhotonPipelineResult updatedChange = new PhotonPipelineResult(change.metadata, targetList, change.multitagResult);
-            if (!targetList.isEmpty()){
+
                 // Get Estimated Position
-                visionEst = pose_est.update(updatedChange);
+                visionEst = pose_est.update(change);
 
                 // Check if a pose was estimated
                 if(visionEst.isPresent()) {
@@ -182,7 +175,7 @@ public class AprilTagPipeline extends SubsystemBase {
                         
                     }
                 }
-            }
+            
         }
     }
     

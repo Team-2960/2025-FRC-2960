@@ -476,14 +476,14 @@ public class Elevator extends SubsystemBase {
         if(getCurrentCommand() != elevatorRateCommand) elevatorRateCommand.schedule();
     }
 
-    public void setAngleCommand(double angle){
+    public void setPosCommand(double angle){
         elevatorPosCommand.setPos(angle);
         if(getCurrentCommand() != elevatorPosCommand) elevatorPosCommand.schedule();
     }
 
     public void setStateCommand(String stateName){
         ElevatorStateValues state = elevatorStates.get(stateName);
-        setAngleCommand(state.targetPos);
+        setPosCommand(state.targetPos);
     }
 
     public void setHoldCommand(){

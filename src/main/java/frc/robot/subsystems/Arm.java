@@ -428,6 +428,7 @@ public class Arm extends SubsystemBase {
     }
 
 
+
     //TODO Adjust for 2025 Field and uses
     public void armAutoAlign(){
         Drive drive = Drive.getInstance();

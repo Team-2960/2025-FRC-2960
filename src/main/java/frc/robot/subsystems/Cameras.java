@@ -32,7 +32,7 @@ public class Cameras extends SubsystemBase{
         singleStds = VecBuilder.fill(1, 1, 1);
         multiStds = VecBuilder.fill(1, 1, 1);
         pipeline01 = new AprilTagPipelineSettings(AprilTagFields.k2025Reefscape,
-            new Transform3d(-Constants.robotLength/2, 0, 0.254, new Rotation3d(Math.toRadians(0), Math.toRadians(-30), Math.toRadians(180))),
+            new Transform3d(-Constants.robotLength/2, 0, 0.254, new Rotation3d(Math.toRadians(0), Math.toRadians(0), Math.toRadians(180))),
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, 4, singleStds , multiStds);
         
         pipeline02 = new AprilTagPipelineSettings(AprilTagFields.k2025Reefscape,
