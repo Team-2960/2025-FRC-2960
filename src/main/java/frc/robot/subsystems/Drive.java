@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import frc.robot.Constants;
 import frc.robot.Util.FieldLayout;
 import frc.robot.Util.FieldLayout.ReefFace;
@@ -182,6 +183,24 @@ public class Drive extends SubsystemBase {
 
         }
 
+        public class LinearGoToReefCommand extends Command{
+            Pose2d offset;
+    
+            public LinearGoToReefCommand(Pose2d offset){
+                this.offset = offset;
+                addRequirements(LinearDriveCommands.this);
+            }
+    
+            public void goToReef(Pose2d offset){
+                this.offset = offset;
+            }
+    
+            @Override
+            public void initialize(){
+                Drive.this.linearGoToReef(offset);
+            }
+        }
+
         public static LinearDriveCommands getInstance() {
             if (linearCommands == null) {
                 linearCommands = drive.new LinearDriveCommands();
@@ -282,6 +301,24 @@ public class Drive extends SubsystemBase {
             }
         }
 
+        public class RotGoToReefCommand extends Command{
+            Pose2d offset;
+    
+            public RotGoToReefCommand(Pose2d offset){
+                this.offset = offset;
+                addRequirements(RotationDriveCommands.this);
+            }
+    
+            public void goToReef(Pose2d offset){
+                this.offset = offset;
+            }
+    
+            @Override
+            public void initialize(){
+                Drive.this.rotGoToReef(offset);
+            }
+        }
+
         public static RotationDriveCommands getInstance() {
             if (rotationCommands == null) {
                 rotationCommands = drive.new RotationDriveCommands();
@@ -290,6 +327,7 @@ public class Drive extends SubsystemBase {
             return rotationCommands;
         }
     }
+
 
     //Command classes
     private final LinearDriveCommands linearDriveCommands;
@@ -393,6 +431,7 @@ public class Drive extends SubsystemBase {
         //Make instance of Command Classes
         linearDriveCommands = new LinearDriveCommands();
         rotationDriveCommands = new RotationDriveCommands();
+
 
         pathConstraints = PathConstraints.unlimitedConstraints(12);
     }
@@ -648,6 +687,41 @@ public class Drive extends SubsystemBase {
         setAngleAlign(finalReefFace.getRotation().plus(offset.getRotation()));
     }
 
+    public void linearGoToReef(Pose2d offset){
+        if (getAlliance() == DriverStation.Alliance.Red){
+            offset = new Pose2d(-offset.getX(), -offset.getY(), offset.getRotation());
+        }
+        FieldLayout fieldLayout = FieldLayout.getInstance();
+        //Pose2d nearestReefFace = fieldLayout.getNearestReefFace(getEstimatedPos());
+        Rotation2d reefFaceRotation = fieldLayout.getReefFaceZone(getEstimatedPos());
+        Pose2d zeroFace = fieldLayout.getReef(ReefFace.ZERO);
+        Translation2d poseOffset = new Translation2d(zeroFace.getX() + offset.getX(), zeroFace.getY() + offset.getY())
+            .rotateAround(fieldLayout.getReef(ReefFace.CENTER).getTranslation(), 
+                reefFaceRotation);
+        Pose2d finalReefFace = new Pose2d(poseOffset, reefFaceRotation);
+        this.nearestReefFace = finalReefFace;
+
+        setGoToPoint(finalReefFace.getTranslation());
+    }
+
+    public void rotGoToReef(Pose2d offset){
+        if (getAlliance() == DriverStation.Alliance.Red){
+            offset = new Pose2d(-offset.getX(), -offset.getY(), offset.getRotation());
+        }
+        FieldLayout fieldLayout = FieldLayout.getInstance();
+        //Pose2d nearestReefFace = fieldLayout.getNearestReefFace(getEstimatedPos());
+        Rotation2d reefFaceRotation = fieldLayout.getReefFaceZone(getEstimatedPos());
+        Pose2d zeroFace = fieldLayout.getReef(ReefFace.ZERO);
+        Translation2d poseOffset = new Translation2d(zeroFace.getX() + offset.getX(), zeroFace.getY() + offset.getY())
+            .rotateAround(fieldLayout.getReef(ReefFace.CENTER).getTranslation(), 
+                reefFaceRotation);
+        Pose2d finalReefFace = new Pose2d(poseOffset, reefFaceRotation);
+        this.nearestReefFace = finalReefFace;
+
+        setGoToPoint(finalReefFace.getTranslation());
+        setAngleAlign(finalReefFace.getRotation().plus(offset.getRotation()));
+    }
+
     public Alliance getAlliance(){
         var alliance = DriverStation.getAlliance();
         if (alliance.isPresent()){
@@ -672,10 +746,22 @@ public class Drive extends SubsystemBase {
         field2d.setRobotPose(getEstimatedPos());
         field2d.getObject("fieldTargetPoint").setPose(targetPoint.getX(), targetPoint.getY(), Rotation2d.fromDegrees(0));
         field2d.getObject("nearestReefFace").setPose(nearestReefFace);
-        var currentCommand = Drive.getInstance().rotationDriveCommands.getCurrentCommand();
+        var rotationCommand = Drive.getInstance().rotationDriveCommands.getCurrentCommand();
+        String curRotCommand = "null";
+        if (rotationCommand != null) curRotCommand = rotationCommand.getName();
+        SmartDashboard.putString("Rotation Command", curRotCommand);
+
+        var linearCommand = linearDriveCommands.getCurrentCommand();
+        String curLinearCommand = "null";
+        if (linearCommand != null) curLinearCommand = linearCommand.getName();
+        
+        SmartDashboard.putString("Linear Command", curLinearCommand);
+
+        var curCommand = getCurrentCommand();
         String curCommandName = "null";
-        if (currentCommand != null) curCommandName = currentCommand.getName();
-        SmartDashboard.putString("Current Drive Command", curCommandName);
+        if (curCommand != null) curCommandName = curCommand.getName();
+        
+        SmartDashboard.putString("Drive Command", curCommandName);
     }
 
     private void updateScope() {
@@ -753,6 +839,7 @@ public class Drive extends SubsystemBase {
         goToPointCommand.setPoint(targetPoint);
         if (linearDriveCommands.getCurrentCommand() != goToPointCommand) goToPointCommand.schedule();
     }
+
 
     public void followPath(Command path){
         if (getCurrentCommand() != path){

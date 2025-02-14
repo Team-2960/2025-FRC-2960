@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class Elevator extends SubsystemBase {
     private static Elevator elevator;
@@ -55,6 +56,10 @@ public class Elevator extends SubsystemBase {
     private SparkLimitSwitch elevatorLimitBot;
     
     private SparkLimitSwitch elevatorLimitTop;
+
+    private Trigger elevLimBotTrigger;
+    
+    private Trigger elevLimTopTrigger;
 
     private PIDController elevatorPID;
 
@@ -200,6 +205,32 @@ public class Elevator extends SubsystemBase {
         }
     }
 
+    public class EncoderResetCommand extends Command{
+        private double resetValue;
+
+        public EncoderResetCommand(double resetValue){
+            this.resetValue = resetValue;
+        }
+
+        /**
+         * @param resetValue
+         * The value you want to reset the encoder to
+        */
+        public void resetTo(double resetValue){
+            this.resetValue = resetValue;
+        }
+
+        @Override
+        public void initialize(){
+            elevatorEncoder.setPosition(resetValue);
+        }
+        
+        @Override
+        public boolean isFinished(){
+            return true;
+        }
+    }
+
     public class ElevatorBrakeModeCommand extends Command{
         
     }
@@ -227,7 +258,16 @@ public class Elevator extends SubsystemBase {
 
         elevatorFFS0 = new ElevatorFeedforward(Constants.elevatorFFS.kS, Constants.elevatorFFS.kG, Constants.elevatorFFS.kV);
 
-        //Auton Positions
+        elevLimBotTrigger = new Trigger(elevatorLimitBot::isPressed);
+        
+        elevLimTopTrigger = new Trigger(elevatorLimitTop::isPressed);
+
+
+        //TODO change reset values to whatever they need to be
+        elevLimBotTrigger.whileTrue(new EncoderResetCommand(0));
+
+        elevLimTopTrigger.whileTrue(new EncoderResetCommand(0));
+
         // TODO Set abs encoder offset
 
         // Set control mode
@@ -444,6 +484,7 @@ public class Elevator extends SubsystemBase {
         // elevatorMotor.getConfigurator().apply(motorConfigs);
         // elevatorMotor2.getConfigurator().apply(motorConfigs);
     }
+
 
     /**
      * Updates shuffleboard
