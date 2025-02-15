@@ -143,7 +143,6 @@ public class AprilTagPipeline extends SubsystemBase {
                     // Get found tag count and average distance
                     for(var tag : visionEst.get().targetsUsed) {
                         var tag_pose3d = pose_est.getFieldTags().getTagPose(tag.getFiducialId());
-                        
                         if(!tag_pose3d.isEmpty()) {
                             Pose2d tag_pose = tag_pose3d.get().toPose2d();
                             
