@@ -1,13 +1,11 @@
 package frc.robot.subsystems;
 
-import com.ctre.phoenix6.configs.MotorOutputConfigs;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.InvertedValue;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.servohub.ServoHub.ResetMode;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.AbsoluteEncoderConfig;
 import com.revrobotics.spark.config.SparkFlexConfig;
@@ -25,19 +23,18 @@ import frc.robot.Constants;
 
 public class Swerve extends SubsystemBase {
 
-    private final TalonFX mDrive;
+    private final SparkFlex mDrive;
 
     private final SparkMax mAngle;
 
     private final SparkAbsoluteEncoder encAngle;
+    private final RelativeEncoder encDrive;
 
     private final PIDController drivePIDcontroller;
     private final SimpleMotorFeedforward driveFeedforward;
 
     private final PIDController anglePIDController;
     private final SimpleMotorFeedforward angleFeedforward;
-
-    private TalonFXConfiguration talonConfig;
 
     private SwerveModuleState desiredState;
 
@@ -54,14 +51,18 @@ public class Swerve extends SubsystemBase {
 
     public Swerve(int driveMotorID, int angleMotorID, String swerveName, Rotation2d swerveOffset, boolean invertDrive) {
         // Initialize Motors
-        mDrive = new TalonFX(driveMotorID);
+        mDrive = new SparkFlex(driveMotorID, MotorType.kBrushless);
         mDrive.setInverted(invertDrive);
         swerveAngleOffset = swerveOffset;
+
         mAngle = new SparkMax(angleMotorID, MotorType.kBrushless);
         mAngle.configure(new SparkFlexConfig().apply(new AbsoluteEncoderConfig().inverted(true)), 
                          com.revrobotics.spark.SparkBase.ResetMode.kResetSafeParameters, 
                          PersistMode.kPersistParameters);
         mAngle.setInverted(true);
+
+        // Initialize drive encoder
+        encDrive = mDrive.getEncoder();
 
         // Initialize Angle Sensor
         encAngle = mAngle.getAbsoluteEncoder();
@@ -103,20 +104,6 @@ public class Swerve extends SubsystemBase {
      * @return current swerve module angle
      */
     public Rotation2d getAnglePos() {
-        
-        //double anglePos = Rotation2d.fromRotations(encAngle.getPosition()).plus(swerveAngleOffset).getDegrees();
-        /*double anglePos = Rotation2d.fromRotations(encAngle.getPosition()).getDegrees() + swerveAngleOffset.getDegrees();
-        if(anglePos > 360){
-            anglePos = anglePos-360;
-        }
-  
-        if(anglePos < 0){
-            anglePos = anglePos+360;
-        }
-
-
-        return Rotation2d.fromDegrees(anglePos);
-        */
         return Rotation2d.fromRotations(encAngle.getPosition());
     }
 
@@ -133,7 +120,7 @@ public class Swerve extends SubsystemBase {
      * @return current swerve module drive distance
      */
     public double getDrivePos() {
-        return mDrive.getPosition().getValueAsDouble() * Constants.driveRatio;
+        return encDrive.getPosition() * Constants.driveRatio;
     }
 
     /**
@@ -142,7 +129,7 @@ public class Swerve extends SubsystemBase {
      * @return current swerve module drive speed
      */
     public double getDriveVelocity() {
-        return mDrive.getVelocity().getValueAsDouble() * Constants.driveRatio;
+        return encDrive.getVelocity() * Constants.driveRatio;
     }
 
     /**
@@ -253,6 +240,6 @@ public class Swerve extends SubsystemBase {
         sb_angleVolt.setDouble(mAngle.getBusVoltage() * mAngle.getAppliedOutput());
         sb_driveSetPoint.setDouble(desiredState.speedMetersPerSecond);
         sb_driveCurrent.setDouble(getDriveVelocity());
-        sb_driveVolt.setDouble(mDrive.getMotorVoltage().getValueAsDouble());
+        sb_driveVolt.setDouble(mDrive.getAppliedOutput() * mDrive.getBusVoltage());
     }
 }
