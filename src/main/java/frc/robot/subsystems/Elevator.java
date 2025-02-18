@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import frc.robot.Constants;
+import frc.robot.subsystems.Arm.ArmHoldCommand;
 
 import java.util.Map;
 
@@ -11,6 +12,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -278,35 +280,6 @@ public class Elevator extends SubsystemBase {
         return Math.abs(targetPos - currentPos) < posTol;
     }
 
-
-
-
-    /**
-     * Determines the current target elevator control rate
-     * 
-     * @return target elevator control rate based on current settings
-     */
-
-    /* 
-     private double getTargetElevatorRate() {
-        double targetSpeed = 0;
-
-        switch (control_mode) {
-            case AUTOMATIC:
-                targetSpeed = calcTrapezoidalRate();
-                break;
-            case MANUAL_RATE:
-                targetSpeed = manual_rate;
-                break;
-            default:
-                targetSpeed = 0;
-                break;
-        }
-
-        return targetSpeed;
-    }
-    */
-
     /**
      * Calculate the trapezoidal control rate for the current elevator target position
      * 
@@ -388,6 +361,11 @@ public class Elevator extends SubsystemBase {
         sb_posPosRotations.setDouble(elevatorEncoder.getPosition());
     }
 
+    public void setVoltCommand(double voltage) {
+        elevatorVoltageCommand.setVoltage(voltage);
+        if(getCurrentCommand() != elevatorVoltageCommand) elevatorVoltageCommand.schedule();
+    }
+
     public void setRateCommand(double rate){
         elevatorRateCommand.setRate(rate);
         if(getCurrentCommand() != elevatorRateCommand) elevatorRateCommand.schedule();
@@ -406,11 +384,12 @@ public class Elevator extends SubsystemBase {
     public void setHoldCommand(){
         if(getCurrentCommand() != elevatorHoldCommand) new ElevatorHoldCommand().schedule();
     }
-
-    public Command getElevatorCommand(){
-        return getCurrentCommand();
-    }
     
+    public void stopCommands() {
+        Command currentCmd = getCurrentCommand();
+        if(currentCmd != null) currentCmd.cancel();
+    }
+
     /**
      * Subsystem periodic method
      */

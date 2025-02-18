@@ -322,6 +322,11 @@ public class Arm extends SubsystemBase {
         sb_angleTargetVolt.setDouble(targetVolt);
     }
 
+    public void setVoltCommand(double voltage) {
+        armVoltageCommand.setVoltage(voltage);
+        if(getCurrentCommand() != armVoltageCommand) armVoltageCommand.schedule();
+    }
+
     public void setRateCommand(double rate){
         armRateCommand.setRate(rate);
         if(getCurrentCommand() != armRateCommand) armRateCommand.schedule();
@@ -340,9 +345,10 @@ public class Arm extends SubsystemBase {
     public void setHoldCommand(){
         if(getCurrentCommand() != armHoldCommand) new ArmHoldCommand().schedule();
     }
-
-    public Command getArmCommand(){
-        return getCurrentCommand();
+    
+    public void stopCommands() {
+        Command currentCmd = getCurrentCommand();
+        if(currentCmd != null) currentCmd.cancel();
     }
     
     /**
