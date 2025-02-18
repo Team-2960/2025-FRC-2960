@@ -6,12 +6,9 @@ package frc.robot;
 
 import java.util.Optional;
 
-import com.ctre.phoenix6.mechanisms.swerve.LegacySwerveRequest.RobotCentric;
-import com.fasterxml.jackson.databind.util.RootNameLookup;
 
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.Relay.Value;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Auton.RobotContainer;
@@ -33,7 +30,6 @@ public class Robot extends TimedRobot {
      * for any
      * initialization code.
      */
-    private Optional<Command> autonCommand;
     private RobotContainer robotContainer;
     private Drive drive;
     private OperatorInterface oi;
@@ -63,7 +59,6 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousInit() {
-        //if (autonCommand.isPresent()) autonCommand.get().schedule();
         autonomousCommand = robotContainer.getAutonomousCommand();
         if(autonomousCommand != null){
             autonomousCommand.schedule();
