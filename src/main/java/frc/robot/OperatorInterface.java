@@ -5,7 +5,6 @@ import frc.robot.Util.FieldLayout.ReefFace;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Drive;
-import frc.robot.subsystems.Climber.ClimberStates;
 
 import java.util.ArrayList;
 import java.util.List;
