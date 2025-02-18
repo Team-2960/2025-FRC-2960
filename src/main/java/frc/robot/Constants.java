@@ -144,11 +144,18 @@ public class Constants {
 
     // Climber
     public static final double winchDiam = 1.5; // in.
-    public static final double winchCircum = Math.PI * winchDiam * (15/36); // in.
+    public static final double winchCircum = Math.PI * winchDiam; // in.
 
     public static final double winchMaxExtension = 88;   // in.
     public static final double winchMinLimit = 1.5; //in
     public static final double winchRatchedDelay = .25;  // seconds
+
+    public static final double climberExtDist = 0; // in.
+    public static final double climberRetDist = 0; // in.
+
+    public static final double climberExtVolt = 6;      // voltage
+    public static final double climberRetVolt = 12;     // voltage
+    public static final double climberResetVolt = 6;    // voltage
 
     // Cameras
     public static final Transform3d robotToFrontCamera = new Transform3d(
