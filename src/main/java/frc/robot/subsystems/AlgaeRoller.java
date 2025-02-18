@@ -29,6 +29,7 @@ public class AlgaeRoller extends SubsystemBase{
     private SparkFlex algaeDrive;
 
     private EjectCmd ejectCmd;
+    private IntakeCmd intakeCmd;
     
     private GenericEntry sb_currentCmd;
     private GenericEntry sb_motorVoltage;
@@ -80,6 +81,7 @@ public class AlgaeRoller extends SubsystemBase{
         algaeDrive = new SparkFlex(Constants.algaeRollerMotor, MotorType.kBrushless);
 
         ejectCmd = new EjectCmd();
+        intakeCmd = new IntakeCmd();
 
         //Setup Shuffleboard
         var layout = Shuffleboard.getTab("Status")
@@ -96,9 +98,22 @@ public class AlgaeRoller extends SubsystemBase{
      * Schedules eject command
      */
     public void runEject(){
-        if(getCurrentCommand() != ejectCmd){
-            ejectCmd.schedule();
-        }
+        if(getCurrentCommand() != ejectCmd) ejectCmd.schedule();
+    }
+
+    /**
+     * Schedules intake command
+     */
+    public void runIntake(){
+        if(getCurrentCommand() != intakeCmd) intakeCmd.schedule();
+    }
+
+    /**
+     * Schedules stop all commands
+     */
+    public void stop(){
+        Command currentCmd = getCurrentCommand();
+        if(currentCmd != null) currentCmd.cancel();
     }
 
     /**
