@@ -159,10 +159,6 @@ public class Arm extends SubsystemBase {
         }
     }
 
-    public class ArmBrakeModeCommand extends Command{
-        
-    }
-
 
     private final ArmVoltageCommand armVoltageCommand;
     private final ArmRateCommand armRateCommand;
