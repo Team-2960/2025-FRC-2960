@@ -54,8 +54,7 @@ public class Constants {
     public static final int winchMotorL = 10;
     public static final int winchMotorR = 9;
     
-    public static final int armMotor1 =11;
-    public static final int armMotor2 = 12;
+    public static final int armMotor = 11;
 
     public static final int frontLeftDriveM = 3;
     public static final int frontLeftAngleM = 4;

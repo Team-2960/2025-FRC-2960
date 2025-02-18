@@ -125,9 +125,6 @@ public class OperatorInterface extends SubsystemBase {
         sb_rumblePower = rumble_layout.add("Rumble Power", 0).getEntry();
         sb_rumbleTimer = rumble_layout.add("Rumble Timer", 0).getEntry();
         sb_isEndGame = rumble_layout.add("Is End Game", false).getEntry();
-
-        
-        
     }
     
 
@@ -138,7 +135,7 @@ public class OperatorInterface extends SubsystemBase {
     public void periodic() {
         if (DriverStation.isTeleop()) {
             updateDrive();
-            updateArm();
+            updateCoralPlacement();
             updateClimber();
             updateDriverFeedback();
         }
@@ -154,7 +151,7 @@ public class OperatorInterface extends SubsystemBase {
         double maxSpeed = (slowSpeed ? .5 : 1) * Constants.maxSpeed;
         double maxAngleRate = (slowSpeed ? .5 : 1) * Constants.maxAngularSpeed;
 
-        boolean fieldRelative = true;// !driverController.getRawButton(1);
+        boolean fieldRelative = true;
         var alliance = DriverStation.getAlliance();
         double alliance_dir = alliance.isPresent() && alliance.get() == Alliance.Red ? 1 : -1;
 
@@ -166,20 +163,9 @@ public class OperatorInterface extends SubsystemBase {
         double ySpeed = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.05) * maxSpeed * alliance_dir;
         double rSpeed = rAxis * maxAngleRate * -1;
 
-        Climber climber = Climber.getInstance();
-
         if (driverController.getPOV() == 0){
-            //drive.presetPosition(new Pose2d(0.0, 0.0, new Rotation2d()));
             drive.presetPosition(FieldLayout.getReef(ReefFace.ZERO).plus(new Transform2d(-Constants.robotLength/2, 0, new Rotation2d())));
         }
-
-
-        if (driverController.getRawButton(8)) {
-            climber.setClimbState(ClimberStates.CLIMB);
-        }
-
-        
-        climber.setRatchet(driverController.getRawButton((5)));
 
         if (!driverController.getRawButton(3) && !driverController.getRawButton(4)){
             if (Math.abs(xAxis) > 0.05 || Math.abs(yAxis) > 0.05 ){
@@ -203,9 +189,6 @@ public class OperatorInterface extends SubsystemBase {
             }
             else if (driverController.getRawButton(2)){
                 drive.setPointAlign(new Translation2d(0, 0), Rotation2d.fromDegrees(0));
-
-            // } else if (driverController.getRawButton(4)){
-            //     drive.setReefAlign(new Rotation2d());
 
             } else{
                 drive.setRotationRate(0);
@@ -235,103 +218,27 @@ public class OperatorInterface extends SubsystemBase {
         sb_driveFR.setBoolean(fieldRelative);
     }
 
-    /**
-     * Updates the controls for the arm
-     */
-    private void updateArm() {
-        Arm arm = Arm.getInstance();
-
-        // Set Arm Presets
-        if (operatorController.getRawButton(1)) {
-            arm.setStateCommand("Speaker");
-        } else if (operatorController.getRawButton(2)) {
-            arm.setStateCommand("lineSpeaker");
-        } else if (operatorController.getRawButton(3)) {
-            arm.setStateCommand("Amp");// amp
-        } else if (operatorController.getRawButton(4)) {
-            arm.setStateCommand("Intake");
-        } else if (operatorController.getPOV() == 90 && operatorController.getPOV() != 270) {
-            arm.armAutoAlign();
-        } else if (operatorController.getPOV() == 270 && operatorController.getPOV() != 90) {
-            arm.setStateCommand("home");
-        }
-
-        // TODO Map Podium shot preset
-
-        // Manual Arm Angle Control
-        double armManual = operatorController.getRawAxis(1);
-        double armManualRate = armManual * Constants.maxArmSpeed;
-        double tolerance = .1;
-
-        if (Math.abs(armManual) > tolerance) {
-            arm.setTolRateCommand(armManualRate, (tolerance + 0.3)* Constants.maxArmSpeed);
-        }
-
-        sb_armRate.setDouble(armManualRate);
+    private void updateCoralPlacement() {
+        // TODO Implement
     }
 
+
+    private void updateAlgaeGrabber() {
+        // TODO Implements
+    }
 
     /**
      * Updates the controls for the climber
      */
     private void updateClimber() {
-        Climber climber = Climber.getInstance();
-        // TODO implement climber controls
-        if (operatorController.getRawButton(7) || driverController.getRawButton(7)) {
-            climber.setClimbState(ClimberStates.CLIMB_START);
-        } else if (operatorController.getRawButton(8) || driverController.getRawButton(8)) {
-            climber.setClimbState(ClimberStates.CLIMB);
-        } else {
-            climber.setClimbState(ClimberStates.IDLE);
-        }
-
+        // TODO Implement
     }
 
     /**
      * Updates the driver feedback state
      */
     private void updateDriverFeedback() {
-        double rumblePower = 0;
-        
-        AddressableLEDBuffer ledColor = led_idle;
-
-        boolean isEndGame = DriverStation.isTeleop() && DriverStation.getMatchTime() <= 50 && DriverStation.getMatchType() != MatchType.None;
-
-
-        // Rumble the controllers at full power for 1 second when the end game is about
-        // to start
-        if (isEndGame) {
-            if (!lastIsEndGame) {
-                rumbleTimer.restart();
-                ledTimer.restart();
-            }
-
-            // if(rumbleTimer.get() < 1) rumblePower = 1;TODO add this back later
-
-            double ledTime = ledTimer.get();
-            if (ledTime < 1) {
-                if (ledTime % .2 < .1) {
-                    ledColor = led_endgame1;
-                } else {
-                    ledColor = led_endgame2;
-                }
-            }
-        }
-
-        // Update controller rumble
-        driverController.setRumble(RumbleType.kBothRumble, rumblePower);
-        operatorController.setRumble(RumbleType.kBothRumble, rumblePower);
-
-        // Update LEDs
-        leds.setData(ledColor);
-
-        // Update state transition checks
-        lastIsEndGame = isEndGame;
-
-        // Update UI
-        sb_rumblePower.setDouble(rumblePower);
-        sb_rumbleTimer.setDouble(rumbleTimer.get());
-        sb_isEndGame.setBoolean(isEndGame);
+        // TODO Implement
     }
 
     /**
