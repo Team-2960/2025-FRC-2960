@@ -139,6 +139,13 @@ public class Constants {
     public static final double coralEjectTime = 1;
 
     //Algae Roller
+    public static final PIDParam algaeAnglePID = new PIDParam(0.01, 0.0, 0.0);
+    public static final FFParam algaeAngleFF = FFParam.arm(.1, 2, 0.25, 0.0);
+
+    
+    public static final double maxAlgaeAutoSpeed = 1 * Math.PI;  //radians /s
+    public static final Rotation2d algaeRampDownDist = Rotation2d.fromDegrees(20);
+
     public static final double algaeEjectVolt = 6;
     public static final double algaeIntakeVolt = 6;
 
