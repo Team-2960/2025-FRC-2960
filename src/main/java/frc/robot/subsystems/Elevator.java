@@ -1,26 +1,17 @@
 package frc.robot.subsystems;
 
 import frc.robot.Constants;
-import frc.robot.Util.FieldLayout;
-import frc.robot.Util.FieldLayout.ReefFace;
 
 import java.util.Map;
 
-import com.ctre.phoenix6.controls.VoltageOut;
-import com.ctre.phoenix6.hardware.TalonFX;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLimitSwitch;
-import com.revrobotics.spark.SparkRelativeEncoder;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.GenericEntry;
-import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.DutyCycleEncoder;
-import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -30,24 +21,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class Elevator extends SubsystemBase {
     private static Elevator elevator;
-
-    /**
-     * Defines an elevator position state
-     */
-    public class ElevatorStateValues {
-        public double targetPos;
-        public double angleTol;
-
-        public ElevatorStateValues(double targetPos) {
-            this.targetPos = targetPos;
-            this.angleTol = Constants.elevatorDefTol;
-        }
-
-        public ElevatorStateValues(double targetPos, double angleTol) {
-            this.targetPos = targetPos;
-            this.angleTol = angleTol;
-        }
-    }
 
     private SparkFlex elevatorMotor;
 
@@ -63,43 +36,20 @@ public class Elevator extends SubsystemBase {
 
     private PIDController elevatorPID;
 
-    private ElevatorFeedforward elevatorFFS0;
-
-    private final ElevatorStateValues defaultState = new ElevatorStateValues(0);
-
-    private ElevatorStateValues targetState = defaultState;
+    private ElevatorFeedforward elevatorFF;
 
     private double elevatorVolt;
     private double elevatorRate;
 
-    private Map<String, ElevatorStateValues> elevatorStates = Map.of(
-            "Match Start", new ElevatorStateValues(1),
-            "Home", defaultState,
-            "Intake", new ElevatorStateValues(2),
-            "Speaker", new ElevatorStateValues(3),
-            "lineSpeaker", new ElevatorStateValues(4),
-            "longShot", new ElevatorStateValues(5),
-            "Amp", new ElevatorStateValues(6),
-            "Climb", new ElevatorStateValues(7),
-            "AmpSideShoot", new ElevatorStateValues(8),
-            "home", new ElevatorStateValues(9)
-            //"Climb Balance", new ElevatorStateValues(Rotation2d.fromDegrees(97.38), 0),
-            //"Trap Score", new ElevatorStateValues(Rotation2d.fromDegrees(70), 2)
-        );
-
-    private GenericEntry sb_elevatorMode;
+    private GenericEntry sb_elevatorCmd;
     private GenericEntry sb_posPosCurrent;
     private GenericEntry sb_posPosSetPoint;
     private GenericEntry sb_posRateCurrent;
     private GenericEntry sb_posRateSetPoint;
     private GenericEntry sb_posRateError;
-    private GenericEntry sb_posM1Volt;
-    private GenericEntry sb_posM2Volt;
+    private GenericEntry sb_posVolt;
     private GenericEntry sb_posTargetVolt;
     private GenericEntry sb_posPosRotations;
-    private GenericEntry sb_atPos;
-    private GenericEntry sb_atTarget;
-    private GenericEntry sb_currentElevatorCommand;
 
 
     //Command to set the voltage of the Elevator
@@ -231,10 +181,6 @@ public class Elevator extends SubsystemBase {
         }
     }
 
-    public class ElevatorBrakeModeCommand extends Command{
-        
-    }
-
 
     private final ElevatorVoltageCommand elevatorVoltageCommand;
     private final ElevatorRateCommand elevatorRateCommand;
@@ -256,7 +202,7 @@ public class Elevator extends SubsystemBase {
 
         elevatorPID = new PIDController(Constants.elevatorPIDS.kP, Constants.elevatorPIDS.kP, Constants.elevatorPIDS.kP);
 
-        elevatorFFS0 = new ElevatorFeedforward(Constants.elevatorFFS.kS, Constants.elevatorFFS.kG, Constants.elevatorFFS.kV);
+        elevatorFF = new ElevatorFeedforward(Constants.elevatorFFS.kS, Constants.elevatorFFS.kG, Constants.elevatorFFS.kV);
 
         elevLimBotTrigger = new Trigger(elevatorLimitBot::isPressed);
         
@@ -266,16 +212,11 @@ public class Elevator extends SubsystemBase {
         //TODO change reset values to whatever they need to be
         elevLimBotTrigger.whileTrue(new EncoderResetCommand(0));
 
-        elevLimTopTrigger.whileTrue(new EncoderResetCommand(0));
-
         // TODO Set abs encoder offset
 
         // Set control mode
         elevatorVolt = 0;
         elevatorRate = 0;
-
-        // Set target state to current state
-        targetState = new ElevatorStateValues(getElevatorPos());
 
         // Initialize Timer        
         shuffleBoardInit();
@@ -294,19 +235,15 @@ public class Elevator extends SubsystemBase {
                 .getLayout("Elevator", BuiltInLayouts.kList)
                 .withSize(2, 6);
 
-        sb_elevatorMode = layout.add("Elevator Control Mode", "").getEntry();
+        sb_elevatorCmd = layout.add("Elevator Command", "").getEntry();
         sb_posPosCurrent = layout.add("Pos Position Current", 0).getEntry();
         sb_posPosSetPoint = layout.add("Pos Position Set Point", 0).getEntry();
         sb_posRateCurrent = layout.add("Pos Rate Current", 0).getEntry();
         sb_posRateSetPoint = layout.add("Pos Rate Set Point", 0).getEntry();
         sb_posRateError = layout.add("Pos Rate Error", 0).getEntry();
-        sb_posM1Volt = layout.add("Pos Motor 1 Voltage", 0).getEntry();
-        sb_posM2Volt = layout.add("Pos Motor 2 Voltage", 0).getEntry();
+        sb_posVolt = layout.add("Pos Motor Voltage", 0).getEntry();
         sb_posTargetVolt = layout.add("Pos Target Voltage", 0).getEntry();
         sb_posPosRotations = layout.add("Elevator Encoder Rotations Output", 0).getEntry();
-        sb_atPos = layout.add("At Pos", false).getEntry();
-        sb_atTarget = layout.add("At Target", false).getEntry();
-        //sb_currentElevatorCommand = layout.add("Current Elevator Command", getCurrentCommand().getName()).getEntry();
 
     }
 
@@ -391,12 +328,6 @@ public class Elevator extends SubsystemBase {
         setElevatorRate(targetSpeed);
     }
 
-    private void setElevatorState(ElevatorStateValues elevatorState){
-        double targetPos = elevatorState.targetPos;
-
-        setElevatorPos(targetPos);
-    }
-
     /**
      * Updates the control of the elevator rate
      * 
@@ -406,13 +337,7 @@ public class Elevator extends SubsystemBase {
         double result = this.elevatorRate;
 
         double currentPos = getElevatorPos();
-        double posRate = getElevatorVelocity();
-
-        ElevatorFeedforward elevatorFF = elevatorFFS0;
-
-        elevatorPID.setPID(Constants.elevatorPIDS.kP, Constants.elevatorPIDS.kI, Constants.elevatorPIDS.kD);
-        elevatorFF = elevatorFFS0;
-            
+        double posRate = getElevatorVelocity();            
 
         sb_posRateError.setDouble(posRate - targetSpeed);
 
@@ -436,18 +361,11 @@ public class Elevator extends SubsystemBase {
      */
     //TODO Change to use Spark Flex
     private void setMotorVolt(double voltage) {
-        // Set Motors
-        VoltageOut settings = new VoltageOut(voltage);
-        settings.EnableFOC = true;
-        //elevatorMotor.setControl(settings); TODO
+        elevatorMotor.setVoltage(voltage);
         
         //Shuffleboard display
-        this.elevatorVolt = settings.Output;
+        this.elevatorVolt = voltage;
         
-    }
-
-    public ElevatorStateValues getState(){
-        return targetState;
     }
 
 
@@ -455,12 +373,17 @@ public class Elevator extends SubsystemBase {
      * Updates shuffleboard
      */
     private void updateUI(double targetRate, double targetVolt) {
-        sb_elevatorMode.setString("");
+        Command currentCmd = getCurrentCommand();
+        String currentCmdName = "<null>";
+
+        if(currentCmd != null) currentCmdName = currentCmd.getName();   
+
+        sb_elevatorCmd.setString(currentCmdName);
         sb_posPosCurrent.setDouble(getElevatorPos());
-        sb_posPosSetPoint.setDouble(targetState.targetPos);
+        sb_posPosSetPoint.setDouble(elevatorPosCommand.elevatorPos);
         sb_posRateCurrent.setDouble(getElevatorVelocity());
         sb_posRateSetPoint.setDouble(targetRate);
-        sb_posM1Volt.setDouble(elevatorMotor.getBusVoltage());//TODO
+        sb_posVolt.setDouble(elevatorMotor.getAppliedOutput() * elevatorMotor.getBusVoltage());
         sb_posTargetVolt.setDouble(targetVolt);
         sb_posPosRotations.setDouble(elevatorEncoder.getPosition());
     }
@@ -478,11 +401,6 @@ public class Elevator extends SubsystemBase {
     public void setPosCommand(double angle){
         elevatorPosCommand.setPos(angle);
         if(getCurrentCommand() != elevatorPosCommand) elevatorPosCommand.schedule();
-    }
-
-    public void setStateCommand(String stateName){
-        ElevatorStateValues state = elevatorStates.get(stateName);
-        setPosCommand(state.targetPos);
     }
 
     public void setHoldCommand(){
