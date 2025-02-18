@@ -436,10 +436,6 @@ public class Elevator extends SubsystemBase {
      */
     //TODO Change to use Spark Flex
     private void setMotorVolt(double voltage) {
-        // Set soft limits
-        if (elevatorEncoder.getPosition() < Constants.upperEncLimit) {//TODO check if this is correct
-            voltage = Math.min(0, voltage);
-        }
         // Set Motors
         VoltageOut settings = new VoltageOut(voltage);
         settings.EnableFOC = true;
@@ -450,39 +446,8 @@ public class Elevator extends SubsystemBase {
         
     }
 
-
-    //TODO Adjust for 2025 Field and uses (change this for elevator)
-    public void elevatorAutoAlign(){
-        Drive drive = Drive.getInstance();
-        double distance = Math.abs(FieldLayout.getReef(ReefFace.CENTER).getX() - drive.getEstimatedPos().getX()) + 
-            ((Math.cos(getElevatorPos() - (Rotation2d.fromDegrees(11)).getRadians()) * Constants.elevatorLength) + 0.2413);
-        double height =  /*change this value ->*/0 - Constants.elevatorHeightOffset - (Math.sin(getElevatorPos() - (Rotation2d.fromDegrees(11)).getRadians()) * Constants.elevatorLength);
-        double desiredAngle = 90 - Math.toDegrees(Math.atan2(height, distance));
-        if(desiredAngle < 23){
-            desiredAngle = 23;
-        }else if(desiredAngle > 100 ){
-            desiredAngle = 100;
-        }
-        new Rotation2d();
-        ElevatorStateValues targetState = new ElevatorStateValues(desiredAngle);
-        setElevatorState(targetState);
-    }
-
-
     public ElevatorStateValues getState(){
         return targetState;
-    }
-
-    /**
-     * Updates the brake mode control of the
-     */
-    private void updateBrakeMode() {
-        // var motorConfigs = new MotorOutputConfigs();
-
-        // motorConfigs.NeutralMode = !brakeModeDisableBtn.get() ? NeutralModeValue.Coast : NeutralModeValue.Brake;
-
-        // elevatorMotor.getConfigurator().apply(motorConfigs);
-        // elevatorMotor2.getConfigurator().apply(motorConfigs);
     }
 
 
@@ -498,7 +463,6 @@ public class Elevator extends SubsystemBase {
         sb_posM1Volt.setDouble(elevatorMotor.getBusVoltage());//TODO
         sb_posTargetVolt.setDouble(targetVolt);
         sb_posPosRotations.setDouble(elevatorEncoder.getPosition());
-        //sb_currentElevatorCommand.setString(getCurrentCommand().getName());
     }
 
     public void setRateCommand(double rate){

@@ -24,68 +24,39 @@ public class Constants {
     public static final double wheelInset = 1.75 * .0254;   // Meters
     public static final double robotDiag = Math.sqrt(Math.pow(robotWidth, 2) + Math.pow(robotLength, 2)); // Meters
 
-    public static final double autoClearance = .25; // Meters
-
-    public static final double driveGearRatio = 5.08;
-    public static final double wheelCirc = 2.95 * .0254 * Math.PI; // Meters
-    public static final double driveRatio =  Constants.wheelCirc / Constants.driveGearRatio;   // Meters
-
-    public static final Transform3d robotToCamera = new Transform3d(
-        new Translation3d(-robotLength/2+.040, 0, .206), 
-        new Rotation3d(36 * Math.PI / 180, 0, Math.PI)
-    );  
-
-    public static final double winchDiam = 1.5; // in.
-    public static final double winchCircum = Math.PI * winchDiam * (15/36); // in.
-
     public static final int revTBEncCountPerRev = 4096;
 
     public static final ModuleConfig moduleConfig = new ModuleConfig(0.0381, 5.450, 1, new DCMotor(12, 4.69, 257, 1.5, 106.33, 1), 257, 1);
 
     // CAN IDs
-    public static final int elevatorMotor = 0;//TODO set correct value
+    public static final int elevatorMotor = 11;
 
-    public static final int coralMotor = 0;//TODO set correct value
+    public static final int coralMotor = 13;
 
-    public static final int algaeMotor = 0;//TODO set correct value
+    public static final int algaeAngleMotor = 4;
+    public static final int algaeRollerMotor = 3;
 
-    public static final int intakeRollers = 15;
+    public static final int climberMotor = 14;
 
-    public static final int winchMotorL = 10;
-    public static final int winchMotorR = 9;
-    
-    public static final int armMotor = 11;
+    public static final int armMotor = 12;
 
-    public static final int frontLeftDriveM = 3;
-    public static final int frontLeftAngleM = 4;
-    public static final int frontRightDriveM = 1;
-    public static final int frontRightAngleM = 2;
+    public static final int frontLeftDriveM = 8;
+    public static final int frontLeftAngleM = 7;
+    public static final int frontRightDriveM = 10;
+    public static final int frontRightAngleM = 9;
 
-    public static final int backLeftDriveM = 5;
-    public static final int backLeftAngleM = 6;
-    public static final int backRightDriveM = 7;
-    public static final int backRightAngleM = 8;
-
-    public static final int phCANID = 20;
+    public static final int backLeftDriveM = 2;
+    public static final int backLeftAngleM = 1;
+    public static final int backRightDriveM = 6;
+    public static final int backRightAngleM = 5;
 
     // Digital Input Ports
-    public static final int armDCEncoderPort = 0;
-    public static final int armQuadEncoderAPort = 1;
-    public static final int armQuadEncoderBPort = 2;
-    public static final int coralPresentPE = 3;//TODO update port
-    public static final int armBrakeModeBtn = 4;
-
-    // PH Solenoid Port
-    public static final int armExt1Rev = 8;
-    public static final int armExt1For = 9;
-    public static final int armExt2Rev = 7;
-    public static final int armExt2For = 6;
-    public static final int climbRatchetRev = 4;
-    public static final int climbRatchetFor = 5;
+    public static final int coralPresentPE = 0;
 
     // Auton
-    public static double autonRampDownSpeed = 0.5;  
-    public static double minSpeed = 2;              // m/s
+    public static final double autoClearance = .25; // Meters
+    public static final double autonRampDownSpeed = 0.5;  
+    public static final double minSpeed = 2;              // m/s
     //TODO Change MOI
     public static final RobotConfig robotConfig = new RobotConfig(52.16, 6.883, moduleConfig, robotWidth);
 
@@ -100,6 +71,10 @@ public class Constants {
 
 
     // Drive
+    public static final double driveGearRatio = 5.08;
+    public static final double wheelCirc = 2.95 * .0254 * Math.PI; // Meters
+    public static final double driveRatio =  Constants.wheelCirc / Constants.driveGearRatio;   // Meters
+
     public static PIDParam drivePID = new PIDParam(.5, 0.0, 0.0);
     public static PIDConstants drivePIDConstants = new PIDConstants(.5, 0.0, 0.0);
     public static FFParam driveFF = FFParam.simpleMotor(0.0, 2.25, 0.0);
@@ -122,93 +97,72 @@ public class Constants {
     public static final PIDParam angleAlignPID = new PIDParam(4, 0, 0.3);
 
     // Arm
-    public static PIDParam armPIDS0 = new PIDParam(0.01, 0.0, 0.0);
-    public static FFParam armFFS0 = FFParam.arm(.1, 2, 0.25, 0.0);
-
-    public static PIDParam armPIDS1 = new PIDParam(0.01, 0.0, 0.0);
-    public static FFParam armFFS1 = FFParam.arm(.1, 2, 0.25, 0.0);
-    
-    public static PIDParam armPIDS2 = new PIDParam(0.01, 0.0, 0.0);
-    public static FFParam armFFS2 = FFParam.arm(.1, 2, 0.25, 0.0);
-
-    public static final Rotation2d minArmS0Pos = Rotation2d.fromDegrees(20 + 16);
-    public static final Rotation2d minArmS0Angle = Rotation2d.fromDegrees(2 + 16);
-    public static final Rotation2d minArmS2Angle = Rotation2d.fromDegrees(46 + 16);
-    public static final Rotation2d maxArmS2Angle = Rotation2d.fromDegrees(96.5 + 16);
-    public static final Rotation2d minArmIntakePos = Rotation2d.fromDegrees(2 + 16);
-    public static final Rotation2d maxArmPos = Rotation2d.fromDegrees(96.5 + 16);
-    public static final Rotation2d minArm2dAngle = Rotation2d.fromDegrees(46 + 16);
-    public static final Rotation2d maxArm2dAngle = Rotation2d.fromDegrees(77 + 16);
-
-    public static final Rotation2d armMinState2Angle = Rotation2d.fromDegrees(30 + 16);
+    public static final PIDParam armPID = new PIDParam(0.01, 0.0, 0.0);
+    public static final FFParam armFF = FFParam.arm(.1, 2, 0.25, 0.0);
 
     public static final Rotation2d armRampDownDist = Rotation2d.fromDegrees(20);
 
-    public static final Rotation2d climberZoneLowerAngle =  Rotation2d.fromDegrees(46); 
-    public static final Rotation2d climberZoneUpperAngle =  Rotation2d.fromDegrees(70);
-
-    public static final double armExtDelayTime = .25;   // Second
     public static final double maxArmSpeed = Math.PI;   // radians / s
     public static final double maxArmAutoSpeed = 1 * Math.PI;  //radians /s
 
-    public static final Rotation2d armEncAnglePerRot = Rotation2d.fromDegrees(360);
-    public static final Rotation2d armEncAngleOffset = Rotation2d.fromDegrees(168.5);
-
-    public static final double armOffset = 0;
-
-    public static final double armAlignAngleOffset = 0;
-
-    public static final double armLength = 0.4953;
-
-    public static final double armHeightOffset = 0.26;
+    public static final Rotation2d armIntakeAngle = Rotation2d.fromDegrees(110);
+    public static final Rotation2d armTravelAngle = Rotation2d.fromDegrees(90);
+    public static final Rotation2d armL1CoralScoreAngle = Rotation2d.fromDegrees(73);
+    public static final Rotation2d armCoralScoreAngle = Rotation2d.fromDegrees(73);
+    public static final Rotation2d armAlgaeRemoveAngle = Rotation2d.fromDegrees(80);
 
     //Elevator
     public static PIDParam elevatorPIDS = new PIDParam(0.01, 0.0, 0.0);
     public static FFParam elevatorFFS = FFParam.arm(.1, 2, 0.25, 0.0);
     
-    public static final double elevatorScale = 1;
-    public static final double maxElevatorAutoSpeed = 1;
-    public static final double elevatorRampDownDist = 1;
-    public static final double elevatorDefTol = .5;
-    public static final double elevatorPosTol = .5;
+    public static final double elevatorGearRatio = 1/25;    // rot. out / rot. in
+    public static final double elevatorOutputDiam = 1.751;  // in.
 
-    public static final double elevatorHeightOffset = 0; //TODO change this value before running**
-    public static final double elevatorLength = 0; //TODO change this value before running**
-    // STAGE1 SOFT LIMIT RANGE 46 - 78.1
-    public static final double lowerEncLimit = .449;
-    public static final double upperEncLimit = .184;
-    public static final double LowerEncLimitS0 = .42 - 16/360;
-    public static final double lowerEncLimitS2 = .2;
+    public static final double elevatorScale = elevatorGearRatio * elevatorOutputDiam;           // in. / rot.
+    public static final double maxElevatorAutoSpeed = 1;    // in. / s
+    public static final double elevatorRampDownDist = 1;    // in.
+    public static final double elevatorDefTol = .5;         // in.
+    public static final double elevatorPosTol = .5;         // in.
 
-    // Pizzabox
-    public static final double intakeInVoltage = 8.3;
-    public static final double intakeShootVoltage = 8.3;
-    public static final double intakeOutVoltage = 8.3;
-    public static final double intakeSlowVoltage = 4;
-    public static final double intakeSlowCurrent = 20;
-
-    public static final double shooterPrepPower = .75;    
-    public static final double shooterShootVoltage = 10.8;
-    public static final double shooterRevVoltage = 10.8;
-    public static final double shooterMinShootSpeed = 4000 ;     // rpm
-    public static final double shooterFastShootSpeed = 5500;//rpm
+    public static final double elevIntakePos = 0;       // in.
+    public static final double elevL1Pos = 0;           // in.
+    public static final double elevL2Pos = 0;           // in.
+    public static final double elevL3Pos = 0;           // in.
+    public static final double elevL4Pos = 0;           // in.
+    public static final double elevLowAlgaePos = 0;     // in.
+    public static final double elevHighAlgaePos = 0;    // in.
 
     //End Effector
     public static final double coralEjectVolt = 12;
     public static final double coralIntakeVolt = 6;
+    public static final double algaeRemovalVolt = 12;
     public static final double coralEjectTime = 1;
 
     //Algae Roller
     public static final double algaeEjectVolt = 6;
     public static final double algaeIntakeVolt = 6;
 
-
     // Climber
+    public static final double winchDiam = 1.5; // in.
+    public static final double winchCircum = Math.PI * winchDiam * (15/36); // in.
+
     public static final double winchMaxExtension = 88;   // in.
     public static final double winchMinLimit = 1.5; //in
     public static final double winchRatchedDelay = .25;  // seconds
 
-    // Pneumatics
-    public static final double minPressure = 100;
-    public static final double maxPressure = 120;
+    // Cameras
+    public static final Transform3d robotToFrontCamera = new Transform3d(
+        new Translation3d(-robotLength/2+.040, 0, .206), 
+        new Rotation3d(36 * Math.PI / 180, 0, Math.PI)
+    );  
+    
+    public static final Transform3d robotToLeftRearCamera = new Transform3d(
+        new Translation3d(-robotLength/2+.040, 0, .206), 
+        new Rotation3d(36 * Math.PI / 180, 0, Math.PI)
+    );  
+    
+    public static final Transform3d robotToRightRearCamera = new Transform3d(
+        new Translation3d(-robotLength/2+.040, 0, .206), 
+        new Rotation3d(36 * Math.PI / 180, 0, Math.PI)
+    );  
 }

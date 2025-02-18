@@ -69,7 +69,7 @@ public class AlgaeRoller extends SubsystemBase{
      * Constructor
      */
     private AlgaeRoller(){
-        algaeDrive = new SparkFlex(Constants.algaeMotor, MotorType.kBrushless);
+        algaeDrive = new SparkFlex(Constants.algaeRollerMotor, MotorType.kBrushless);
 
         ejectCmd = new EjectCmd();
 

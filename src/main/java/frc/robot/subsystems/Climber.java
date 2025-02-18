@@ -1,10 +1,6 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.networktables.GenericEntry;
-import edu.wpi.first.wpilibj.DoubleSolenoid;
-import edu.wpi.first.wpilibj.PneumaticsModuleType;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -43,9 +39,6 @@ public class Climber extends SubsystemBase {
     private RelativeEncoder winchEncoder;
     private EncoderConfig winchEncoderConfig;
 
-    private DoubleSolenoid ratchetRelease;
-    private Timer ratchetTimer;
-
     private ClimberStates climbState = ClimberStates.IDLE;
 
     private GenericEntry sb_state;
@@ -62,8 +55,7 @@ public class Climber extends SubsystemBase {
      */
     private Climber() {
         // Initialize Motors
-        winchL = new SparkMax(Constants.winchMotorL, MotorType.kBrushless);
-        winchR = new SparkMax(Constants.winchMotorR, MotorType.kBrushless);
+        winchL = new SparkMax(Constants.climberMotor, MotorType.kBrushless);
         
         //Initialize Configurations
         winchConfig = new SparkMaxConfig().idleMode(IdleMode.kBrake);
@@ -82,13 +74,6 @@ public class Climber extends SubsystemBase {
 
         // Initialize climber state
         climbState = ClimberStates.MATCH_START;
-
-        // Initialize Ratchet Release
-        ratchetRelease = new DoubleSolenoid(Constants.phCANID, PneumaticsModuleType.REVPH,
-                Constants.climbRatchetRev, Constants.climbRatchetFor);
-        ratchetRelease.set(DoubleSolenoid.Value.kReverse);
-
-        ratchetTimer = new Timer();
 
         // Setup Shuffleboard
 
@@ -157,14 +142,6 @@ public class Climber extends SubsystemBase {
     public boolean isClearOfArm() {
         double armContactHeight = 15;
         return isDown() || getExtension() < armContactHeight;
-    }
-
-    public void setRatchet(boolean enabled) {
-        if (enabled) {
-            ratchetRelease.set(Value.kForward);
-        } else {
-            ratchetRelease.set(Value.kReverse);
-        }
     }
 
     /**
@@ -241,8 +218,6 @@ public class Climber extends SubsystemBase {
         sb_mLVoltage.setDouble(winchL.getBusVoltage() * winchL.getAppliedOutput());
         sb_mRVoltage.setDouble(winchR.getBusVoltage() * winchR.getAppliedOutput());
         sb_winchExt.setDouble(getExtension());
-        sb_ratchetTime.setDouble(ratchetTimer.get());
-        sb_ratchetValve.setString(ratchetRelease.get().name());
     }
 
     /**

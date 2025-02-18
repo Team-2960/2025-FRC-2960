@@ -32,7 +32,7 @@ public class Arm extends SubsystemBase {
 
     private PIDController armPID;
 
-    private ArmFeedforward armFFS0;
+    private ArmFeedforward armFF;
 
     private double armVolt;
     private double armRate;
@@ -177,9 +177,9 @@ public class Arm extends SubsystemBase {
         absEncoder = motor.getAbsoluteEncoder();
         relEncoder = motor.getExternalEncoder();
 
-        armPID = new PIDController(Constants.armPIDS0.kP, Constants.armPIDS0.kP, Constants.armPIDS0.kP);
+        armPID = new PIDController(Constants.armPID.kP, Constants.armPID.kP, Constants.armPID.kP);
 
-        armFFS0 = new ArmFeedforward(Constants.armFFS0.kS, Constants.armFFS0.kG, Constants.armFFS0.kV);
+        armFF = new ArmFeedforward(Constants.armFF.kS, Constants.armFF.kG, Constants.armFF.kV);
 
         // Set control mode
         armVolt = 0;
@@ -273,13 +273,7 @@ public class Arm extends SubsystemBase {
         double result = this.armRate;
 
         Rotation2d currentAngle = getArmAngle();
-        double angleRate = getArmVelocity();
-
-        ArmFeedforward armFF = armFFS0;
-
-        armPID.setPID(Constants.armPIDS0.kP, Constants.armPIDS0.kI, Constants.armPIDS0.kD);
-        armFF = armFFS0;
-            
+        double angleRate = getArmVelocity();            
 
         sb_angleRateError.setDouble(angleRate - targetSpeed);
 
