@@ -2,9 +2,13 @@ package frc.robot;
 
 import frc.robot.Util.FieldLayout;
 import frc.robot.Util.FieldLayout.ReefFace;
+import frc.robot.subsystems.AlgaeAngle;
+import frc.robot.subsystems.AlgaeRoller;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Drive;
+import frc.robot.subsystems.Elevator;
+import frc.robot.subsystems.EndEffector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +29,7 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
@@ -34,8 +39,8 @@ public class OperatorInterface extends SubsystemBase {
     public static OperatorInterface oi = null;
 
     // JOYSTICKS
-    private Joystick driverController;
-    private Joystick operatorController;
+    private XboxController driverController;
+    private XboxController operatorController;
 
     private int lastOpPOV;
 
@@ -71,8 +76,8 @@ public class OperatorInterface extends SubsystemBase {
      */
     private OperatorInterface() {
         // Create Joysticks
-        driverController = new Joystick(0);
-        operatorController = new Joystick(1);
+        driverController = new XboxController(0);
+        operatorController = new XboxController(1);
 
         lastOpPOV = -1;
 
@@ -135,8 +140,14 @@ public class OperatorInterface extends SubsystemBase {
         if (DriverStation.isTeleop()) {
             updateDrive();
             updateCoralPlacement();
+            updateAlgaeGrabber();
             updateClimber();
             updateDriverFeedback();
+        } else if(DriverStation.isTest()) {
+            updateDriveTest();
+            updateCoralPlacementTest();
+            updateAlgaeGrabberTest();
+            updateClimberTest();
         }
     }
 
@@ -238,6 +249,65 @@ public class OperatorInterface extends SubsystemBase {
      */
     private void updateDriverFeedback() {
         // TODO Implement
+    }
+
+    private void updateDriveTest() {
+        // TODO Implement test mode for drivetrain
+
+        updateDrive();
+    }
+
+    private void updateCoralPlacementTest(){
+        Arm arm = Arm.getInstance();
+        Elevator elevator = Elevator.getInstance();
+        EndEffector end_effector = EndEffector.getInstance();
+
+        double arm_percent = MathUtil.applyDeadband(operatorController.getLeftY(), .05);
+        double elev_percent = MathUtil.applyDeadband(operatorController.getRightY(), .05);
+        
+        arm.setVoltCommand(arm_percent * 12);
+        elevator.setVoltCommand(elev_percent * 12);
+
+        if(operatorController.getAButton()) {
+            end_effector.runEject();
+        } else if(operatorController.getBButton()) {
+            end_effector.runIntake();
+        }else {
+            end_effector.stop();
+        }
+    }
+
+    private void updateAlgaeGrabberTest() {
+        AlgaeAngle algae_angle = AlgaeAngle.getInstance();
+        AlgaeRoller algae_roller = AlgaeRoller.getInstance();
+
+        double angle_percent_pos = MathUtil.applyDeadband(operatorController.getRightTriggerAxis(), .05);
+        double angle_percent_neg = -MathUtil.applyDeadband(operatorController.getLeftTriggerAxis(), .05);
+        double angle_percent = angle_percent_pos + angle_percent_neg;
+
+        algae_angle.setVoltCommand(angle_percent * 12);
+
+        if(operatorController.getXButton()) {
+            algae_roller.runEject();
+        } else if (operatorController.getYButton()) {
+            algae_roller.runIntake();
+        } else {
+            algae_roller.stop();
+        }
+    }
+
+    private void updateClimberTest() {
+        Climber climber = Climber.getInstance();
+
+        if(operatorController.getStartButton()) {
+            climber.runExtend();
+        } else if (operatorController.getBackButton()) {
+            climber.runRetract();
+        } else if (operatorController.getPOV() == 0){
+            climber.runReset();
+        } else {
+            climber.stop();
+        }
     }
 
     /**
