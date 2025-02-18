@@ -38,6 +38,10 @@ public class AlgaeRoller extends SubsystemBase{
     //Command for ejecting algae
     public class EjectCmd extends Command {
 
+        public EjectCmd() {
+            addRequirements(AlgaeRoller.this);
+        }
+
         @Override
         public void initialize(){
             setEject();
@@ -53,6 +57,10 @@ public class AlgaeRoller extends SubsystemBase{
 
     //Command for intaking algae 
     public class IntakeCmd extends Command{
+
+        public IntakeCmd() {
+            addRequirements(AlgaeRoller.this);
+        }
 
         @Override
         public void initialize(){

@@ -44,6 +44,10 @@ public class EndEffector extends SubsystemBase{
      * Command for ejecting coral
      * */
     public class EjectCmd extends Command {
+        public EjectCmd() {
+            addRequirements(EndEffector.this);
+        }
+
         @Override
         public void initialize(){
             setEject();
@@ -62,6 +66,7 @@ public class EndEffector extends SubsystemBase{
     public class TimedEjectCmd extends WaitCommand {
         public TimedEjectCmd() {
             super(Constants.coralEjectTime);
+            addRequirements(EndEffector.this);
         }
 
         public TimedEjectCmd(double runTime) {
@@ -83,6 +88,10 @@ public class EndEffector extends SubsystemBase{
      * Command for intaking coral
      */ 
     public class IntakeCmd extends Command{
+        public IntakeCmd() {
+            addRequirements(EndEffector.this);
+        }
+
         @Override
         public void initialize(){
             setIntake();
