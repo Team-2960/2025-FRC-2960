@@ -7,14 +7,18 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 
+/**
+ * Manages coral end effector
+ */
 public class EndEffector extends SubsystemBase{
     /*Coral intake/eject
     motor: Neo vortex (spark flex) used to control intake and eject
@@ -28,34 +32,21 @@ public class EndEffector extends SubsystemBase{
 
     private Trigger intakeTrigger;
 
-    private EjectCmd ejectCmd;
+    private final EjectCmd ejectCmd;
+    private final Command timedEjectCmd;
+    private final IntakeCmd intakeCmd;
     
     private GenericEntry sb_currentCmd;
     private GenericEntry sb_motorVoltage;
     private GenericEntry sb_photoeyeState;
 
-    //Command for ejecting coral
+    /**
+     * Command for ejecting coral
+     * */
     public class EjectCmd extends Command {
-        private double startTime;
-        private final double runTime;
-
-        /**
-         * Constructor
-         */
-        public EjectCmd(double runTime){
-            startTime = 0;
-            this.runTime = runTime;
-        }
-
         @Override
         public void initialize(){
-            startTime = Timer.getFPGATimestamp();
             setEject();
-        }
-
-        @Override
-        public boolean isFinished(){
-            return Timer.getFPGATimestamp() > startTime + runTime;
         }
 
         @Override
@@ -65,9 +56,33 @@ public class EndEffector extends SubsystemBase{
         
     }
 
-    //Command for intaking coral 
-    public class IntakeCmd extends Command{
+    /**
+     * Runs eject command for a specific amount of time
+     */
+    public class TimedEjectCmd extends WaitCommand {
+        public TimedEjectCmd() {
+            super(Constants.coralEjectTime);
+        }
 
+        public TimedEjectCmd(double runTime) {
+            super(runTime);
+        }
+
+        @Override
+        public void initialize(){
+            setEject();
+        }
+
+        @Override
+        public void end(boolean interupted){
+            setStop();
+        }
+    }
+
+    /**
+     * Command for intaking coral
+     */ 
+    public class IntakeCmd extends Command{
         @Override
         public void initialize(){
             setIntake();
@@ -86,10 +101,13 @@ public class EndEffector extends SubsystemBase{
         coralDrive = new SparkFlex(Constants.coralMotor, MotorType.kBrushless);
         coralPresentPE = new DigitalInput(Constants.coralPresentPE);
 
-        intakeTrigger = new Trigger(coralPresentPE::get);
-        intakeTrigger.whileTrue(new IntakeCmd());
+        ejectCmd = new EjectCmd();
+        timedEjectCmd = new TimedEjectCmd();
+        intakeCmd = new IntakeCmd();
 
-        ejectCmd = new EjectCmd(Constants.coralEjectTime);
+        intakeTrigger = new Trigger(coralPresentPE::get);
+        intakeTrigger.whileTrue(intakeCmd);
+        
 
         //Setup Shuffleboard
         var layout = Shuffleboard.getTab("Status")
@@ -104,12 +122,32 @@ public class EndEffector extends SubsystemBase{
     }
 
     /**
+     * Schedules timed eject command
+     */
+    public void runTimedEject(){
+        if(getCurrentCommand() != timedEjectCmd)  timedEjectCmd.schedule();
+    }
+
+    /**
      * Schedules eject command
      */
     public void runEject(){
-        if(getCurrentCommand() != ejectCmd){
-            ejectCmd.schedule();
-        }
+        if(getCurrentCommand() != ejectCmd) ejectCmd.schedule();
+    }
+
+    /**
+     * Schedules intake command
+     */
+    public void runIntake(){
+        if (getCurrentCommand() != intakeCmd) intakeCmd.schedule();
+    }
+    
+    /**
+     * Stops all current commands
+     */
+    public void stop() {
+        Command currentCmd = getCurrentCommand();
+        if (currentCmd != null) currentCmd.cancel();
     }
 
     /**
@@ -142,12 +180,17 @@ public class EndEffector extends SubsystemBase{
     }
 
 
-
+    /**
+     * Periodic method
+     */
     @Override
     public void periodic(){
         updateUI();
     }
 
+    /**
+     * Update Shuffleboard
+     */
     private void updateUI(){
         Command currentCommand = getCurrentCommand();
         String commandName = "null";
