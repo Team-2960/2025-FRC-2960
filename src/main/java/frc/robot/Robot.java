@@ -69,7 +69,6 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopInit() {
-        drive.ignoreCamera(false);
         if (autonomousCommand != null) {
             autonomousCommand.cancel();
         }
