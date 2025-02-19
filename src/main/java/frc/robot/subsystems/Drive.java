@@ -497,15 +497,6 @@ public class Drive extends SubsystemBase {
      */
     private void updateKinematics(double xSpeed, double ySpeed) {
         ChassisSpeeds speeds;
-
-        // double xSpeed = this.xSpeed;
-        // double ySpeed = this.ySpeed;
-
-        double autonRSpeed = chassisSpeeds.omegaRadiansPerSecond;
-        /*if (targetSeen && fieldRelative) {
-            xSpeed *= -1;
-            ySpeed *= -1;
-        }*/
         
         if (fieldRelative) {
             Pose2d robot_pose = getEstimatedPos();
@@ -621,12 +612,12 @@ public class Drive extends SubsystemBase {
         if (getAlliance() == DriverStation.Alliance.Red){
             offset = new Pose2d(-offset.getX(), -offset.getY(), offset.getRotation());
         }
-        FieldLayout fieldLayout = FieldLayout.getInstance();
-        //Pose2d nearestReefFace = fieldLayout.getNearestReefFace(getEstimatedPos());
-        Rotation2d reefFaceRotation = fieldLayout.getReefFaceZone(getEstimatedPos());
-        Pose2d zeroFace = fieldLayout.getReef(ReefFace.ZERO);
+        
+        
+        Rotation2d reefFaceRotation = FieldLayout.getReefFaceZone(getEstimatedPos());
+        Pose2d zeroFace = FieldLayout.getReef(ReefFace.ZERO);
         Translation2d poseOffset = new Translation2d(zeroFace.getX() + offset.getX(), zeroFace.getY() + offset.getY())
-            .rotateAround(fieldLayout.getReef(ReefFace.CENTER).getTranslation(), 
+            .rotateAround(FieldLayout.getReef(ReefFace.CENTER).getTranslation(), 
                 reefFaceRotation);
         Pose2d finalReefFace = new Pose2d(poseOffset, reefFaceRotation);
         this.nearestReefFace = finalReefFace;

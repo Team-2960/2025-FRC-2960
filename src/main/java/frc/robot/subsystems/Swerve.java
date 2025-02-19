@@ -4,10 +4,12 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.AbsoluteEncoderConfig;
 import com.revrobotics.spark.config.SparkFlexConfig;
+import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -49,16 +51,22 @@ public class Swerve extends SubsystemBase {
     private Rotation2d swerveAngleOffset;
 
     public Swerve(int driveMotorID, int angleMotorID, String swerveName, Rotation2d swerveOffset, boolean invertDrive) {
-        // Initialize Motors
+        // Initialize Drive Motor
         mDrive = new SparkFlex(driveMotorID, MotorType.kBrushless);
-        mDrive.setInverted(invertDrive);
+
+        SparkFlexConfig drive_config = new SparkFlexConfig();
+        drive_config.inverted(invertDrive);
+        mDrive.configure(drive_config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        
         swerveAngleOffset = swerveOffset;
 
+        // Initialize Angle Motor
         mAngle = new SparkMax(angleMotorID, MotorType.kBrushless);
-        mAngle.configure(new SparkFlexConfig().apply(new AbsoluteEncoderConfig().inverted(true)), 
-                         com.revrobotics.spark.SparkBase.ResetMode.kResetSafeParameters, 
-                         PersistMode.kPersistParameters);
-        mAngle.setInverted(true);
+        
+        SparkMaxConfig angle_config = new SparkMaxConfig();
+        angle_config.inverted(invertDrive);
+        angle_config.apply(new AbsoluteEncoderConfig().inverted(true));
+        mDrive.configure(angle_config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         // Initialize drive encoder
         encDrive = mDrive.getEncoder();
@@ -164,22 +172,10 @@ public class Swerve extends SubsystemBase {
      */
     @Override
     public void periodic() {
-        // Optimize desired state
-       /*  double anglePos = desiredState.angle.getDegrees() + swerveAngleOffset.getDegrees();
-        if(anglePos > 360){
-            anglePos = anglePos-360;
-        }
-  
-        if(anglePos < 0){
-            anglePos = anglePos+360;
-        }
+        desiredState.optimize(getAnglePos());
 
-        desiredState.angle =  Rotation2d.fromDegrees(anglePos);*/
-
-        SwerveModuleState state = SwerveModuleState.optimize(desiredState, getAnglePos());
-
-        updateDrive(state);
-        updateAngle(state);
+        updateDrive(desiredState);
+        updateAngle(desiredState);
         updateUI();
     }
 
