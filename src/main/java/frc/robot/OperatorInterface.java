@@ -10,11 +10,6 @@ import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.EndEffector;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.pathplanner.lib.path.GoalEndState;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -22,15 +17,12 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.DriverStation.MatchType;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 
@@ -42,8 +34,6 @@ public class OperatorInterface extends SubsystemBase {
     private XboxController driverController;
     private XboxController operatorController;
 
-    private int lastOpPOV;
-
     // LED Control
     int led_count = 69;
     AddressableLED leds;
@@ -52,12 +42,7 @@ public class OperatorInterface extends SubsystemBase {
     AddressableLEDBuffer led_endgame1;
     AddressableLEDBuffer led_endgame2;
     Timer ledTimer = new Timer();
-
-    // Robot State Tracking
-    private Timer rumbleTimer = new Timer();
-    private boolean lastIsNotePresent = true;
-    private boolean lastIsEndGame = false;
-
+    
     // Shuffleboard Entries
     private GenericEntry sb_driveX;
     private GenericEntry sb_driveY;
@@ -78,8 +63,6 @@ public class OperatorInterface extends SubsystemBase {
         // Create Joysticks
         driverController = new XboxController(0);
         operatorController = new XboxController(1);
-
-        lastOpPOV = -1;
 
         // Setup LEDs
         leds = new AddressableLED(0);

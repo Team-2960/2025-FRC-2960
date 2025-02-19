@@ -1,11 +1,8 @@
 package frc.robot.Util;
 
-import java.sql.Driver;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import javax.sql.rowset.spi.TransactionalWriter;
 
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -195,7 +192,7 @@ public class FieldLayout {
         
         List<Pose2d> reeflist = bReefFaces;
         var alliance = DriverStation.getAlliance();
-        Pose2d nearest = null;
+
         if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
             reeflist = rReefFaces;
         } else {
@@ -203,18 +200,6 @@ public class FieldLayout {
         }
 
         return pose.nearest(reeflist);
-        //     double min_dist = Double.MAX_VALUE;
-
-        //     for (var pose : stage_list.entrySet()) {
-        //         double distance = pos.getTranslation().getDistance(pose.getValue().getTranslation());
-        //         if (distance < min_dist) {
-        //             min_dist = distance;
-        //             nearest = pose.getValue();
-        //         }
-        //     }
-        // }
-
-        // return nearest;
     }
 
     public static Rotation2d getReefFaceZone(Pose2d pose){

@@ -4,8 +4,6 @@
 
 package frc.robot;
 
-import java.util.Optional;
-
 
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.TimedRobot;

@@ -6,13 +6,10 @@ import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.networktables.GenericEntry;
-import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 
 public class AlgaeRoller extends SubsystemBase{
@@ -33,8 +30,6 @@ public class AlgaeRoller extends SubsystemBase{
     
     private GenericEntry sb_currentCmd;
     private GenericEntry sb_motorVoltage;
-    private GenericEntry sb_photoeyeState;
-
     
     //Command for ejecting algae
     public class EjectCmd extends Command {
