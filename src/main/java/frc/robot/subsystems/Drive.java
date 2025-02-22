@@ -360,8 +360,8 @@ public class Drive extends SubsystemBase {
     }
 
     // Command classes
-    private final LinearDriveCommands linearDriveCommands;      /**< Linear motion control subsytem */
-    private final RotationDriveCommands rotationDriveCommands;  /**< Rotation motion control subsystem */
+    public final LinearDriveCommands linearDriveCommands;      /**< Linear motion control subsytem */
+    public final RotationDriveCommands rotationDriveCommands;  /**< Rotation motion control subsystem */
 
     /**
      * Constructor
