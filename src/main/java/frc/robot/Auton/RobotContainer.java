@@ -10,17 +10,20 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Drive;
-public class RobotContainer {  
+public class RobotContainer {
   SendableChooser<Command> autoChooser;
   Command chosenAuto;
+  private static RobotContainer robotContainer = null;
 
   public RobotContainer(){
     Drive drive = Drive.getInstance();
     Arm arm = Arm.getInstance();
-
-    autoChooser = AutoBuilder.buildAutoChooser();
+    
     NamedCommands.registerCommand("armLvl1", arm.new ArmAngleCommand(Rotation2d.fromDegrees(0)));
     NamedCommands.registerCommand("driveAlignCommand", drive.linearDriveCommands.new GoToPointCommand(new Translation2d()));
+    
+    autoChooser = AutoBuilder.buildAutoChooser();
+    
     SmartDashboard.putData("Choose Auto", autoChooser);
   }
 
@@ -31,6 +34,13 @@ public class RobotContainer {
     // Load the path you want to follow using its name in the GUI
     // Create a path following command using AutoBuilder. This will also trigger event markers.
     return chosenAuto;
+  }
+
+  public static RobotContainer getInstance(){
+    if (robotContainer == null){
+      robotContainer = new RobotContainer();
+    }
+    return robotContainer;
   }
 
   

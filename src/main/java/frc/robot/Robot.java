@@ -32,6 +32,11 @@ public class Robot extends TimedRobot {
     private Drive drive;
     private OperatorInterface oi;
     private Arm arm;
+    private AlgaeAngle algaeAngle;
+    private AlgaeRoller algaeRoller;
+    private ElevArmControl elevArmControl;
+    private Elevator elevator;
+    private EndEffector endEffector;
     private Climber climber;
     private Cameras cameras;
     private Command autonomousCommand;
@@ -43,10 +48,15 @@ public class Robot extends TimedRobot {
         oi = OperatorInterface.getInstance();
         climber = Climber.getInstance();
         arm = Arm.getInstance();
+        algaeAngle = AlgaeAngle.getInstance();
+        algaeRoller = AlgaeRoller.getInstance();
+        elevArmControl = ElevArmControl.getInstance();
+        elevator = Elevator.getInstance();
+        endEffector = EndEffector.getInstance();
         cameras = Cameras.getInstance();
 
         CameraServer.startAutomaticCapture();
-        robotContainer = new RobotContainer();
+        robotContainer = RobotContainer.getInstance();
     }
 
     @Override

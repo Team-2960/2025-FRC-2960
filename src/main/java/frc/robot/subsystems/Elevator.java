@@ -18,7 +18,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class Elevator extends SubsystemBase {
-    private static Elevator elevator;
+    private static Elevator elevator = null;
 
     private SparkFlex elevatorMotor;
 

@@ -17,7 +17,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class AlgaeAngle extends SubsystemBase {
-    private static AlgaeAngle instance;
+    private static AlgaeAngle instance = null;
 
     private SparkMax motor;
 
