@@ -122,9 +122,9 @@ public class EndEffector extends SubsystemBase{
                 .getLayout("End Effector", BuiltInLayouts.kList)
                 .withSize(1, 3);
 
-        sb_currentCmd = layout.add("current command", "").getEntry();
-        sb_motorVoltage = layout.add("motor voltage", 2960).getEntry();
-        sb_photoeyeState = layout.add("photoeye state", false).getEntry();
+        sb_currentCmd = layout.add("current command End Effector", "").getEntry();
+        sb_motorVoltage = layout.add("motor voltage End Effector", 2960).getEntry();
+        sb_photoeyeState = layout.add("photoeye state End Effector", false).getEntry();
 
 
     }
