@@ -29,25 +29,25 @@ public class Constants {
 
     public static final int coralMotor = 13;
 
-    public static final int algaeAngleMotor = 4;
-    public static final int algaeRollerMotor = 3;
+    public static final int algaeAngleMotor = 3;
+    public static final int algaeRollerMotor = 4;
 
     public static final int climberMotor = 14;
 
     public static final int armMotor = 12;
 
-    public static final int frontLeftDriveM = 8;
-    public static final int frontLeftAngleM = 7;
-    public static final int frontRightDriveM = 10;
-    public static final int frontRightAngleM = 9;
+    public static final int frontLeftDriveM = 9;
+    public static final int frontLeftAngleM = 10;
+    public static final int frontRightDriveM = 7;
+    public static final int frontRightAngleM = 8;
 
-    public static final int backLeftDriveM = 2;
-    public static final int backLeftAngleM = 1;
-    public static final int backRightDriveM = 6;
-    public static final int backRightAngleM = 5;
+    public static final int backLeftDriveM = 1;
+    public static final int backLeftAngleM = 2;
+    public static final int backRightDriveM = 5;
+    public static final int backRightAngleM = 6;
 
     // Digital Input Ports
-    public static final int coralPresentPE = 0;
+    public static final int coralPresentPE = 9;
 
     // Auton
     public static final double autoClearance = .25; // Meters
