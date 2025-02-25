@@ -114,6 +114,9 @@ public class Constants {
     public static final double elevatorGearRatio = 1/25;    // rot. out / rot. in
     public static final double elevatorOutputDiam = 1.751;  // in.
 
+    public static final double elevatorMinPos = 0;          // in. 
+    public static final double elevatorMaxPos = 30;         // in. 
+
     public static final double elevatorScale = elevatorGearRatio * elevatorOutputDiam;           // in. / rot.
     public static final double maxElevatorAutoSpeed = 1;    // in. / s
     public static final double elevatorRampDownDist = 1;    // in.

@@ -10,12 +10,25 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.units.measure.MutCurrent;
+import edu.wpi.first.units.measure.MutDistance;
+import edu.wpi.first.units.measure.MutLinearVelocity;
+import edu.wpi.first.units.measure.MutVoltage;
+import edu.wpi.first.units.measure.Voltage;
+
+import static edu.wpi.first.units.Units.*;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 
 public class Elevator extends SubsystemBase {
     private static Elevator elevator = null;
@@ -49,8 +62,14 @@ public class Elevator extends SubsystemBase {
     private GenericEntry sb_posTargetVolt;
     private GenericEntry sb_posPosRotations;
 
+    public final SysIdRoutine sysIdRoutine;     /**< System Identification Routine Instance */
+    private final MutVoltage appliedVoltage;    /**< Elevator Motor voltage variable for SysID */
+    private final MutCurrent appliedCurrent;    /**< Elevator Motor current variable for SysID */
+    private final MutDistance distance;         /**< Elevator position variable for SysID */
+    private final MutLinearVelocity velocity;   /**< Elevator velocity variable for SysID */
+    public final Command sysIdRoutineCommand;   /**< The system ID command sequence */
 
-    //Command to set the voltage of the Elevator
+
     public class ElevatorVoltageCommand extends Command{
         private double targetVoltage;
 
@@ -225,6 +244,29 @@ public class Elevator extends SubsystemBase {
         elevatorHoldCommand = new ElevatorHoldCommand();
 
         setDefaultCommand(elevatorHoldCommand);
+
+        // Initialize SysID
+        sysIdRoutine = new SysIdRoutine(
+            new Config(), 
+            new Mechanism(
+                this::setMotorVolt,
+                this::sysIDLogging,
+                this,
+                "Elevator"
+            )
+        );
+
+        appliedVoltage = Volts.mutable(0);
+        appliedCurrent = Amps.mutable(0);
+        distance = Inches.mutable(0);
+        velocity = InchesPerSecond.mutable(0);
+
+        sysIdRoutineCommand = new SequentialCommandGroup(
+            sysIdRoutine.quasistatic(Direction.kForward),
+            sysIdRoutine.quasistatic(Direction.kReverse),
+            sysIdRoutine.dynamic(Direction.kForward),
+            sysIdRoutine.dynamic(Direction.kReverse)
+        );
     }
 
     public void shuffleBoardInit(){
@@ -261,9 +303,24 @@ public class Elevator extends SubsystemBase {
      * @return current elevator velocity (in per sec)
      */
     public double getElevatorVelocity() {
-        return elevatorEncoder.getVelocity();
+        return elevatorEncoder.getVelocity() * Constants.elevatorScale / 60;
     }
 
+    /**
+     * Get the applied motor voltage
+     * @return  applied motor voltage
+     */
+    public double getElevatorVoltage() {
+        return elevatorMotor.getAppliedOutput() * elevatorMotor.getBusVoltage();
+    }
+
+    /**
+     * Get the applied motor current in Amps
+     * @return  applied motor current in Amps
+     */
+    public double getElevatorCurrent() {
+        return elevatorMotor.getOutputCurrent();
+    }
 
     /**
      * Check if the elevator is at its target position
@@ -328,15 +385,40 @@ public class Elevator extends SubsystemBase {
      * 
      * @param voltage desired motor voltage
      */
-    //TODO Change to use Spark Flex
+    private void setMotorVolt(Voltage voltage) {
+        setMotorVolt(voltage.baseUnitMagnitude());
+    }
+
+    /**
+     * Sets the motor voltage for the elevator angle control. Manages soft limits as
+     * well.
+     * 
+     * @param voltage desired motor voltage
+     */
     private void setMotorVolt(double voltage) {
+        // TODO Make sure limits are correct
+        double pos = getElevatorPos();
+
+        if(voltage < 0 && pos <= Constants.elevatorMinPos) voltage = 0;
+        if(voltage > 0 && pos >= Constants.elevatorMaxPos) voltage = 0;
+
         elevatorMotor.setVoltage(voltage);
         
         //Shuffleboard display
         this.elevatorVolt = voltage;
-        
     }
 
+    /**
+     * Updates the log for system ID
+     * @param log   SysIDRoutine Log instance
+     */
+    private void sysIDLogging(SysIdRoutineLog log){
+        log.motor("Elevator")
+            .voltage(appliedVoltage.mut_replace(getElevatorVoltage(), Volts))
+            .current(appliedCurrent.mut_replace(getElevatorCurrent(), Amps))
+            .linearPosition(distance.mut_replace(getElevatorPos(), Inches))
+            .linearVelocity(velocity.mut_replace(getElevatorVelocity(), InchesPerSecond));
+    }
 
     /**
      * Updates shuffleboard
@@ -352,7 +434,7 @@ public class Elevator extends SubsystemBase {
         sb_posPosSetPoint.setDouble(elevatorPosCommand.elevatorPos);
         sb_posRateCurrent.setDouble(getElevatorVelocity());
         sb_posRateSetPoint.setDouble(targetRate);
-        sb_posVolt.setDouble(elevatorMotor.getAppliedOutput() * elevatorMotor.getBusVoltage());
+        sb_posVolt.setDouble(getElevatorVoltage());
         sb_posTargetVolt.setDouble(targetVolt);
         sb_posPosRotations.setDouble(elevatorEncoder.getPosition());
     }
@@ -379,6 +461,10 @@ public class Elevator extends SubsystemBase {
 
     public void setHoldCommand(){
         if(getCurrentCommand() != elevatorHoldCommand) new ElevatorHoldCommand().schedule();
+    }
+
+    public void setSysIDCommand() {
+        if(getCurrentCommand() != sysIdRoutineCommand) sysIdRoutineCommand.schedule();
     }
     
     public void stopCommands() {
