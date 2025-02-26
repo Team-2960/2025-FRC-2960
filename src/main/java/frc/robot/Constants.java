@@ -142,8 +142,8 @@ public class Constants {
     public static final double maxAlgaeAutoSpeed = 1 * Math.PI;  //radians /s
     public static final Rotation2d algaeRampDownDist = Rotation2d.fromDegrees(20);
 
-    public static final double algaeEjectVolt = 6;
-    public static final double algaeIntakeVolt = 6;
+    public static final double algaeEjectVolt = -3;
+    public static final double algaeIntakeVolt = 2;
 
     // Climber
     public static final double winchDiam = 1.5; // in.

@@ -46,17 +46,17 @@ public class Robot extends TimedRobot {
     public void robotInit() {
         drive = Drive.getInstance();
         oi = OperatorInterface.getInstance();
-        climber = Climber.getInstance();
-        arm = Arm.getInstance();
+        // climber = Climber.getInstance();
+        // arm = Arm.getInstance();
         algaeAngle = AlgaeAngle.getInstance();
         algaeRoller = AlgaeRoller.getInstance();
-        elevArmControl = ElevArmControl.getInstance();
-        elevator = Elevator.getInstance();
-        endEffector = EndEffector.getInstance();
-        cameras = Cameras.getInstance();
+        // elevArmControl = ElevArmControl.getInstance();
+        // elevator = Elevator.getInstance();
+        // endEffector = EndEffector.getInstance();
+        // cameras = Cameras.getInstance();
 
         CameraServer.startAutomaticCapture();
-        robotContainer = RobotContainer.getInstance();
+        // robotContainer = RobotContainer.getInstance();
     }
 
     @Override

@@ -382,13 +382,13 @@ public class Drive extends SubsystemBase {
                 frontLeftLocation, frontRightLocation, backLeftLocation, backRightLocation);
         // Create swerve drive module objects
         frontLeft = new Swerve(Constants.frontLeftDriveM, Constants.frontLeftAngleM, "FrontLeft",
-                Rotation2d.fromDegrees(0), true);
+                Rotation2d.fromDegrees(0), true, true);
         frontRight = new Swerve(Constants.frontRightDriveM, Constants.frontRightAngleM, "FrontRight",
-                Rotation2d.fromDegrees(0), false);
+                Rotation2d.fromDegrees(0), false, true);
         backLeft = new Swerve(Constants.backLeftDriveM, Constants.backLeftAngleM, "BackLeft", Rotation2d.fromDegrees(0),
-                true);
+                true, true);
         backRight = new Swerve(Constants.backRightDriveM, Constants.backRightAngleM, "BackRight",
-                Rotation2d.fromDegrees(0), false);
+                Rotation2d.fromDegrees(0), false, true);
 
         // Initialize NavX
         navx = new AHRS(NavXComType.kMXP_SPI);
