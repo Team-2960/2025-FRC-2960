@@ -125,6 +125,8 @@ public class OperatorInterface extends SubsystemBase {
             updateCoralPlacement();
             updateAlgaeGrabber();
             updateClimber();
+            //updateElevator();
+            //updateEndEffector();
             updateDriverFeedback();
         } else if(DriverStation.isTest()) {
             updateDriveTest();
@@ -194,12 +196,12 @@ public class OperatorInterface extends SubsystemBase {
             } else if (driverController.getRawButton(4)){
                 //Shuffle distance should be 0.15875
                 if (driverController.getRawButton(5)){
-                    drive.goToReef(new Pose2d(-Constants.robotLength/2, 0.3, Rotation2d.fromDegrees(180)));
+                    drive.goToReef(new Pose2d(-Constants.robotLength/2, 0.3, Rotation2d.fromDegrees(0)));
 
                 } else if (driverController.getRawButton(6)){
-                    drive.goToReef(new Pose2d(-Constants.robotLength/2, -0.3, Rotation2d.fromDegrees(180)));
+                    drive.goToReef(new Pose2d(-Constants.robotLength/2, -0.3, Rotation2d.fromDegrees(0)));
                 }else{
-                    drive.goToReef(new Pose2d(-Constants.robotLength/2, 0, Rotation2d.fromDegrees(180)));
+                    drive.goToReef(new Pose2d(-Constants.robotLength/2, 0, Rotation2d.fromDegrees(0)));
                 }
             }
         }
@@ -211,13 +213,52 @@ public class OperatorInterface extends SubsystemBase {
         sb_driveFR.setBoolean(fieldRelative);
     }
 
-    private void updateCoralPlacement() {
-        // TODO Implement
+    /**
+     * updates controls for elevator, arm, and end effector
+     */
+    private void updateCoralPlacement(){//TODO finish whatever is needed for this
+        Elevator elevator = Elevator.getInstance();
+        EndEffector endEffector = EndEffector.getInstance();
+        Arm arm = Arm.getInstance();
+
+        //L2 = button A | L3 = button B | L4 = button Y
+        boolean elevatorL2 = operatorController.getRawButton(1);
+        boolean elevatorL3 = operatorController.getRawButton(2);
+        boolean elevatorL4 = operatorController.getRawButton(4);
     }
 
 
+    /**
+     * updates controls for algae angle and algae roller
+     */
     private void updateAlgaeGrabber() {
-        // TODO Implements
+        AlgaeAngle algaeAngle = AlgaeAngle.getInstance();
+        AlgaeRoller algaeRoller = AlgaeRoller.getInstance();
+
+        double algaeDeadband = 0.05;
+
+        boolean algaeUp = operatorController.getPOV() == 180;
+        boolean algaeDown = operatorController.getPOV() == 0;
+
+        boolean algaeIntake = operatorController.getRightTriggerAxis() > algaeDeadband;
+        boolean algaeEject = operatorController.getLeftTriggerAxis() > algaeDeadband;
+
+       
+        //sets algae intake angle position (D-pad up = down | D-pad down = up)
+        if(algaeUp){
+            algaeAngle.setAngleCommand(Rotation2d.fromDegrees(0));
+        }else if(algaeDown){
+            algaeAngle.setAngleCommand(Rotation2d.fromDegrees(80));
+        }
+
+        //runs algae intake/eject rollers (right trigger = run intake | left trigger = run reverse intake)
+        if(algaeIntake){
+            algaeRoller.runIntake();
+        }else if(algaeEject){
+            algaeRoller.runEject();
+        }else{
+            algaeRoller.stop();
+        }
     }
 
     /**
@@ -234,12 +275,19 @@ public class OperatorInterface extends SubsystemBase {
         // TODO Implement
     }
 
+
+    /**
+     * updates drive (test mode)
+     */
     private void updateDriveTest() {
         // TODO Implement test mode for drivetrain
 
         updateDrive();
     }
 
+    /**
+     * updates elevator, arm, and end effector controls (test mode)
+     */
     private void updateCoralPlacementTest(){
         Arm arm = Arm.getInstance();
         Elevator elevator = Elevator.getInstance();
@@ -259,13 +307,15 @@ public class OperatorInterface extends SubsystemBase {
             end_effector.stop();
         }
     }
-
+    /**
+     * updates controls for algae angle and algae roller (test mode)
+     */
     private void updateAlgaeGrabberTest() {
         AlgaeAngle algae_angle = AlgaeAngle.getInstance();
         AlgaeRoller algae_roller = AlgaeRoller.getInstance();
 
-        double angle_percent_pos = MathUtil.applyDeadband(operatorController.getRightTriggerAxis(), .05);
-        double angle_percent_neg = -MathUtil.applyDeadband(operatorController.getLeftTriggerAxis(), .05);
+        double angle_percent_pos = MathUtil.applyDeadband(operatorController.getRightTriggerAxis(), .05)/4;
+        double angle_percent_neg = -MathUtil.applyDeadband(operatorController.getLeftTriggerAxis(), .05)/4;
         double angle_percent = angle_percent_pos + angle_percent_neg;
 
         algae_angle.setVoltCommand(angle_percent * 12);
@@ -279,6 +329,9 @@ public class OperatorInterface extends SubsystemBase {
         }
     }
 
+    /**
+     * updates controls for climber (test mode)
+     */
     private void updateClimberTest() {
         Climber climber = Climber.getInstance();
 
