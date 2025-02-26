@@ -2,6 +2,8 @@ package frc.robot.subsystems;
 
 import frc.robot.Constants;
 
+import org.opencv.core.Mat;
+
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
@@ -13,6 +15,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -102,7 +105,7 @@ public class AlgaeAngle extends SubsystemBase {
         //What actually sets the rate/ execute the action to set the rate
         @Override
         public void execute(){
-            setRate(targetRate);
+            AlgaeAngle.this.setRate(targetRate);;
         }
 
         @Override
@@ -144,7 +147,7 @@ public class AlgaeAngle extends SubsystemBase {
 
         @Override
         public void execute(){
-            setAngle(Angle);
+            AlgaeAngle.this.setAngle(Angle);
         }
         
         @Override
@@ -180,7 +183,7 @@ public class AlgaeAngle extends SubsystemBase {
 
         VoltageCommand = new VoltageCommand(0);
         RateCommand = new RateCommand(0, 0);
-        AngleCommand = new AngleCommand(Rotation2d.fromDegrees(0));
+        AngleCommand = new AngleCommand(new Rotation2d());
         HoldCommand = new HoldCommand();
 
         setDefaultCommand(HoldCommand);
@@ -189,7 +192,7 @@ public class AlgaeAngle extends SubsystemBase {
     public void shuffleBoardInit(){
         // Setup Shuffleboard
         var layout = Shuffleboard.getTab("Status")
-                .getLayout("", BuiltInLayouts.kList)
+                .getLayout("Algae Angle", BuiltInLayouts.kList)
                 .withSize(2, 6);
 
         sb_Command = layout.add(" Command", "").getEntry();
@@ -218,7 +221,7 @@ public class AlgaeAngle extends SubsystemBase {
      * @return current  angle rate in radians per second
      */
     public double getVelocity() {
-        return relEncoder.getVelocity();
+        return absEncoder.getVelocity();
     }
 
 
@@ -230,7 +233,7 @@ public class AlgaeAngle extends SubsystemBase {
     public boolean atAngle(Rotation2d targetAngle, Rotation2d angleTol) {
         Rotation2d currentAngle = getAngle();
 
-        return Math.abs(targetAngle.getDegrees() - currentAngle.getDegrees()) < angleTol.getDegrees();
+        return Math.abs(targetAngle.minus(currentAngle).getDegrees()) < angleTol.getDegrees();
     }
 
     /**
@@ -242,7 +245,7 @@ public class AlgaeAngle extends SubsystemBase {
         
         // Calculate trapezoidal profile
         Rotation2d currentAngle = getAngle();
-        double maxAngleRate = Constants.maxAlgaeAutoSpeed;
+        double maxAngleRate = Constants.maxAlgaeAutoSpeed/2;
         Rotation2d angleError = targetAngle.minus(currentAngle);
 
         double targetSpeed = maxAngleRate * (angleError.getRadians() > 0 ? 1 : +-1);
@@ -250,7 +253,7 @@ public class AlgaeAngle extends SubsystemBase {
 
         if (Math.abs(rampDownSpeed) < Math.abs(targetSpeed))
             targetSpeed = rampDownSpeed;
-        
+        SmartDashboard.putNumber("Algae Angle Error", angleError.getDegrees());
         setRate(targetSpeed);
     }
 
@@ -272,7 +275,11 @@ public class AlgaeAngle extends SubsystemBase {
         double calcFF = ff.calculate(currentAngle.getRadians(), targetSpeed);
 
         result = calcPID + calcFF;
-        
+        // if(getAngle().getDegrees() < 275 && targetSpeed > 0){
+        //     result = 0;
+        // }else if (getAngle().getDegrees() < 350 && targetSpeed < 0){
+        //     result = 0;
+        // }
         setMotorVolt(result);
         
         //Shuffleboard display
