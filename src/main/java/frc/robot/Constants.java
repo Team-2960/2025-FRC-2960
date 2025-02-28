@@ -120,6 +120,9 @@ public class Constants {
     public static final double elevatorDefTol = .5;         // in.
     public static final double elevatorPosTol = .5;         // in.
 
+    public static final double elevatorTopLim = 59;         //in.
+    public static final double elevatorBotLim = 0.25;        //in.
+
     public static final double elevIntakePos = 0;       // in.
     public static final double elevL1Pos = 0;           // in.
     public static final double elevL2Pos = 0;           // in.

@@ -351,18 +351,21 @@ public class OperatorInterface extends SubsystemBase {
 
     private void sysIdTest(){
         Elevator elevator = Elevator.getInstance();
+        // if (operatorController.getAButton()){
+        //     elevator.setSysIdCommandQuasiUp();
+
+        // } else if(operatorController.getBButton()){
+        //     elevator.setSysIdCommandQuasiDown();
+
+        // } else if(operatorController.getXButton()){
+        //     elevator.setSysIdCommandDynUp();
+
+        // } else if(operatorController.getYButton()){
+        //     elevator.setSysIdCommandDynDown();
+
+        // }
         if (operatorController.getAButton()){
-            elevator.setSysIdCommandQuasiUp();
-
-        } else if(operatorController.getBButton()){
-            elevator.setSysIdCommandQuasiDown();
-
-        } else if(operatorController.getXButton()){
-            elevator.setSysIdCommandDynUp();
-
-        } else if(operatorController.getYButton()){
-            elevator.setSysIdCommandDynDown();
-
+            elevator.setSysIdCommandGroup();
         }
     }
 

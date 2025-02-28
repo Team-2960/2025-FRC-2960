@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import frc.robot.Constants;
+import frc.robot.subsystems.Elevator.SoftLimCheckCommand.SoftLimDirection;
 
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkFlex;
@@ -22,6 +23,7 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -69,10 +71,12 @@ public class Elevator extends SubsystemBase {
     private final MutCurrent appliedCurrent;
     private final MutDistance distance;
     private final MutLinearVelocity linearVelocity;
+
     public final Command sysIdCommandUpQuasi;
     public final Command sysIdCommandDownQuasi;
     public final Command sysIdCommandUpDyn;
     public final Command sysIdCommandDownDyn;
+    public final Command sysIdCommandGroup;
 
     //Command to set the voltage of the Elevator
     public class ElevatorVoltageCommand extends Command{
@@ -203,6 +207,40 @@ public class Elevator extends SubsystemBase {
         }
     }
 
+    public class SoftLimCheckCommand extends Command{
+        public enum SoftLimDirection{
+            UP,
+            DOWN
+        }
+
+        SoftLimDirection softLimDirection;
+        boolean isReached;
+
+        public SoftLimCheckCommand(SoftLimDirection softLimDirection){
+            this.softLimDirection = softLimDirection;
+            isReached = false;
+        }
+
+        public void setDirection(SoftLimDirection softLimDirection){
+            this.softLimDirection = softLimDirection;
+        }
+
+        @Override
+        public void execute(){
+            if(softLimDirection == SoftLimDirection.UP){
+                isReached = topLimitReached();
+
+            }else if(softLimDirection == SoftLimDirection.DOWN){
+                isReached = botLimitReached();
+            }
+        }
+
+        @Override
+        public boolean isFinished(){
+            return isReached;
+        }
+    }
+
 
     private final ElevatorVoltageCommand elevatorVoltageCommand;
     private final ElevatorRateCommand elevatorRateCommand;
@@ -267,6 +305,24 @@ public class Elevator extends SubsystemBase {
         sysIdCommandDownQuasi = sysIdRoutine.quasistatic(edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction.kReverse);
         sysIdCommandUpDyn = sysIdRoutine.dynamic(edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction.kForward);
         sysIdCommandDownDyn = sysIdRoutine.dynamic(edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction.kReverse);
+        sysIdCommandGroup =  new SequentialCommandGroup(
+            new ParallelRaceGroup(
+                sysIdCommandUpQuasi,
+                new SoftLimCheckCommand(SoftLimDirection.UP)
+            ),
+            new ParallelRaceGroup(
+                sysIdCommandDownQuasi,
+                new SoftLimCheckCommand(SoftLimDirection.DOWN)
+            ),
+            new ParallelRaceGroup(
+                sysIdCommandUpDyn,
+                new SoftLimCheckCommand(SoftLimDirection.UP)
+            ),
+            new ParallelRaceGroup(
+                sysIdCommandDownDyn,
+                new SoftLimCheckCommand(SoftLimDirection.DOWN)
+            )
+        );
     }
 
     public void shuffleBoardInit(){
@@ -379,10 +435,10 @@ public class Elevator extends SubsystemBase {
      */
     //TODO Change to use Spark Flex
     private void setMotorVolt(double voltage) {
-        if (getElevatorPos() > 59 && voltage > 0){
+        if (topLimitReached() && voltage > 0){
             voltage = 0;
         }
-        if (getElevatorPos() < 0.25 && voltage < 0){
+        if (botLimitReached() && voltage < 0){
             voltage = 0;
         }
         elevatorMotor.setVoltage(voltage);
@@ -394,10 +450,10 @@ public class Elevator extends SubsystemBase {
 
     private void setMotorVolt(Voltage voltage){
         double voltNum = voltage.baseUnitMagnitude();
-        if (getElevatorPos() > 59 && voltNum > 0){
+        if (topLimitReached() && voltNum > 0){
             voltNum = 0;
         }
-        if (getElevatorPos() < 0.25 && voltNum < 0){
+        if (botLimitReached() && voltNum < 0){
             voltNum = 0;
         }
         
@@ -405,6 +461,22 @@ public class Elevator extends SubsystemBase {
 
         //Shuffleboard display
         this.elevatorVolt = voltNum;
+    }
+
+    public boolean topLimitReached(){
+        if (getElevatorPos() >= Constants.elevatorTopLim){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    public boolean botLimitReached(){
+        if (getElevatorPos() <= Constants.elevatorBotLim){
+            return true;
+        }else{
+            return false;
+        }
     }
 
     private void sysIDLogging(SysIdRoutineLog log){
@@ -462,6 +534,10 @@ public class Elevator extends SubsystemBase {
     public void stopCommands() {
         Command currentCmd = getCurrentCommand();
         if(currentCmd != null) currentCmd.cancel();
+    }
+
+    public void setSysIdCommandGroup(){
+        if (getCurrentCommand() != sysIdCommandGroup) sysIdCommandGroup.schedule();
     }
 
     public void setSysIdCommandQuasiUp(){
