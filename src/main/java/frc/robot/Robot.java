@@ -48,11 +48,11 @@ public class Robot extends TimedRobot {
         oi = OperatorInterface.getInstance();
         // climber = Climber.getInstance();
         // arm = Arm.getInstance();
-        algaeAngle = AlgaeAngle.getInstance();
+        //algaeAngle = AlgaeAngle.getInstance();
         algaeRoller = AlgaeRoller.getInstance();
         // elevArmControl = ElevArmControl.getInstance();
-        // elevator = Elevator.getInstance();
-        // endEffector = EndEffector.getInstance();
+        elevator = Elevator.getInstance();
+        endEffector = EndEffector.getInstance();
         // cameras = Cameras.getInstance();
 
         CameraServer.startAutomaticCapture();

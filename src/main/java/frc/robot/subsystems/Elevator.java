@@ -7,15 +7,29 @@ import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLimitSwitch;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
+import edu.wpi.first.hal.SimDevice.Direction;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.units.measure.MutCurrent;
+import edu.wpi.first.units.measure.MutDistance;
+import edu.wpi.first.units.measure.MutLinearVelocity;
+import edu.wpi.first.units.measure.MutVoltage;
+import edu.wpi.first.units.measure.Velocity;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
+import static edu.wpi.first.units.Units.*;
+
 
 public class Elevator extends SubsystemBase {
     private static Elevator elevator = null;
@@ -49,6 +63,16 @@ public class Elevator extends SubsystemBase {
     private GenericEntry sb_posTargetVolt;
     private GenericEntry sb_posPosRotations;
 
+    //System Identification
+    private final SysIdRoutine sysIdRoutine;
+    private final MutVoltage appliedVoltage;
+    private final MutCurrent appliedCurrent;
+    private final MutDistance distance;
+    private final MutLinearVelocity linearVelocity;
+    public final Command sysIdCommandUpQuasi;
+    public final Command sysIdCommandDownQuasi;
+    public final Command sysIdCommandUpDyn;
+    public final Command sysIdCommandDownDyn;
 
     //Command to set the voltage of the Elevator
     public class ElevatorVoltageCommand extends Command{
@@ -224,7 +248,25 @@ public class Elevator extends SubsystemBase {
         elevatorPosCommand = new ElevatorPosCommand(0);
         elevatorHoldCommand = new ElevatorHoldCommand();
 
-        setDefaultCommand(elevatorHoldCommand);
+        //setDefaultCommand(elevatorHoldCommand);
+
+        //System Identification
+        sysIdRoutine = new SysIdRoutine(
+            new Config(), 
+            new Mechanism(
+                this::setMotorVolt,
+                this::sysIDLogging, this)
+        );
+
+        appliedVoltage = Volts.mutable(0);
+        appliedCurrent = Amps.mutable(0);
+        distance = Inches.mutable(0);
+        linearVelocity =  InchesPerSecond.mutable(0);
+        
+        sysIdCommandUpQuasi = sysIdRoutine.quasistatic(edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction.kForward);
+        sysIdCommandDownQuasi = sysIdRoutine.quasistatic(edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction.kReverse);
+        sysIdCommandUpDyn = sysIdRoutine.dynamic(edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction.kForward);
+        sysIdCommandDownDyn = sysIdRoutine.dynamic(edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction.kReverse);
     }
 
     public void shuffleBoardInit(){
@@ -264,6 +306,13 @@ public class Elevator extends SubsystemBase {
         return elevatorEncoder.getVelocity();
     }
 
+    public double getElevatorVoltage(){
+        return elevatorMotor.getAppliedOutput() * elevatorMotor.getBusVoltage();
+    }
+
+    public double getElevatorCurrent(){
+        return elevatorMotor.getOutputCurrent();
+    }
 
     /**
      * Check if the elevator is at its target position
@@ -330,11 +379,40 @@ public class Elevator extends SubsystemBase {
      */
     //TODO Change to use Spark Flex
     private void setMotorVolt(double voltage) {
+        if (getElevatorPos() > 59 && voltage > 0){
+            voltage = 0;
+        }
+        if (getElevatorPos() < 0.25 && voltage < 0){
+            voltage = 0;
+        }
         elevatorMotor.setVoltage(voltage);
         
         //Shuffleboard display
         this.elevatorVolt = voltage;
         
+    }
+
+    private void setMotorVolt(Voltage voltage){
+        double voltNum = voltage.baseUnitMagnitude();
+        if (getElevatorPos() > 59 && voltNum > 0){
+            voltNum = 0;
+        }
+        if (getElevatorPos() < 0.25 && voltNum < 0){
+            voltNum = 0;
+        }
+        
+        elevatorMotor.setVoltage(voltNum);
+
+        //Shuffleboard display
+        this.elevatorVolt = voltNum;
+    }
+
+    private void sysIDLogging(SysIdRoutineLog log){
+        log.motor("Elevator")
+            .voltage(appliedVoltage.mut_replace(getElevatorVoltage(), Volts))
+            .current(appliedCurrent.mut_replace(getElevatorCurrent(), Amps))
+            .linearPosition(distance.mut_replace(getElevatorPos(), Inches))
+            .linearVelocity(linearVelocity.mut_replace(getElevatorVelocity(), InchesPerSecond));
     }
 
 
@@ -384,6 +462,22 @@ public class Elevator extends SubsystemBase {
     public void stopCommands() {
         Command currentCmd = getCurrentCommand();
         if(currentCmd != null) currentCmd.cancel();
+    }
+
+    public void setSysIdCommandQuasiUp(){
+        if (getCurrentCommand() != sysIdCommandUpQuasi) sysIdCommandUpQuasi.schedule();
+    }
+
+    public void setSysIdCommandQuasiDown(){
+        if (getCurrentCommand() != sysIdCommandDownQuasi) sysIdCommandDownQuasi.schedule();
+    }
+
+    public void setSysIdCommandDynUp(){
+        if (getCurrentCommand() != sysIdCommandUpDyn) sysIdCommandUpDyn.schedule();
+    }
+
+    public void setSysIdCommandDynDown(){
+        if (getCurrentCommand() != sysIdCommandDownDyn) sysIdCommandDownDyn.schedule();
     }
 
     /**
