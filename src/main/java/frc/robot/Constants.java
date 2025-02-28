@@ -109,12 +109,12 @@ public class Constants {
 
     //Elevator
     public static PIDParam elevatorPIDS = new PIDParam(0.01, 0.0, 0.0);
-    public static FFParam elevatorFFS = FFParam.arm(.1, 2, 0.25, 0.0);
+    public static FFParam elevatorFFS = FFParam.arm(0, 0, 0.25, 0.0);
     
-    public static final double elevatorGearRatio = 1/25;    // rot. out / rot. in
+    public static final double elevatorGearRatio = 1.0/12.0 * 2.0;    // rot. out / rot. in
     public static final double elevatorOutputDiam = 1.751;  // in.
 
-    public static final double elevatorScale = elevatorGearRatio * elevatorOutputDiam;           // in. / rot.
+    public static final double elevatorScale = elevatorGearRatio * elevatorOutputDiam * Math.PI;           // in. / rot.
     public static final double maxElevatorAutoSpeed = 1;    // in. / s
     public static final double elevatorRampDownDist = 1;    // in.
     public static final double elevatorDefTol = .5;         // in.
@@ -129,8 +129,8 @@ public class Constants {
     public static final double elevHighAlgaePos = 0;    // in.
 
     //End Effector
-    public static final double coralEjectVolt = 12;
-    public static final double coralIntakeVolt = 6;
+    public static final double coralEjectVolt = 6;
+    public static final double coralIntakeVolt = 2;
     public static final double algaeRemovalVolt = 12;
     public static final double coralEjectTime = 1;
 
@@ -140,10 +140,10 @@ public class Constants {
 
     
     public static final double maxAlgaeAutoSpeed = 1 * Math.PI;  //radians /s
-    public static final Rotation2d algaeRampDownDist = Rotation2d.fromDegrees(20);
+    public static final Rotation2d algaeRampDownDist = Rotation2d.fromDegrees(30);
 
     public static final double algaeEjectVolt = -3;
-    public static final double algaeIntakeVolt = 2;
+    public static final double algaeIntakeVolt = 3;
 
     // Climber
     public static final double winchDiam = 1.5; // in.

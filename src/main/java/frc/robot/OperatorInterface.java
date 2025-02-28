@@ -123,16 +123,17 @@ public class OperatorInterface extends SubsystemBase {
         if (DriverStation.isTeleop()) {
             updateDrive();
             updateCoralPlacement();
-            updateAlgaeGrabber();
-            updateClimber();
+            //updateAlgaeGrabber();
+            //updateClimber();
             //updateElevator();
             //updateEndEffector();
             updateDriverFeedback();
         } else if(DriverStation.isTest()) {
-            updateDriveTest();
-            updateCoralPlacementTest();
-            updateAlgaeGrabberTest();
-            updateClimberTest();
+            //updateDriveTest();
+            //updateCoralPlacementTest();
+            //updateAlgaeGrabberTest();
+            //updateClimberTest();
+            sysIdTest();
         }
     }
 
@@ -217,14 +218,15 @@ public class OperatorInterface extends SubsystemBase {
      * updates controls for elevator, arm, and end effector
      */
     private void updateCoralPlacement(){//TODO finish whatever is needed for this
-        Elevator elevator = Elevator.getInstance();
-        EndEffector endEffector = EndEffector.getInstance();
-        Arm arm = Arm.getInstance();
+        // Elevator elevator = Elevator.getInstance();
+        // EndEffector endEffector = EndEffector.getInstance();
+        // Arm arm = Arm.getInstance();
 
-        //L2 = button A | L3 = button B | L4 = button Y
-        boolean elevatorL2 = operatorController.getRawButton(1);
-        boolean elevatorL3 = operatorController.getRawButton(2);
-        boolean elevatorL4 = operatorController.getRawButton(4);
+        // //L2 = button A | L3 = button B | L4 = button Y
+        // boolean elevatorL2 = operatorController.getRawButton(1);
+        // boolean elevatorL3 = operatorController.getRawButton(2);
+        // boolean elevatorL4 = operatorController.getRawButton(4);
+        EndEffector endEffector = EndEffector.getInstance();
     }
 
 
@@ -289,14 +291,14 @@ public class OperatorInterface extends SubsystemBase {
      * updates elevator, arm, and end effector controls (test mode)
      */
     private void updateCoralPlacementTest(){
-        Arm arm = Arm.getInstance();
+        //Arm arm = Arm.getInstance();
         Elevator elevator = Elevator.getInstance();
         EndEffector end_effector = EndEffector.getInstance();
 
         double arm_percent = MathUtil.applyDeadband(operatorController.getLeftY(), .05);
-        double elev_percent = MathUtil.applyDeadband(operatorController.getRightY(), .05);
+        double elev_percent = -MathUtil.applyDeadband(operatorController.getRightY(), .05);
         
-        arm.setVoltCommand(arm_percent * 12);
+        //arm.setVoltCommand(arm_percent * 12);
         elevator.setVoltCommand(elev_percent * 12);
 
         if(operatorController.getAButton()) {
@@ -307,6 +309,7 @@ public class OperatorInterface extends SubsystemBase {
             end_effector.stop();
         }
     }
+    
     /**
      * updates controls for algae angle and algae roller (test mode)
      */
@@ -343,6 +346,23 @@ public class OperatorInterface extends SubsystemBase {
             climber.runReset();
         } else {
             climber.stop();
+        }
+    }
+
+    private void sysIdTest(){
+        Elevator elevator = Elevator.getInstance();
+        if (operatorController.getAButton()){
+            elevator.setSysIdCommandQuasiUp();
+
+        } else if(operatorController.getBButton()){
+            elevator.setSysIdCommandQuasiDown();
+
+        } else if(operatorController.getXButton()){
+            elevator.setSysIdCommandDynUp();
+
+        } else if(operatorController.getYButton()){
+            elevator.setSysIdCommandDynDown();
+
         }
     }
 
