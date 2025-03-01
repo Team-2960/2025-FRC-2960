@@ -75,6 +75,7 @@ public class EndEffector extends SubsystemBase{
 
         public TimedEjectCmd(double runTime) {
             super(runTime);
+            addRequirements(EndEffector.this);
         }
 
         @Override
