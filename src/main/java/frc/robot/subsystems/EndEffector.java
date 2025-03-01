@@ -120,7 +120,7 @@ public class EndEffector extends SubsystemBase{
         intakeCmd = new IntakeCmd();
 
         intakeTrigger = new Trigger(coralPresentPE::get);
-        intakeTrigger.whileTrue(intakeCmd);
+        intakeTrigger.whileFalse(intakeCmd);
         
 
         //Setup Shuffleboard

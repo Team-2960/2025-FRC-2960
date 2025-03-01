@@ -1,6 +1,8 @@
 package frc.robot.subsystems;
 
 import frc.robot.Constants;
+import frc.robot.subsystems.Elevator.SoftLimCheckCommand;
+import frc.robot.subsystems.Elevator.SoftLimCheckCommand.SoftLimDirection;
 
 import org.opencv.core.Mat;
 
@@ -13,11 +15,27 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.units.measure.MutAngle;
+import edu.wpi.first.units.measure.MutAngularVelocity;
+import edu.wpi.first.units.measure.MutCurrent;
+import edu.wpi.first.units.measure.MutDistance;
+import edu.wpi.first.units.measure.MutLinearVelocity;
+import edu.wpi.first.units.measure.MutVoltage;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
+
+import static edu.wpi.first.units.Units.*;
+
 
 public class AlgaeAngle extends SubsystemBase {
     private static AlgaeAngle instance = null;
@@ -42,6 +60,21 @@ public class AlgaeAngle extends SubsystemBase {
     private GenericEntry sb_angleRateError;
     private GenericEntry sb_angleVolt;
     private GenericEntry sb_angleTargetVolt;
+    private GenericEntry sb_angleAtTopLim;
+    private GenericEntry sb_angleAtBotLim;
+
+    //System Identification
+    private final SysIdRoutine sysIdRoutine;
+    private final MutVoltage appliedVoltage;
+    private final MutCurrent appliedCurrent;
+    private final MutAngle angle;
+    private final MutAngularVelocity angularVelocity;
+
+    public final Command sysIdCommandUpQuasi;
+    public final Command sysIdCommandDownQuasi;
+    public final Command sysIdCommandUpDyn;
+    public final Command sysIdCommandDownDyn;
+    public final Command sysIdCommandGroup;
 
     /**
      * Voltage Control Command
@@ -133,6 +166,40 @@ public class AlgaeAngle extends SubsystemBase {
         }
     }
 
+    public class SoftLimCheckCommand extends Command{
+        public enum SoftLimDirection{
+            UP,
+            DOWN
+        }
+
+        SoftLimDirection softLimDirection;
+        boolean isReached;
+
+        public SoftLimCheckCommand(SoftLimDirection softLimDirection){
+            this.softLimDirection = softLimDirection;
+            isReached = false;
+        }
+
+        public void setDirection(SoftLimDirection softLimDirection){
+            this.softLimDirection = softLimDirection;
+        }
+
+        @Override
+        public void execute(){
+            if(softLimDirection == SoftLimDirection.UP){
+                isReached = topLimitReached();
+
+            }else if(softLimDirection == SoftLimDirection.DOWN){
+                isReached = botLimitReached();
+            }
+        }
+
+        @Override
+        public boolean isFinished(){
+            return isReached;
+        }
+    }
+
     public class AngleCommand extends Command{
         private Rotation2d Angle;
         
@@ -168,7 +235,7 @@ public class AlgaeAngle extends SubsystemBase {
     private AlgaeAngle() {        
         motor = new SparkMax(Constants.algaeAngleMotor, MotorType.kBrushless);
         absEncoder = motor.getAbsoluteEncoder();
-        relEncoder = motor.getAlternateEncoder();
+        relEncoder = motor.getEncoder();
 
         pid = new PIDController(Constants.algaeAnglePID.kP, Constants.algaeAnglePID.kP, Constants.algaeAnglePID.kP);
 
@@ -186,7 +253,47 @@ public class AlgaeAngle extends SubsystemBase {
         AngleCommand = new AngleCommand(new Rotation2d());
         HoldCommand = new HoldCommand();
 
-        setDefaultCommand(HoldCommand);
+        //setDefaultCommand(HoldCommand);
+
+        //System Identification
+        sysIdRoutine = new SysIdRoutine(
+            new Config(
+                Volts.per(Second).of(.25),
+                Volts.of(3),
+                Seconds.of(10)
+            ), 
+            new Mechanism(
+                this::setMotorVolt,
+                this::sysIDLogging, this)
+        );
+
+        appliedVoltage = Volts.mutable(0);
+        appliedCurrent = Amps.mutable(0);
+        angle = Degrees.mutable(0);
+        angularVelocity =  DegreesPerSecond.mutable(0);
+        
+        sysIdCommandUpQuasi = sysIdRoutine.quasistatic(edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction.kForward);
+        sysIdCommandDownQuasi = sysIdRoutine.quasistatic(edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction.kReverse);
+        sysIdCommandUpDyn = sysIdRoutine.dynamic(edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction.kForward);
+        sysIdCommandDownDyn = sysIdRoutine.dynamic(edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction.kReverse);
+        sysIdCommandGroup =  new SequentialCommandGroup(
+            new ParallelRaceGroup(
+                sysIdCommandDownQuasi,
+                new SoftLimCheckCommand(frc.robot.subsystems.AlgaeAngle.SoftLimCheckCommand.SoftLimDirection.DOWN)
+            ),
+            new ParallelRaceGroup(
+                sysIdCommandUpQuasi,
+                new SoftLimCheckCommand(frc.robot.subsystems.AlgaeAngle.SoftLimCheckCommand.SoftLimDirection.UP)
+            ),
+            new ParallelRaceGroup(
+                sysIdCommandDownDyn,
+                new SoftLimCheckCommand(frc.robot.subsystems.AlgaeAngle.SoftLimCheckCommand.SoftLimDirection.DOWN)
+            ),
+            new ParallelRaceGroup(
+                sysIdCommandUpDyn,
+                new SoftLimCheckCommand(frc.robot.subsystems.AlgaeAngle.SoftLimCheckCommand.SoftLimDirection.UP)
+            )
+        );
     }
 
     public void shuffleBoardInit(){
@@ -203,6 +310,8 @@ public class AlgaeAngle extends SubsystemBase {
         sb_angleRateError = layout.add("Angle Rate Error", 0).getEntry();
         sb_angleVolt = layout.add("Angle Motor Voltage", 0).getEntry();
         sb_angleTargetVolt = layout.add("Angle Target Voltage", 0).getEntry();
+        sb_angleAtTopLim = layout.add("Top Limit Angle", false).getEntry();
+        sb_angleAtBotLim = layout.add("Bottom Limit Angle", false).getEntry();
 
     }
 
@@ -212,16 +321,31 @@ public class AlgaeAngle extends SubsystemBase {
      * @return current  angle
      */
     public Rotation2d getAngle() {
-        return Rotation2d.fromRotations(absEncoder.getPosition());
+        double rotations = absEncoder.getPosition();
+        if (rotations >= 0.5){
+            rotations = 1.0 - rotations;
+        }else{
+            rotations = -rotations;
+        }
+        return Rotation2d.fromRotations(rotations);
     }
 
     /**
      * Gets the current  angle rate
      * 
-     * @return current  angle rate in radians per second
+     * @return current  angle rate in degrees per second
      */
     public double getVelocity() {
-        return absEncoder.getVelocity();
+        //return -absEncoder.getVelocity()/60 * 360;
+        return relEncoder.getVelocity()/60 * 360 * 22.0/(42.0 * 25.0);
+    }
+
+    public double getVoltage(){
+        return motor.getAppliedOutput() * motor.getBusVoltage();
+    }
+
+    public double getCurrent(){
+        return motor.getOutputCurrent();
     }
 
 
@@ -275,11 +399,7 @@ public class AlgaeAngle extends SubsystemBase {
         double calcFF = ff.calculate(currentAngle.getRadians(), targetSpeed);
 
         result = calcPID + calcFF;
-        // if(getAngle().getDegrees() < 275 && targetSpeed > 0){
-        //     result = 0;
-        // }else if (getAngle().getDegrees() < 350 && targetSpeed < 0){
-        //     result = 0;
-        // }
+
         setMotorVolt(result);
         
         //Shuffleboard display
@@ -294,12 +414,54 @@ public class AlgaeAngle extends SubsystemBase {
      */
     //TODO Change to use Spark Flex
     private void setMotorVolt(double voltage) {
+        if (topLimitReached() && voltage > 0){
+            voltage = 0;
+        }
+        if (botLimitReached() && voltage < 0){
+            voltage = 0;
+        }
+
         motor.setVoltage(voltage);
         
         //Shuffleboard display
         this.voltage = voltage;
         
     }
+
+    private void setMotorVolt(Voltage voltage){
+        double voltNum = voltage.baseUnitMagnitude();
+        if (topLimitReached() && voltNum > 0){
+            voltNum = 0;
+        }
+        if (botLimitReached() && voltNum < 0){
+            voltNum = 0;
+        }
+        
+        motor.setVoltage(voltNum);
+
+        //Shuffleboard display
+        this.voltage = voltNum;
+    }
+
+    public boolean topLimitReached(){
+        return getAngle().getDegrees() >= Constants.algaeTopLim.getDegrees();
+    }
+
+    public boolean botLimitReached(){
+        return getAngle().getDegrees() <= Constants.algaeBotLim.getDegrees();
+
+    }
+
+    private void sysIDLogging(SysIdRoutineLog log){
+        double velocity = getVelocity();
+        System.out.println(velocity);
+        log.motor("Algae Angle")
+            .voltage(appliedVoltage.mut_replace(getVoltage(), Volts))
+            .current(appliedCurrent.mut_replace(getCurrent(), Amps))
+            .angularPosition(angle.mut_replace(getAngle().getDegrees(), Degrees))
+            .angularVelocity(angularVelocity.mut_replace(velocity, DegreesPerSecond));
+    }
+
 
     /**
      * Updates shuffleboard
@@ -317,6 +479,8 @@ public class AlgaeAngle extends SubsystemBase {
         sb_angleRateSetPoint.setDouble(targetRate);
         sb_angleVolt.setDouble(motor.getAppliedOutput() * motor.getBusVoltage());
         sb_angleTargetVolt.setDouble(targetVolt);
+        sb_angleAtTopLim.setBoolean(topLimitReached());
+        sb_angleAtBotLim.setBoolean(botLimitReached());
     }
 
     public void setVoltCommand(double voltage) {
@@ -346,6 +510,10 @@ public class AlgaeAngle extends SubsystemBase {
     public void stopCommands() {
         Command currentCmd = getCurrentCommand();
         if(currentCmd != null) currentCmd.cancel();
+    }
+
+    public void setSysIdCommandGroup(){
+        if (getCurrentCommand() != sysIdCommandGroup) sysIdCommandGroup.schedule();
     }
     
     /**

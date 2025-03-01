@@ -115,27 +115,7 @@ public class OperatorInterface extends SubsystemBase {
     }
     
 
-    /**
-     * Subsystem Period Method
-     */
-    @Override
-    public void periodic() {
-        if (DriverStation.isTeleop()) {
-            updateDrive();
-            updateCoralPlacement();
-            //updateAlgaeGrabber();
-            //updateClimber();
-            //updateElevator();
-            //updateEndEffector();
-            updateDriverFeedback();
-        } else if(DriverStation.isTest()) {
-            //updateDriveTest();
-            //updateCoralPlacementTest();
-            //updateAlgaeGrabberTest();
-            //updateClimberTest();
-            sysIdTest();
-        }
-    }
+    
 
     /**
      * Updates the controls for the drivetrain
@@ -218,15 +198,22 @@ public class OperatorInterface extends SubsystemBase {
      * updates controls for elevator, arm, and end effector
      */
     private void updateCoralPlacement(){//TODO finish whatever is needed for this
-        // Elevator elevator = Elevator.getInstance();
-        // EndEffector endEffector = EndEffector.getInstance();
+        Elevator elevator = Elevator.getInstance();
+        EndEffector endEffector = EndEffector.getInstance();
         // Arm arm = Arm.getInstance();
 
         // //L2 = button A | L3 = button B | L4 = button Y
         // boolean elevatorL2 = operatorController.getRawButton(1);
         // boolean elevatorL3 = operatorController.getRawButton(2);
         // boolean elevatorL4 = operatorController.getRawButton(4);
-        EndEffector endEffector = EndEffector.getInstance();
+
+        double elevatorRate = MathUtil.applyDeadband(operatorController.getRightY(), 0.05);
+        if(Math.abs(elevatorRate) > 0){
+            elevator.setRateCommand(elevatorRate);
+        }else if (operatorController.getAButton()){
+            elevator.setPosCommand(30);
+        }
+        //elevator.setRateCommand(elevatorRate);
     }
 
 
@@ -293,7 +280,7 @@ public class OperatorInterface extends SubsystemBase {
     private void updateCoralPlacementTest(){
         //Arm arm = Arm.getInstance();
         Elevator elevator = Elevator.getInstance();
-        EndEffector end_effector = EndEffector.getInstance();
+        //EndEffector end_effector = EndEffector.getInstance();
 
         double arm_percent = MathUtil.applyDeadband(operatorController.getLeftY(), .05);
         double elev_percent = -MathUtil.applyDeadband(operatorController.getRightY(), .05);
@@ -301,13 +288,13 @@ public class OperatorInterface extends SubsystemBase {
         //arm.setVoltCommand(arm_percent * 12);
         elevator.setVoltCommand(elev_percent * 12);
 
-        if(operatorController.getAButton()) {
-            end_effector.runEject();
-        } else if(operatorController.getBButton()) {
-            end_effector.runIntake();
-        }else {
-            end_effector.stop();
-        }
+        // if(operatorController.getAButton()) {
+        //     end_effector.runEject();
+        // } else if(operatorController.getBButton()) {
+        //     end_effector.runIntake();
+        // }else {
+        //     end_effector.stop();
+        // }
     }
     
     /**
@@ -321,7 +308,9 @@ public class OperatorInterface extends SubsystemBase {
         double angle_percent_neg = -MathUtil.applyDeadband(operatorController.getLeftTriggerAxis(), .05)/4;
         double angle_percent = angle_percent_pos + angle_percent_neg;
 
-        algae_angle.setVoltCommand(angle_percent * 12);
+        double anglePercent = MathUtil.applyDeadband(operatorController.getLeftY(), 0.05);
+        //algae_angle.setVoltCommand(angle_percent * 12);
+        algae_angle.setRateCommand(anglePercent);
 
         if(operatorController.getXButton()) {
             algae_roller.runEject();
@@ -350,7 +339,8 @@ public class OperatorInterface extends SubsystemBase {
     }
 
     private void sysIdTest(){
-        Elevator elevator = Elevator.getInstance();
+        //Elevator elevator = Elevator.getInstance();
+        AlgaeAngle algaeAngle = AlgaeAngle.getInstance();
         // if (operatorController.getAButton()){
         //     elevator.setSysIdCommandQuasiUp();
 
@@ -365,7 +355,29 @@ public class OperatorInterface extends SubsystemBase {
 
         // }
         if (operatorController.getAButton()){
-            elevator.setSysIdCommandGroup();
+            algaeAngle.setSysIdCommandGroup();
+        }
+    }
+
+    /**
+     * Subsystem Period Method
+     */
+    @Override
+    public void periodic() {
+        if (DriverStation.isTeleop()) {
+            updateDrive();
+            updateCoralPlacement();
+            //updateAlgaeGrabber();
+            //updateClimber();
+            //updateElevator();
+            //updateEndEffector();
+            updateDriverFeedback();
+        } else if(DriverStation.isTest()) {
+            //updateDriveTest();
+            //updateCoralPlacementTest();
+            updateAlgaeGrabberTest();
+            //updateClimberTest();
+            //sysIdTest();
         }
     }
 

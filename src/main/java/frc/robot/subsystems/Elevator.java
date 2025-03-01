@@ -12,6 +12,7 @@ import edu.wpi.first.hal.SimDevice.Direction;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.MutCurrent;
 import edu.wpi.first.units.measure.MutDistance;
 import edu.wpi.first.units.measure.MutLinearVelocity;
@@ -31,6 +32,8 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 import static edu.wpi.first.units.Units.*;
+
+import java.security.GeneralSecurityException;
 
 
 public class Elevator extends SubsystemBase {
@@ -64,6 +67,8 @@ public class Elevator extends SubsystemBase {
     private GenericEntry sb_posVolt;
     private GenericEntry sb_posTargetVolt;
     private GenericEntry sb_posPosRotations;
+    private GenericEntry sb_topSoftLim;
+    private GenericEntry sb_botSoftLim;
 
     //System Identification
     private final SysIdRoutine sysIdRoutine;
@@ -133,10 +138,10 @@ public class Elevator extends SubsystemBase {
             setElevatorRate(targetRate);
         }
 
-        @Override
-        public boolean isFinished(){
-            return targetRate == 0 || Math.abs(targetRate) <= tolerance;
-        }
+        // @Override
+        // public boolean isFinished(){
+        //     return targetRate == 0 || Math.abs(targetRate) <= tolerance;
+        // }
     }
 
     public class ElevatorHoldCommand extends Command{
@@ -286,11 +291,15 @@ public class Elevator extends SubsystemBase {
         elevatorPosCommand = new ElevatorPosCommand(0);
         elevatorHoldCommand = new ElevatorHoldCommand();
 
-        //setDefaultCommand(elevatorHoldCommand);
+        setDefaultCommand(elevatorHoldCommand);
 
         //System Identification
         sysIdRoutine = new SysIdRoutine(
-            new Config(), 
+            new Config(
+                Volts.per(Second).of(.5),
+                Volts.of(7),
+                Seconds.of(10)
+            ), 
             new Mechanism(
                 this::setMotorVolt,
                 this::sysIDLogging, this)
@@ -340,6 +349,9 @@ public class Elevator extends SubsystemBase {
         sb_posVolt = layout.add("Pos Motor Voltage", 0).getEntry();
         sb_posTargetVolt = layout.add("Pos Target Voltage", 0).getEntry();
         sb_posPosRotations = layout.add("Elevator Encoder Rotations Output", 0).getEntry();
+        sb_topSoftLim = layout.add("Elevator Top Soft Lim", false).getEntry();
+        sb_botSoftLim = layout.add("Elevator Bottom Soft Lim", false).getEntry();
+        
 
     }
 
@@ -349,8 +361,7 @@ public class Elevator extends SubsystemBase {
      * @return current elevator position (in)
      */
     public double getElevatorPos() {
-        double pos = elevatorEncoder.getPosition() * Constants.elevatorScale;
-        return pos;
+        return elevatorEncoder.getPosition() * Constants.elevatorScale;
     }
 
     /**
@@ -359,7 +370,7 @@ public class Elevator extends SubsystemBase {
      * @return current elevator velocity (in per sec)
      */
     public double getElevatorVelocity() {
-        return elevatorEncoder.getVelocity();
+        return elevatorEncoder.getVelocity() * Constants.elevatorScale / 60.0;
     }
 
     public double getElevatorVoltage(){
@@ -410,14 +421,14 @@ public class Elevator extends SubsystemBase {
     private void setElevatorRate(double targetSpeed) {
         double result = this.elevatorRate;
 
-        double currentPos = getElevatorPos();
+        //double currentPos = getElevatorPos();
         double posRate = getElevatorVelocity();            
 
         sb_posRateError.setDouble(posRate - targetSpeed);
 
         // Calculate motor voltage output
         double calcPID = elevatorPID.calculate(posRate, targetSpeed);
-        double calcFF = elevatorFF.calculate(currentPos, targetSpeed);
+        double calcFF = elevatorFF.calculate(targetSpeed);
 
         result = calcPID + calcFF;
         
@@ -441,11 +452,11 @@ public class Elevator extends SubsystemBase {
         if (botLimitReached() && voltage < 0){
             voltage = 0;
         }
+
         elevatorMotor.setVoltage(voltage);
         
         //Shuffleboard display
         this.elevatorVolt = voltage;
-        
     }
 
     private void setMotorVolt(Voltage voltage){
@@ -464,19 +475,12 @@ public class Elevator extends SubsystemBase {
     }
 
     public boolean topLimitReached(){
-        if (getElevatorPos() >= Constants.elevatorTopLim){
-            return true;
-        }else{
-            return false;
-        }
+        return getElevatorPos() >= Constants.elevatorTopLim;
     }
 
     public boolean botLimitReached(){
-        if (getElevatorPos() <= Constants.elevatorBotLim){
-            return true;
-        }else{
-            return false;
-        }
+        return getElevatorPos() <= Constants.elevatorBotLim;
+
     }
 
     private void sysIDLogging(SysIdRoutineLog log){
@@ -503,8 +507,10 @@ public class Elevator extends SubsystemBase {
         sb_posRateCurrent.setDouble(getElevatorVelocity());
         sb_posRateSetPoint.setDouble(targetRate);
         sb_posVolt.setDouble(elevatorMotor.getAppliedOutput() * elevatorMotor.getBusVoltage());
-        sb_posTargetVolt.setDouble(targetVolt);
+        sb_posTargetVolt.setDouble(this.elevatorVolt);
         sb_posPosRotations.setDouble(elevatorEncoder.getPosition());
+        sb_topSoftLim.setBoolean(topLimitReached());
+        sb_botSoftLim.setBoolean(botLimitReached());
     }
 
     public void setVoltCommand(double voltage) {

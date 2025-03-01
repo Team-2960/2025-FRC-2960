@@ -108,8 +108,8 @@ public class Constants {
     public static final Rotation2d armAlgaeRemoveAngle = Rotation2d.fromDegrees(80);
 
     //Elevator
-    public static PIDParam elevatorPIDS = new PIDParam(0.01, 0.0, 0.0);
-    public static FFParam elevatorFFS = FFParam.arm(0, 0, 0.25, 0.0);
+    public static PIDParam elevatorPIDS = new PIDParam(0.0017692, 0.0, 0.0); //0.02132
+    public static FFParam elevatorFFS = FFParam.elevator(0.22643, 4.4162, 0, 0.33045);
     
     public static final double elevatorGearRatio = 1.0/12.0 * 2.0;    // rot. out / rot. in
     public static final double elevatorOutputDiam = 1.751;  // in.
@@ -120,7 +120,7 @@ public class Constants {
     public static final double elevatorDefTol = .5;         // in.
     public static final double elevatorPosTol = .5;         // in.
 
-    public static final double elevatorTopLim = 59;         //in.
+    public static final double elevatorTopLim = 57.5;         //in.
     public static final double elevatorBotLim = 0.25;        //in.
 
     public static final double elevIntakePos = 0;       // in.
@@ -138,8 +138,8 @@ public class Constants {
     public static final double coralEjectTime = 1;
 
     //Algae Roller
-    public static final PIDParam algaeAnglePID = new PIDParam(0.01, 0.0, 0.0);
-    public static final FFParam algaeAngleFF = FFParam.arm(.1, 2, 0.25, 0.0);
+    public static final PIDParam algaeAnglePID = new PIDParam(0.0, 0.0, 0.0);
+    public static final FFParam algaeAngleFF = FFParam.arm(0.15488, 5.0985, 0, 0.48409);
 
     
     public static final double maxAlgaeAutoSpeed = 1 * Math.PI;  //radians /s
@@ -147,6 +147,9 @@ public class Constants {
 
     public static final double algaeEjectVolt = -3;
     public static final double algaeIntakeVolt = 3;
+
+    public static final Rotation2d algaeTopLim = Rotation2d.fromDegrees(88);
+    public static final Rotation2d algaeBotLim = Rotation2d.fromDegrees(10);
 
     // Climber
     public static final double winchDiam = 1.5; // in.
