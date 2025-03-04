@@ -13,6 +13,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 public class Climber extends SubsystemBase {
 
+
     public class ExtendCmd extends Command {
         public ExtendCmd() {
             addRequirements(Climber.this);
@@ -72,6 +73,24 @@ public class Climber extends SubsystemBase {
         }
     }
 
+    public class ClimberVoltageCommand extends Command{
+        private double voltage;
+
+        public ClimberVoltageCommand(double voltage){
+            this.voltage = voltage;
+            addRequirements(Climber.this);
+        }
+
+        public void setVoltage(double voltage){
+            this.voltage = voltage;
+        }
+
+        @Override
+        public void execute(){
+            setMotorVolt(voltage);
+        }
+    }
+
 
     private static Climber climber = null;
 
@@ -82,6 +101,7 @@ public class Climber extends SubsystemBase {
     private final ExtendCmd extendCmd;
     private final RetractCmd retractCmd;
     private final ResetCmd resetCmd;
+    private final ClimberVoltageCommand climberVoltageCommand;
 
     private final GenericEntry sb_command;
     private final GenericEntry sb_voltage;
@@ -102,6 +122,7 @@ public class Climber extends SubsystemBase {
         extendCmd = new ExtendCmd();
         retractCmd = new RetractCmd();
         resetCmd = new ResetCmd();
+        climberVoltageCommand = new ClimberVoltageCommand(0);
 
         // Setup Shuffleboard
         var layout = Shuffleboard.getTab("Status")
@@ -139,6 +160,11 @@ public class Climber extends SubsystemBase {
 
     public void runReset() {
         if(getCurrentCommand() != resetCmd) resetCmd.schedule();
+    }
+
+    public void setClimberVoltage(double voltage){
+        climberVoltageCommand.setVoltage(voltage);
+        if(getCurrentCommand() != climberVoltageCommand) climberVoltageCommand.schedule();
     }
 
     public void stop() {
