@@ -56,7 +56,7 @@ public class Robot extends TimedRobot {
         // cameras = Cameras.getInstance();
 
         CameraServer.startAutomaticCapture();
-        // robotContainer = RobotContainer.getInstance();
+        robotContainer = RobotContainer.getInstance();
     }
 
     @Override

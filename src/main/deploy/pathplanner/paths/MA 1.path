@@ -4,36 +4,31 @@
     {
       "anchor": {
         "x": 8.062993421052632,
-        "y": 6.555509868421052
+        "y": 4.015378289473684
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.7188469122569305,
-        "y": 6.059202769830046
+        "x": 7.062993421052624,
+        "y": 4.015378289473684
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 5.147615131578947,
-        "y": 5.1411184210526315
+        "x": 5.801891447368421,
+        "y": 4.015378289473684
       },
       "prevControl": {
-        "x": 5.909118372889594,
-        "y": 5.533704966506345
+        "x": 6.801891447368421,
+        "y": 4.015378289473684
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Test Path 1 End"
+      "linkedName": "MA 1 End"
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0.5,
-      "rotationDegrees": -119.99999999999999
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [],
@@ -47,10 +42,10 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -119.99999999999999
+    "rotation": 180.0
   },
   "reversed": false,
-  "folder": "Test Paths",
+  "folder": "Middle Auton",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 180.0
