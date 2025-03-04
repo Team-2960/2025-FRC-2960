@@ -115,24 +115,7 @@ public class OperatorInterface extends SubsystemBase {
     }
     
 
-    /**
-     * Subsystem Period Method
-     */
-    @Override
-    public void periodic() {
-        if (DriverStation.isTeleop()) {
-            updateDrive();
-            updateCoralPlacement();
-            updateAlgaeGrabber();
-            updateClimber();
-            updateDriverFeedback();
-        } else if(DriverStation.isTest()) {
-            updateDriveTest();
-            updateCoralPlacementTest();
-            updateAlgaeGrabberTest();
-            updateClimberTest();
-        }
-    }
+    
 
     /**
      * Updates the controls for the drivetrain
@@ -194,12 +177,12 @@ public class OperatorInterface extends SubsystemBase {
             } else if (driverController.getRawButton(4)){
                 //Shuffle distance should be 0.15875
                 if (driverController.getRawButton(5)){
-                    drive.goToReef(new Pose2d(-Constants.robotLength/2, 0.3, Rotation2d.fromDegrees(180)));
+                    drive.goToReef(new Pose2d(-Constants.robotLength/2, 0.3, Rotation2d.fromDegrees(0)));
 
                 } else if (driverController.getRawButton(6)){
-                    drive.goToReef(new Pose2d(-Constants.robotLength/2, -0.3, Rotation2d.fromDegrees(180)));
+                    drive.goToReef(new Pose2d(-Constants.robotLength/2, -0.3, Rotation2d.fromDegrees(0)));
                 }else{
-                    drive.goToReef(new Pose2d(-Constants.robotLength/2, 0, Rotation2d.fromDegrees(180)));
+                    drive.goToReef(new Pose2d(-Constants.robotLength/2, 0, Rotation2d.fromDegrees(0)));
                 }
             }
         }
@@ -211,13 +194,60 @@ public class OperatorInterface extends SubsystemBase {
         sb_driveFR.setBoolean(fieldRelative);
     }
 
-    private void updateCoralPlacement() {
-        // TODO Implement
+    /**
+     * updates controls for elevator, arm, and end effector
+     */
+    private void updateCoralPlacement(){//TODO finish whatever is needed for this
+        Elevator elevator = Elevator.getInstance();
+        EndEffector endEffector = EndEffector.getInstance();
+        // Arm arm = Arm.getInstance();
+
+        // //L2 = button A | L3 = button B | L4 = button Y
+        // boolean elevatorL2 = operatorController.getRawButton(1);
+        // boolean elevatorL3 = operatorController.getRawButton(2);
+        // boolean elevatorL4 = operatorController.getRawButton(4);
+
+        double elevatorRate = MathUtil.applyDeadband(operatorController.getRightY(), 0.05);
+        if(Math.abs(elevatorRate) > 0){
+            elevator.setRateCommand(elevatorRate);
+        }else if (operatorController.getAButton()){
+            elevator.setPosCommand(30);
+        }
+        //elevator.setRateCommand(elevatorRate);
     }
 
 
+    /**
+     * updates controls for algae angle and algae roller
+     */
     private void updateAlgaeGrabber() {
-        // TODO Implements
+        AlgaeAngle algaeAngle = AlgaeAngle.getInstance();
+        AlgaeRoller algaeRoller = AlgaeRoller.getInstance();
+
+        double algaeDeadband = 0.05;
+
+        boolean algaeUp = operatorController.getPOV() == 180;
+        boolean algaeDown = operatorController.getPOV() == 0;
+
+        boolean algaeIntake = operatorController.getRightTriggerAxis() > algaeDeadband;
+        boolean algaeEject = operatorController.getLeftTriggerAxis() > algaeDeadband;
+
+       
+        //sets algae intake angle position (D-pad up = down | D-pad down = up)
+        if(algaeUp){
+            algaeAngle.setAngleCommand(Rotation2d.fromDegrees(0));
+        }else if(algaeDown){
+            algaeAngle.setAngleCommand(Rotation2d.fromDegrees(80));
+        }
+
+        //runs algae intake/eject rollers (right trigger = run intake | left trigger = run reverse intake)
+        if(algaeIntake){
+            algaeRoller.runIntake();
+        }else if(algaeEject){
+            algaeRoller.runEject();
+        }else{
+            algaeRoller.stop();
+        }
     }
 
     /**
@@ -234,41 +264,53 @@ public class OperatorInterface extends SubsystemBase {
         // TODO Implement
     }
 
+
+    /**
+     * updates drive (test mode)
+     */
     private void updateDriveTest() {
         // TODO Implement test mode for drivetrain
 
         updateDrive();
     }
 
+    /**
+     * updates elevator, arm, and end effector controls (test mode)
+     */
     private void updateCoralPlacementTest(){
-        Arm arm = Arm.getInstance();
+        //Arm arm = Arm.getInstance();
         Elevator elevator = Elevator.getInstance();
-        EndEffector end_effector = EndEffector.getInstance();
+        //EndEffector end_effector = EndEffector.getInstance();
 
         double arm_percent = MathUtil.applyDeadband(operatorController.getLeftY(), .05);
-        double elev_percent = MathUtil.applyDeadband(operatorController.getRightY(), .05);
+        double elev_percent = -MathUtil.applyDeadband(operatorController.getRightY(), .05);
         
-        arm.setVoltCommand(arm_percent * 12);
+        //arm.setVoltCommand(arm_percent * 12);
         elevator.setVoltCommand(elev_percent * 12);
 
-        if(operatorController.getAButton()) {
-            end_effector.runEject();
-        } else if(operatorController.getBButton()) {
-            end_effector.runIntake();
-        }else {
-            end_effector.stop();
-        }
+        // if(operatorController.getAButton()) {
+        //     end_effector.runEject();
+        // } else if(operatorController.getBButton()) {
+        //     end_effector.runIntake();
+        // }else {
+        //     end_effector.stop();
+        // }
     }
-
+    
+    /**
+     * updates controls for algae angle and algae roller (test mode)
+     */
     private void updateAlgaeGrabberTest() {
         AlgaeAngle algae_angle = AlgaeAngle.getInstance();
         AlgaeRoller algae_roller = AlgaeRoller.getInstance();
 
-        double angle_percent_pos = MathUtil.applyDeadband(operatorController.getRightTriggerAxis(), .05);
-        double angle_percent_neg = -MathUtil.applyDeadband(operatorController.getLeftTriggerAxis(), .05);
+        double angle_percent_pos = MathUtil.applyDeadband(operatorController.getRightTriggerAxis(), .05)/4;
+        double angle_percent_neg = -MathUtil.applyDeadband(operatorController.getLeftTriggerAxis(), .05)/4;
         double angle_percent = angle_percent_pos + angle_percent_neg;
 
-        algae_angle.setVoltCommand(angle_percent * 12);
+        double anglePercent = MathUtil.applyDeadband(operatorController.getLeftY(), 0.05);
+        //algae_angle.setVoltCommand(angle_percent * 12);
+        algae_angle.setRateCommand(anglePercent);
 
         if(operatorController.getXButton()) {
             algae_roller.runEject();
@@ -279,6 +321,9 @@ public class OperatorInterface extends SubsystemBase {
         }
     }
 
+    /**
+     * updates controls for climber (test mode)
+     */
     private void updateClimberTest() {
         Climber climber = Climber.getInstance();
 
@@ -290,6 +335,49 @@ public class OperatorInterface extends SubsystemBase {
             climber.runReset();
         } else {
             climber.stop();
+        }
+    }
+
+    private void sysIdTest(){
+        //Elevator elevator = Elevator.getInstance();
+        AlgaeAngle algaeAngle = AlgaeAngle.getInstance();
+        // if (operatorController.getAButton()){
+        //     elevator.setSysIdCommandQuasiUp();
+
+        // } else if(operatorController.getBButton()){
+        //     elevator.setSysIdCommandQuasiDown();
+
+        // } else if(operatorController.getXButton()){
+        //     elevator.setSysIdCommandDynUp();
+
+        // } else if(operatorController.getYButton()){
+        //     elevator.setSysIdCommandDynDown();
+
+        // }
+        if (operatorController.getAButton()){
+            algaeAngle.setSysIdCommandGroup();
+        }
+    }
+
+    /**
+     * Subsystem Period Method
+     */
+    @Override
+    public void periodic() {
+        if (DriverStation.isTeleop()) {
+            updateDrive();
+            updateCoralPlacement();
+            //updateAlgaeGrabber();
+            //updateClimber();
+            //updateElevator();
+            //updateEndEffector();
+            updateDriverFeedback();
+        } else if(DriverStation.isTest()) {
+            //updateDriveTest();
+            //updateCoralPlacementTest();
+            updateAlgaeGrabberTest();
+            //updateClimberTest();
+            //sysIdTest();
         }
     }
 

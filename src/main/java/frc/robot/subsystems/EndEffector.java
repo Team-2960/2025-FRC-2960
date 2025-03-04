@@ -2,8 +2,12 @@ package frc.robot.subsystems;
 
 
 
+import com.revrobotics.servohub.ServoHub.ResetMode;
 import com.revrobotics.spark.SparkFlex;
+import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.SparkBaseConfig;
+import com.revrobotics.spark.config.SparkFlexConfig;
 
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -28,6 +32,7 @@ public class EndEffector extends SubsystemBase{
     
     private DigitalInput coralPresentPE;//Photoeye coral detector
     private SparkFlex coralDrive;
+    private SparkBaseConfig coralConfig;
 
     private Trigger intakeTrigger;
 
@@ -70,6 +75,7 @@ public class EndEffector extends SubsystemBase{
 
         public TimedEjectCmd(double runTime) {
             super(runTime);
+            addRequirements(EndEffector.this);
         }
 
         @Override
@@ -108,13 +114,14 @@ public class EndEffector extends SubsystemBase{
     private EndEffector(){
         coralDrive = new SparkFlex(Constants.coralMotor, MotorType.kBrushless);
         coralPresentPE = new DigitalInput(Constants.coralPresentPE);
+        coralDrive.configure(new SparkFlexConfig().inverted(true), com.revrobotics.spark.SparkBase.ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         ejectCmd = new EjectCmd();
         timedEjectCmd = new TimedEjectCmd();
         intakeCmd = new IntakeCmd();
 
         intakeTrigger = new Trigger(coralPresentPE::get);
-        intakeTrigger.whileTrue(intakeCmd);
+        intakeTrigger.whileFalse(intakeCmd);
         
 
         //Setup Shuffleboard
