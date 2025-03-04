@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 
@@ -107,6 +108,20 @@ public class EndEffector extends SubsystemBase{
         }
     }
 
+    public class CoralPresentCommand extends Command{
+        @Override
+        public boolean isFinished(){
+            return isCoralPresent();
+        }
+    }
+
+    public class CoralNotPresentCommand extends Command{
+        @Override
+        public boolean isFinished(){
+            return !isCoralPresent();
+        }
+    }
+
     /**
      * Constructor
      */
@@ -191,6 +206,10 @@ public class EndEffector extends SubsystemBase{
      */
     public void setStop(){
         setMotorVolt(0);
+    }
+
+    public boolean isCoralPresent(){
+        return !coralPresentPE.get();
     }
 
 

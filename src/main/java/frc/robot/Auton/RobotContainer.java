@@ -10,6 +10,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Drive;
+import frc.robot.subsystems.ElevArmControl;
+import frc.robot.subsystems.EndEffector;
 public class RobotContainer {
   SendableChooser<Command> autoChooser;
   Command chosenAuto;
@@ -17,11 +19,21 @@ public class RobotContainer {
 
   public RobotContainer(){
     Drive drive = Drive.getInstance();
-    Arm arm = Arm.getInstance();
-    
-    NamedCommands.registerCommand("armLvl1", arm.new ArmAngleCommand(Rotation2d.fromDegrees(0)));
+    ElevArmControl elevArmControl = ElevArmControl.getInstance();
+    EndEffector endEffector = EndEffector.getInstance();
+
     NamedCommands.registerCommand("driveAlignCommand", drive.linearDriveCommands.new GoToPointCommand(new Translation2d()));
-    
+    NamedCommands.registerCommand("goToIntakeCommand", elevArmControl.getGoToIntakeCommand());
+    NamedCommands.registerCommand("goToL1Command", elevArmControl.getGoToL1Command());
+    NamedCommands.registerCommand("goToL2Command", elevArmControl.getGoToL2Command());
+    NamedCommands.registerCommand("goToL3Command", elevArmControl.getGoToL3Command());
+    NamedCommands.registerCommand("goToL4Command", elevArmControl.getGoToL4Command());
+    NamedCommands.registerCommand("goToLowAlgaeCommand", elevArmControl.getGoToLowAlgaeCommand());
+    NamedCommands.registerCommand("goToHighAlgaeCommand", elevArmControl.getGoToHighAlgaeCommand());
+    NamedCommands.registerCommand("coralPresentCommand", endEffector.new CoralPresentCommand());
+    NamedCommands.registerCommand("coralNotPresentCommand", endEffector.new CoralNotPresentCommand());
+    NamedCommands.registerCommand("ejectCommand", endEffector.new EjectCmd());
+    NamedCommands.registerCommand("intakeCommand", endEffector.new IntakeCmd());
     autoChooser = AutoBuilder.buildAutoChooser();
     
     SmartDashboard.putData("Choose Auto", autoChooser);
