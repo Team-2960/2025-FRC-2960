@@ -372,7 +372,7 @@ public class AlgaeAngle extends SubsystemBase {
         double maxAngleRate = Constants.maxAlgaeAutoSpeed/2;
         Rotation2d angleError = targetAngle.minus(currentAngle);
 
-        double targetSpeed = maxAngleRate * (angleError.getRadians() > 0 ? 1 : +-1);
+        double targetSpeed = maxAngleRate * (angleError.getRadians() > 0 ? 1 : -1);
         double rampDownSpeed = angleError.getRadians() / Constants.algaeRampDownDist.getRadians() * maxAngleRate;
 
         if (Math.abs(rampDownSpeed) < Math.abs(targetSpeed))
