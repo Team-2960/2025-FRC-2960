@@ -102,7 +102,7 @@ public class Constants {
     public static final double maxArmAutoSpeed = 1 * Math.PI;  //radians /s
 
     //TODO Change to real limits
-    public static final Rotation2d armTopLim = Rotation2d.fromDegrees(0);
+    public static final Rotation2d armTopLim = Rotation2d.fromDegrees(90);
     public static final Rotation2d armBotLim = Rotation2d.fromDegrees(0);
 
     public static final Rotation2d armIntakeAngle = Rotation2d.fromDegrees(110);

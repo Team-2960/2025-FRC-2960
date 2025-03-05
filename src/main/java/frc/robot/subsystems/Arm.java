@@ -4,9 +4,13 @@ import frc.robot.Constants;
 import frc.robot.subsystems.Arm.SoftLimCheckCommand.SoftLimDirection;
 
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.servohub.ServoHub.ResetMode;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkFlex;
+import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.SparkBaseConfig;
+import com.revrobotics.spark.config.SparkFlexConfig;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
@@ -228,6 +232,7 @@ public class Arm extends SubsystemBase {
      */
     private Arm() {        
         motor = new SparkFlex(Constants.armMotor, MotorType.kBrushless);
+        motor.configure(new SparkFlexConfig().inverted(true), com.revrobotics.spark.SparkBase.ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         absEncoder = motor.getAbsoluteEncoder();
         relEncoder = motor.getExternalEncoder();
 
@@ -316,9 +321,7 @@ public class Arm extends SubsystemBase {
     public Rotation2d getArmAngle() {
         double rotations = absEncoder.getPosition();
         if (rotations >= 0.5){
-            rotations = 1.0 - rotations;
-        }else{
-            rotations = -rotations;
+            rotations = rotations - 1.0;
         }
         return Rotation2d.fromRotations(rotations);
         //return Rotation2d.fromRotations(absEncoder.getPosition());
@@ -333,7 +336,8 @@ public class Arm extends SubsystemBase {
     }
 
     /**
-     * Gets the current arm angle rate
+     * Gets the current][\
+     * \] arm angle rate
      * 
      * @return current arm angle rate in radians per second
      */

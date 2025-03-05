@@ -24,7 +24,6 @@ import edu.wpi.first.units.measure.MutVoltage;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
@@ -253,7 +252,7 @@ public class AlgaeAngle extends SubsystemBase {
         AngleCommand = new AngleCommand(new Rotation2d());
         HoldCommand = new HoldCommand();
 
-        //setDefaultCommand(HoldCommand);
+        setDefaultCommand(HoldCommand);
 
         //System Identification
         sysIdRoutine = new SysIdRoutine(
@@ -369,7 +368,7 @@ public class AlgaeAngle extends SubsystemBase {
         
         // Calculate trapezoidal profile
         Rotation2d currentAngle = getAngle();
-        double maxAngleRate = Constants.maxAlgaeAutoSpeed/2;
+        double maxAngleRate = Constants.maxAlgaeAutoSpeed/7;
         Rotation2d angleError = targetAngle.minus(currentAngle);
 
         double targetSpeed = maxAngleRate * (angleError.getRadians() > 0 ? 1 : -1);
@@ -377,7 +376,6 @@ public class AlgaeAngle extends SubsystemBase {
 
         if (Math.abs(rampDownSpeed) < Math.abs(targetSpeed))
             targetSpeed = rampDownSpeed;
-        SmartDashboard.putNumber("Algae Angle Error", angleError.getDegrees());
         setRate(targetSpeed);
     }
 
