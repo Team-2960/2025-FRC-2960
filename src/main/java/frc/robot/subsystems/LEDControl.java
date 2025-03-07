@@ -147,7 +147,7 @@ public class LEDControl extends SubsystemBase{
 
         // Setup Coral LED blinking 
         // TODO Move trigger to EndEffector
-        coralTrigger = new Trigger(RobotContainer.getInstance().endEffector::isCoralPresent);
+        coralTrigger = new Trigger(RobotContainer.get().endEffector::isCoralPresent);
         coralTrigger.whileTrue(new CycleColors(1, .1, Color.kWhite, Color.kBlue));
 
         // Set default command to set the LEDs to alternating blue and white

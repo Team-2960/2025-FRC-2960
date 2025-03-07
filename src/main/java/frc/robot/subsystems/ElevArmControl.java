@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.config.RobotConfig;
 
 import edu.wpi.first.wpilibj2.command.Command;
@@ -19,8 +20,8 @@ public class ElevArmControl extends SubsystemBase{
     public final Command gotoL4;        /**< Command sequence to move to the L4 scoring position */
     public final Command gotoLowAlgae;  /**< Command sequence to move to the low algae removal position */
     public final Command gotoHighAlgae; /**< Command sequence to move to the high algae removal position   */   
-    private Arm arm = RobotContainer.getInstance().arm;
-    private Elevator elev = RobotContainer.getInstance().elevator;
+    private Arm arm = RobotContainer.get().arm;
+    private Elevator elev = RobotContainer.get().elevator;
 
     /**
      * Constructor
@@ -77,6 +78,15 @@ public class ElevArmControl extends SubsystemBase{
             new ParallelRaceGroup(arm.new ArmAngleCommand(Constants.armAlgaeRemoveAngle), elev.new ElevatorHoldCommand()),
             new ParallelRaceGroup(arm.new ArmHoldCommand(), elev.new ElevatorHoldCommand())
         );
+
+        // Add Named Commands
+        NamedCommands.registerCommand("goToIntakeCommand", getGoToIntakeCommand());
+        NamedCommands.registerCommand("goToL1Command", getGoToL1Command());
+        NamedCommands.registerCommand("goToL2Command", getGoToL2Command());
+        NamedCommands.registerCommand("goToL3Command", getGoToL3Command());
+        NamedCommands.registerCommand("goToL4Command", getGoToL4Command());
+        NamedCommands.registerCommand("goToLowAlgaeCommand", getGoToLowAlgaeCommand());
+        NamedCommands.registerCommand("goToHighAlgaeCommand", getGoToHighAlgaeCommand());
     }
 
     public void gotoIntakePos() {

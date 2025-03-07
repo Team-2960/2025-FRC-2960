@@ -40,6 +40,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.util.Optional;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
@@ -452,6 +453,9 @@ public class Drive extends SubsystemBase {
         rotationDriveCommands = new RotationDriveCommands();
 
         pathConstraints = PathConstraints.unlimitedConstraints(12);
+
+        // Add Named Commands 
+        NamedCommands.registerCommand("driveAlignCommand", linearDriveCommands.new GoToPointCommand(new Translation2d()));
     }
 
     /**

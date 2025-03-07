@@ -1,13 +1,5 @@
 package frc.robot;
 
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.auto.NamedCommands;
-
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.AlgaeAngle;
 import frc.robot.subsystems.AlgaeRoller;
 import frc.robot.subsystems.Arm;
@@ -39,35 +31,8 @@ public class RobotContainer {
     public final Cameras cameras = new Cameras();
     public final DriverCamera driverCamera = new DriverCamera();
     public final LEDControl ledControl = new LEDControl();
-
-    private final SendableChooser<Command> autoChooser;
-
-    private RobotContainer(){
-        // TODO Move to their respective subsystems
-        NamedCommands.registerCommand("driveAlignCommand", drive.linearDriveCommands.new GoToPointCommand(new Translation2d()));
-        NamedCommands.registerCommand("goToIntakeCommand", elevArmControl.getGoToIntakeCommand());
-        NamedCommands.registerCommand("goToL1Command", elevArmControl.getGoToL1Command());
-        NamedCommands.registerCommand("goToL2Command", elevArmControl.getGoToL2Command());
-        NamedCommands.registerCommand("goToL3Command", elevArmControl.getGoToL3Command());
-        NamedCommands.registerCommand("goToL4Command", elevArmControl.getGoToL4Command());
-        NamedCommands.registerCommand("goToLowAlgaeCommand", elevArmControl.getGoToLowAlgaeCommand());
-        NamedCommands.registerCommand("goToHighAlgaeCommand", elevArmControl.getGoToHighAlgaeCommand());
-        NamedCommands.registerCommand("coralPresentCommand", endEffector.new CoralPresentCommand());
-        NamedCommands.registerCommand("coralNotPresentCommand", endEffector.new CoralNotPresentCommand());
-        NamedCommands.registerCommand("ejectCommand", endEffector.new EjectCmd());
-        NamedCommands.registerCommand("intakeCommand", endEffector.new IntakeCmd());
-
-        // TODO Move to Robot.java
-        autoChooser = AutoBuilder.buildAutoChooser();
-        SmartDashboard.putData("Choose Auto", autoChooser);
-    }
-
-    public Command getAutonomousCommand() {
-        return autoChooser.getSelected();
-    }    
-
     
-    public static RobotContainer getInstance() {
+    public static RobotContainer get() {
         if(instance == null) instance = new RobotContainer();
 
         return instance;

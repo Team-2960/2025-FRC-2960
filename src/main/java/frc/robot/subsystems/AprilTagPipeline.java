@@ -111,7 +111,7 @@ public class AprilTagPipeline extends SubsystemBase {
      */
     private void updatePose() {
         Optional<EstimatedRobotPose> visionEst = Optional.empty();
-        Drive drive = RobotContainer.getInstance().drive;
+        Drive drive = RobotContainer.get().drive;
         var unreadResults = camera.getAllUnreadResults();
         // visionSim.update(new Pose2d(17.526/2, 8.05/2, new Rotation2d()));
         

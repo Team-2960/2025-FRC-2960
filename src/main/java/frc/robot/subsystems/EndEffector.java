@@ -1,12 +1,9 @@
 package frc.robot.subsystems;
 
-
-
-import com.revrobotics.servohub.ServoHub.ResetMode;
 import com.revrobotics.spark.SparkFlex;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkFlexConfig;
 
 import edu.wpi.first.networktables.GenericEntry;
@@ -16,9 +13,10 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
-import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
+import frc.robot.subsystems.EndEffector.CoralNotPresentCommand;
+import frc.robot.subsystems.EndEffector.CoralPresentCommand;
 
 /**
  * Manages coral end effector
@@ -146,7 +144,11 @@ public class EndEffector extends SubsystemBase{
         sb_motorVoltage = layout.add("motor voltage End Effector", 2960).getEntry();
         sb_photoeyeState = layout.add("photoeye state End Effector", false).getEntry();
 
-
+        // Add Named Commands
+        NamedCommands.registerCommand("coralPresentCommand", new CoralPresentCommand());
+        NamedCommands.registerCommand("coralNotPresentCommand", new CoralNotPresentCommand());
+        NamedCommands.registerCommand("ejectCommand", new EjectCmd());
+        NamedCommands.registerCommand("intakeCommand", new IntakeCmd());
     }
 
     /**
