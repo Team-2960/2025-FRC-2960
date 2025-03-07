@@ -1,8 +1,10 @@
 package frc.robot.subsystems;
 
+import com.revrobotics.sim.SparkFlexSim;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -19,7 +21,8 @@ public class AlgaeRoller extends SubsystemBase implements AutoCloseable{
 
     //TODO run intake method, stop method
     
-    public SparkFlex algaeDrive;
+    private SparkFlex algaeDrive;
+    public SparkFlexSim algaeDriveSim;
 
     private EjectCmd ejectCmd;
     private IntakeCmd intakeCmd;
@@ -82,7 +85,8 @@ public class AlgaeRoller extends SubsystemBase implements AutoCloseable{
         sb_currentCmd = layout.add("current command", "").getEntry();
         sb_motorVoltage = layout.add("motor voltage", 2960).getEntry();
 
-
+        // Initialize Simulation
+        algaeDriveSim = new SparkFlexSim(algaeDrive, DCMotor.getNeoVortex(1));
     }
 
     /**
