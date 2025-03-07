@@ -479,21 +479,6 @@ public class Elevator extends SubsystemBase {
         this.elevatorVolt = voltage;
     }
 
-    private void setMotorVolt(Voltage voltage){
-        double voltNum = voltage.baseUnitMagnitude();
-        if (topLimitReached() && voltNum > 0){
-            voltNum = 0;
-        }
-        if (botLimitReached() && voltNum < 0){
-            voltNum = 0;
-        }
-        
-        elevatorMotor.setVoltage(voltNum);
-
-        //Shuffleboard display
-        this.elevatorVolt = voltNum;
-    }
-
     public boolean topLimitReached(){
         return getElevatorPos() >= Constants.elevatorTopLim;
     }
@@ -558,7 +543,7 @@ public class Elevator extends SubsystemBase {
     }
 
     public void setSysIDCommand() {
-        if(getCurrentCommand() != sysIdRoutineCommand) sysIdRoutineCommand.schedule();
+        if(getCurrentCommand() != sysIdCommandGroup) sysIdCommandGroup.schedule();
     }
     
     public void stopCommands() {
