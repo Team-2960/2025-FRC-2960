@@ -27,9 +27,6 @@ import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 
 public class OperatorInterface extends SubsystemBase {
-    // INSTANCE
-    public static OperatorInterface oi = null;
-
     // JOYSTICKS
     private XboxController driverController;
     private XboxController operatorController;
@@ -59,7 +56,7 @@ public class OperatorInterface extends SubsystemBase {
     /**
      * Constructor
      */
-    private OperatorInterface() {
+    OperatorInterface() {
         // Create Joysticks
         driverController = new XboxController(0);
         operatorController = new XboxController(1);
@@ -121,7 +118,7 @@ public class OperatorInterface extends SubsystemBase {
      * Updates the controls for the drivetrain
      */
     private void updateDrive() {
-        Drive drive = Drive.getInstance();
+        Drive drive = RobotContainer.getInstance().drive;
 
         boolean slowSpeed = driverController.getRawButton(5);
         double maxSpeed = (slowSpeed ? .5 : 1) * Constants.maxSpeed;
@@ -198,8 +195,8 @@ public class OperatorInterface extends SubsystemBase {
      * updates controls for elevator, arm, and end effector
      */
     private void updateCoralPlacement(){//TODO finish whatever is needed for this
-        Elevator elevator = Elevator.getInstance();
-        EndEffector endEffector = EndEffector.getInstance();
+        Elevator elevator = RobotContainer.getInstance().elevator;
+        EndEffector endEffector = RobotContainer.getInstance().endEffector;
         // Arm arm = Arm.getInstance();
 
         // //L2 = button A | L3 = button B | L4 = button Y
@@ -224,8 +221,8 @@ public class OperatorInterface extends SubsystemBase {
      * updates controls for algae angle and algae roller
      */
     private void updateAlgaeGrabber() {
-        AlgaeAngle algaeAngle = AlgaeAngle.getInstance();
-        AlgaeRoller algaeRoller = AlgaeRoller.getInstance();
+        AlgaeAngle algaeAngle = RobotContainer.getInstance().algaeAngle;
+        AlgaeRoller algaeRoller = RobotContainer.getInstance().algaeRoller;
 
         boolean algaeUp = operatorController.getPOV() == 180;
         boolean algaeDown = operatorController.getPOV() == 0;
@@ -279,9 +276,9 @@ public class OperatorInterface extends SubsystemBase {
      * updates elevator, arm, and end effector controls (test mode)
      */
     private void updateCoralPlacementTest(){
-        Arm arm = Arm.getInstance();
-        Elevator elevator = Elevator.getInstance();
-        //EndEffector end_effector = EndEffector.getInstance();
+        Arm arm = RobotContainer.getInstance().arm;
+        Elevator elevator = RobotContainer.getInstance().elevator;
+        //EndEffector end_effector = RobotContainer.getInstance().endEffector;
 
         double arm_percent = MathUtil.applyDeadband(operatorController.getLeftY(), .05);
         double armMultiplier = 0;
@@ -326,8 +323,8 @@ public class OperatorInterface extends SubsystemBase {
      * updates controls for algae angle and algae roller (test mode)
      */
     private void updateAlgaeGrabberTest() {
-        AlgaeAngle algae_angle = AlgaeAngle.getInstance();
-        AlgaeRoller algae_roller = AlgaeRoller.getInstance();
+        AlgaeAngle algae_angle = RobotContainer.getInstance().algaeAngle;
+        AlgaeRoller algae_roller = RobotContainer.getInstance().algaeRoller;
 
         double angle_percent_pos = MathUtil.applyDeadband(operatorController.getRightTriggerAxis(), .05)/4;
         double angle_percent_neg = -MathUtil.applyDeadband(operatorController.getLeftTriggerAxis(), .05)/4;
@@ -356,7 +353,7 @@ public class OperatorInterface extends SubsystemBase {
      * updates controls for climber (test mode)
      */
     private void updateClimberTest() {
-        Climber climber = Climber.getInstance();
+        Climber climber = RobotContainer.getInstance().climber;
 
         // if(operatorController.getStartButton()) {
         //     climber.runExtend();
@@ -377,7 +374,7 @@ public class OperatorInterface extends SubsystemBase {
     private void sysIdTest(){
         //Elevator elevator = Elevator.getInstance();
         //AlgaeAngle algaeAngle = AlgaeAngle.getInstance();
-        Arm arm = Arm.getInstance();
+        Arm arm = RobotContainer.getInstance().arm;
         // if (operatorController.getAButton()){
         //     elevator.setSysIdCommandQuasiUp();
 
@@ -416,18 +413,5 @@ public class OperatorInterface extends SubsystemBase {
             //updateClimberTest();
             //sysIdTest();
         }
-    }
-
-    /**
-     * Static Initializer
-     * 
-     * @return common instance of the OperatorInterface class
-     */
-    public static OperatorInterface getInstance() {
-        if (oi == null) {
-            oi = new OperatorInterface();
-        }
-
-        return oi;
     }
 }

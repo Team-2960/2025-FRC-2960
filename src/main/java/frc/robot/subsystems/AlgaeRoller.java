@@ -1,7 +1,5 @@
 package frc.robot.subsystems;
 
-
-
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
@@ -12,7 +10,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
-public class AlgaeRoller extends SubsystemBase{
+public class AlgaeRoller extends SubsystemBase implements AutoCloseable{
     /*Algae intake/eject
     motor: Neo vortex (spark flex) used to control intake and eject
     photoeye: ?? Used to detect fully loaded algae
@@ -20,10 +18,8 @@ public class AlgaeRoller extends SubsystemBase{
     */
 
     //TODO run intake method, stop method
-
-    private static AlgaeRoller instance = null;
     
-    private SparkFlex algaeDrive;
+    public SparkFlex algaeDrive;
 
     private EjectCmd ejectCmd;
     private IntakeCmd intakeCmd;
@@ -72,7 +68,7 @@ public class AlgaeRoller extends SubsystemBase{
     /**
      * Constructor
      */
-    private AlgaeRoller(){
+    public AlgaeRoller(){
         algaeDrive = new SparkFlex(Constants.algaeRollerMotor, MotorType.kBrushless);
 
         ejectCmd = new EjectCmd();
@@ -159,14 +155,12 @@ public class AlgaeRoller extends SubsystemBase{
         sb_motorVoltage.setDouble(algaeDrive.getBusVoltage() * algaeDrive.getAppliedOutput());
     }
 
-     /**
-     * Static Initializer
+    /**
+     * Auto Close method for UnitTesting
      */
-    public static AlgaeRoller getInstance() {
-        if (instance == null) {
-            instance = new AlgaeRoller();
-        }
-        return instance;
+    @Override
+    public void close() {
+        algaeDrive.close();
     }
 }
 

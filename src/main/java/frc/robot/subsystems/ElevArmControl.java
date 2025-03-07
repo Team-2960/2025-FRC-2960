@@ -1,14 +1,13 @@
 package frc.robot.subsystems;
 
+import com.pathplanner.lib.config.RobotConfig;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.subsystems.Arm.ArmAngleCommand;
-import frc.robot.subsystems.Arm.ArmHoldCommand;
-import frc.robot.subsystems.Elevator.ElevatorHoldCommand;
-import frc.robot.subsystems.Elevator.ElevatorPosCommand;
+import frc.robot.RobotContainer;
 
 public class ElevArmControl extends SubsystemBase{
     private static ElevArmControl instance = null;
@@ -20,13 +19,13 @@ public class ElevArmControl extends SubsystemBase{
     public final Command gotoL4;        /**< Command sequence to move to the L4 scoring position */
     public final Command gotoLowAlgae;  /**< Command sequence to move to the low algae removal position */
     public final Command gotoHighAlgae; /**< Command sequence to move to the high algae removal position   */   
-    private Arm arm = Arm.getInstance();
-    private Elevator elev = Elevator.getInstance();
+    private Arm arm = RobotContainer.getInstance().arm;
+    private Elevator elev = RobotContainer.getInstance().elevator;
 
     /**
      * Constructor
      */
-    private ElevArmControl(){
+    public ElevArmControl(){
         //Arm arm = Arm.getInstance();
         //Elevator elev = Elevator.getInstance();
 

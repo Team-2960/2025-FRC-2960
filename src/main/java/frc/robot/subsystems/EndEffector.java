@@ -29,11 +29,9 @@ public class EndEffector extends SubsystemBase{
     photoeye: ?? Used to detect fully loaded coral
     photoeye: model#  class library:
     */
-    private static EndEffector instance = null;
     
     private DigitalInput coralPresentPE;//Photoeye coral detector
     private SparkFlex coralDrive;
-    private SparkBaseConfig coralConfig;
 
     private Trigger intakeTrigger;
 
@@ -126,7 +124,7 @@ public class EndEffector extends SubsystemBase{
     /**
      * Constructor
      */
-    private EndEffector(){
+    public EndEffector(){
         coralDrive = new SparkFlex(Constants.coralMotor, MotorType.kBrushless);
         coralPresentPE = new DigitalInput(Constants.coralPresentPE);
         coralDrive.configure(new SparkFlexConfig().inverted(true), com.revrobotics.spark.SparkBase.ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -236,16 +234,6 @@ public class EndEffector extends SubsystemBase{
         sb_currentCmd.setString(commandName);
         sb_motorVoltage.setDouble(coralDrive.getBusVoltage() * coralDrive.getAppliedOutput());
         sb_photoeyeState.setBoolean(coralPresentPE.get());
-    }
-
-     /**
-     * Static Initializer
-     */
-    public static EndEffector getInstance() {
-        if (instance == null) {
-            instance = new EndEffector();
-        }
-        return instance;
     }
 }
 

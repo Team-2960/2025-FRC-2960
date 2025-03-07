@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.RobotContainer;
 
 import static frc.robot.Constants.ledPort;
 import static frc.robot.Constants.LEDControlConst;
@@ -18,7 +19,6 @@ import static frc.robot.Constants.LEDControlConst;
  * Manages the robot LEDs
  */
 public class LEDControl extends SubsystemBase{
-    private static LEDControl instance = null;
 
     /**
      * Sets the LEDs to the team colors
@@ -112,7 +112,7 @@ public class LEDControl extends SubsystemBase{
     /**
      * Constructor
      */
-    private LEDControl() {
+    public LEDControl() {
         // Initialize LEDS
         leds = new AddressableLED(ledPort);
         
@@ -146,19 +146,11 @@ public class LEDControl extends SubsystemBase{
         leds.start();
 
         // Setup Coral LED blinking 
-        coralTrigger = new Trigger(EndEffector.getInstance()::isCoralPresent);
+        // TODO Move trigger to EndEffector
+        coralTrigger = new Trigger(RobotContainer.getInstance().endEffector::isCoralPresent);
         coralTrigger.whileTrue(new CycleColors(1, .1, Color.kWhite, Color.kBlue));
 
         // Set default command to set the LEDs to alternating blue and white
         setDefaultCommand(new TeamColorCommand());
-    }
-
-
-    /**
-     * Singleton Initializer
-     */
-    public static LEDControl getInstance() {
-        if(instance != null) instance = new LEDControl();
-        return instance;
     }
 }

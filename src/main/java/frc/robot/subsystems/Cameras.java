@@ -21,7 +21,6 @@ public class Cameras extends SubsystemBase{
     private AprilTagPipeline camera01;
     private AprilTagPipeline camera02;
     private AprilTagPipeline camera03;
-    private static Cameras cameras = null;
 
     public Cameras(){
         singleStds = VecBuilder.fill(1, 1, 1);
@@ -42,15 +41,4 @@ public class Cameras extends SubsystemBase{
         camera02 = new AprilTagPipeline(pipeline02, "Camera02", "AprilTagPipeline");
         camera03 = new AprilTagPipeline(pipeline03, "Camera03", "AprilTagPipeline");
     }
-
-    @Override
-    public void periodic(){
-    }
-
-    public static Cameras getInstance(){
-        if (cameras == null){
-            cameras = new Cameras();
-        }
-        return cameras;
-    }   
 }

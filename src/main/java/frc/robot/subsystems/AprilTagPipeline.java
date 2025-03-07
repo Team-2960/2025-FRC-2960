@@ -9,6 +9,7 @@ import edu.wpi.first.math.numbers.*;
 import edu.wpi.first.networktables.*;
 import edu.wpi.first.wpilibj.shuffleboard.*;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.RobotContainer;
 import frc.robot.Util.AprilTagPipelineSettings;
 import edu.wpi.first.wpilibj.Timer;
 
@@ -110,7 +111,7 @@ public class AprilTagPipeline extends SubsystemBase {
      */
     private void updatePose() {
         Optional<EstimatedRobotPose> visionEst = Optional.empty();
-        Drive drive = Drive.getInstance();
+        Drive drive = RobotContainer.getInstance().drive;
         var unreadResults = camera.getAllUnreadResults();
         // visionSim.update(new Pose2d(17.526/2, 8.05/2, new Rotation2d()));
         

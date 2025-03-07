@@ -91,9 +91,6 @@ public class Climber extends SubsystemBase {
         }
     }
 
-
-    private static Climber climber = null;
-
     private final SparkFlex motor;
 
     private final RelativeEncoder encoder;
@@ -111,7 +108,7 @@ public class Climber extends SubsystemBase {
     /**
      * Constructor
      */
-    private Climber() {
+    public Climber() {
         // Initialize Motors
         motor = new SparkFlex(Constants.climberMotor, MotorType.kBrushless);
 
@@ -200,16 +197,5 @@ public class Climber extends SubsystemBase {
         sb_command.setString(currentCmdName);
         sb_voltage.setDouble(motor.getBusVoltage() * motor.getAppliedOutput());
         sb_winchExt.setDouble(getExtension());
-    }
-
-    /**
-     * Static initializer
-     */
-    public static Climber getInstance() {
-        if (climber == null) {
-            climber = new Climber();
-        }
-
-        return climber;
     }
 }

@@ -55,8 +55,6 @@ public class Drive extends SubsystemBase {
         LookAtPoint
     }
 
-    private static Drive drive = null; // Statically initialized instance
-
     private final Translation2d frontLeftLocation;
     private final Translation2d frontRightLocation;
     private final Translation2d backLeftLocation;
@@ -366,7 +364,7 @@ public class Drive extends SubsystemBase {
     /**
      * Constructor
      */
-    private Drive() {
+    public Drive() {
         // Set swerve drive positions
         frontLeftLocation = new Translation2d((Constants.robotLength / 2 - Constants.wheelInset),
                 (Constants.robotWidth / 2 - Constants.wheelInset));
@@ -732,7 +730,7 @@ public class Drive extends SubsystemBase {
         field2d.getObject("fieldTargetPoint").setPose(targetPoint.getX(), targetPoint.getY(),
                 Rotation2d.fromDegrees(0));
         field2d.getObject("nearestReefFace").setPose(nearestReefFace);
-        var currentCommand = Drive.getInstance().rotationDriveCommands.getCurrentCommand();
+        var currentCommand = this.rotationDriveCommands.getCurrentCommand();
         String curCommandName = "null";
         if (currentCommand != null)
             curCommandName = currentCommand.getName();
@@ -909,18 +907,4 @@ public class Drive extends SubsystemBase {
         updateUI();
         updateScope();
     }
-
-    /**
-     * Static Initializer
-     * 
-     * @return Common object of Drive
-     */
-    public static Drive getInstance() {
-        if (drive == null) {
-            drive = new Drive();
-        }
-
-        return drive;
-    }
-
 }

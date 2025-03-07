@@ -4,21 +4,17 @@ import frc.robot.Constants;
 import frc.robot.subsystems.Arm.SoftLimCheckCommand.SoftLimDirection;
 
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.servohub.ServoHub.ResetMode;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.AbsoluteEncoderConfig;
-import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkFlexConfig;
-import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.GenericEntry;
-import edu.wpi.first.units.BaseUnits;
 import edu.wpi.first.units.measure.MutAngle;
 import edu.wpi.first.units.measure.MutAngularVelocity;
 import edu.wpi.first.units.measure.MutCurrent;
@@ -37,11 +33,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 import static edu.wpi.first.units.Units.*;
 
-import java.util.prefs.BackingStoreException;
-
 public class Arm extends SubsystemBase {
-    private static Arm arm = null;
-
     private SparkFlex motor;
 
     private RelativeEncoder relEncoder;
@@ -235,7 +227,7 @@ public class Arm extends SubsystemBase {
     /**
      * Constructor
      */
-    private Arm() {        
+    public Arm() {        
         motor = new SparkFlex(Constants.armMotor, MotorType.kBrushless);
         motor.configure(new SparkFlexConfig().inverted(true).apply(new AbsoluteEncoderConfig().zeroCentered(true)), com.revrobotics.spark.SparkBase.ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         absEncoder = motor.getAbsoluteEncoder();
@@ -528,16 +520,4 @@ public class Arm extends SubsystemBase {
         
         SmartDashboard.putString("Current Command", curCommandName);
     }
-
-
-    /**
-     * Static initializer for the arm class
-     */
-    public static Arm getInstance() {
-        if (arm == null) {
-            arm = new Arm();
-        }
-        return arm;
-    }
-
 }

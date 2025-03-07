@@ -14,8 +14,6 @@ import static frc.robot.Constants.DriverCameraConst;
  * Sends a USB camera feed to the dashboard with additional graphics
  */
 public class DriverCamera {
-    private static DriverCamera instance = null;
-
     Thread thread;
     UsbCamera camera;
     CvSink cvSink;
@@ -25,7 +23,7 @@ public class DriverCamera {
     /**
      * Contructor. Starts the camera thread.
      */
-    private DriverCamera() {
+    public DriverCamera() {
         // Setup USB Camera
         camera = CameraServer.startAutomaticCapture();
         camera.setResolution(
@@ -98,16 +96,5 @@ public class DriverCamera {
             // Put new frame to the driver station
             outputStream.putFrame(mat);
         }
-    }
-
-    /**
-     * Singleton initializer method
-     * @return  instance of DriverCamera
-     */
-    public static DriverCamera getInstance() {
-        if(instance == null) instance = new DriverCamera();
-        
-        return instance;
-    }
-    
+    }    
 }
