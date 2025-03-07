@@ -5,6 +5,7 @@
       "/Shuffleboard/Drive/Field": "Field2d",
       "/SmartDashboard/Alerts": "Alerts",
       "/SmartDashboard/Choose Auto": "String Chooser",
+      "/SmartDashboard/PathPlanner": "Alerts",
       "/SmartDashboard/VisionSystemSim-main/Sim Field": "Field2d"
     },
     "windows": {

@@ -3,11 +3,13 @@
   "robotLength": 0.914,
   "holonomicMode": true,
   "pathFolders": [
-    "Left Auto Paths",
-    "Center Auto Paths",
-    "Right Auto Paths"
+    "Middle Auton",
+    "Left Auton",
+    "Test Paths"
   ],
-  "autoFolders": [],
+  "autoFolders": [
+    "New Folder"
+  ],
   "defaultMaxVel": 4.5,
   "defaultMaxAccel": 10.0,
   "defaultMaxAngVel": 540.0,
@@ -16,15 +18,15 @@
   "robotMass": 60.0,
   "robotMOI": 6.883,
   "robotTrackwidth": 0.546,
-  "driveWheelRadius": 0.0381,
+  "driveWheelRadius": 0.038,
   "driveGearing": 5.08,
   "maxDriveSpeed": 5.33,
   "driveMotorType": "vortex",
-  "driveCurrentLimit": 81.0,
+  "driveCurrentLimit": 80.0,
   "wheelCOF": 1.2,
-  "flModuleX": 0.3302,
+  "flModuleX": 0.33,
   "flModuleY": 0.33,
-  "frModuleX": 0.3302,
+  "frModuleX": 0.33,
   "frModuleY": -0.33,
   "blModuleX": -0.33,
   "blModuleY": 0.33,
@@ -33,6 +35,6 @@
   "bumperOffsetX": 0.0,
   "bumperOffsetY": 0.0,
   "robotFeatures": [
-    "{\"name\":\"Circle\",\"type\":\"circle\",\"data\":{\"center\":{\"x\":0.474,\"y\":0.275},\"radius\":0.093,\"strokeWidth\":0.006,\"filled\":false}}"
+    "{\"name\":\"Coral\",\"type\":\"circle\",\"data\":{\"center\":{\"x\":0.474,\"y\":0.275},\"radius\":0.093,\"strokeWidth\":0.006,\"filled\":false}}"
   ]
 }

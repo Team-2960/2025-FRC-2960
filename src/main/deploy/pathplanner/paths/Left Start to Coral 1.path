@@ -5,27 +5,37 @@
       "anchor": {
         "x": 6.965394698488856,
         "y": 5.5457057545536
+        "x": 1.500986842105263,
+        "y": 7.257894736842105
       },
       "prevControl": null,
       "nextControl": {
         "x": 5.883679096465325,
         "y": 5.4985656206205125
+        "x": 1.9309076721325997,
+        "y": 6.881849836641253
       },
       "isLocked": false,
       "linkedName": "Left Auto Start"
+      "linkedName": "Test Human Player"
     },
     {
       "anchor": {
         "x": 4.749049001865014,
         "y": 5.3998583576433425
+        "x": 3.8294407894736837,
+        "y": 5.1411184210526315
       },
       "prevControl": {
         "x": 5.03497598854988,
         "y": 5.423733980318709
+        "x": 3.2639418915444285,
+        "y": 5.629179254290936
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": "Coral J"
+      "linkedName": "Test Reef"
     }
   ],
   "rotationTargets": [],
@@ -43,12 +53,14 @@
   "goalEndState": {
     "velocity": 0,
     "rotation": -119.62374875117386
+    "rotation": -59.99999999999999
   },
   "reversed": false,
-  "folder": "Left Auto Paths",
+  "folder": "Test Paths",
   "idealStartingState": {
     "velocity": 0,
     "rotation": -120.78414652632635
+    "rotation": -54.0
   },
   "useDefaultConstraints": true
 }

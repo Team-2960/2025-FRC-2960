@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.726740689229302,
-        "y": 5.1084960943988245
+        "x": 8.062993421052632,
+        "y": 4.015378289473684
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.975996604026481,
-        "y": 5.127770142718298
+        "x": 7.062993421052624,
+        "y": 4.015378289473684
       },
       "isLocked": false,
-      "linkedName": "Coral K"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 1.5954545454545452,
-        "y": 7.329870129870129
+        "x": 5.801891447368421,
+        "y": 4.015378289473684
       },
       "prevControl": {
-        "x": 1.3887003503973743,
-        "y": 7.4704144389909946
+        "x": 6.801891447368421,
+        "y": 4.015378289473684
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Left Coral Station"
+      "linkedName": "MA 1 End"
     }
   ],
   "rotationTargets": [],
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -52.73359809902284
+    "rotation": 180.0
   },
   "reversed": false,
-  "folder": "Test Paths",
+  "folder": "Middle Auton",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -60.00436058104616
+    "rotation": 180.0
   },
   "useDefaultConstraints": true
 }
