@@ -52,6 +52,9 @@ public class Constants {
     // Digital Input Ports
     public static final int coralPresentPE = 9;
 
+    // PWM Ports
+    public static final int ledPort = 0;
+
     // Auton
     public static final double autoClearance = .25; // Meters
     public static final double autonRampDownSpeed = 0.5;  
@@ -202,5 +205,12 @@ public class Constants {
 
         public static final Scalar lineColor = new Scalar(0, 255, 0);
         public static final int lineWidth = 1;  // pixel
+    }
+
+    // LED Control
+    public static final class LEDControlConst {
+        public static final int frontLEDCount = 60;
+        public static final int leftLEDCount = 60;
+        public static final int rightLEDCount = 60;
     }
 }
