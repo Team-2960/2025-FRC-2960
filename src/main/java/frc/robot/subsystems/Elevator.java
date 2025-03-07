@@ -6,7 +6,11 @@ import frc.robot.subsystems.Elevator.SoftLimCheckCommand.SoftLimDirection;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLimitSwitch;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.SparkBaseConfig;
+import com.revrobotics.spark.config.SparkFlexConfig;
 
 import edu.wpi.first.hal.SimDevice.Direction;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
@@ -267,12 +271,19 @@ public class Elevator extends SubsystemBase {
 
         elevatorPID = new PIDController(Constants.elevatorPIDS.kP, Constants.elevatorPIDS.kP, Constants.elevatorPIDS.kP);
 
+        //Doesn't have kA value BECAUSe it doesn't need it to function and you have to actually give the feedforward a calculated acceleration
         elevatorFF = new ElevatorFeedforward(Constants.elevatorFFS.kS, Constants.elevatorFFS.kG, Constants.elevatorFFS.kV);
+
+        //Motor Config
+        SparkFlexConfig elevatorConfig = new SparkFlexConfig();
+        elevatorConfig.encoder
+            .positionConversionFactor(Constants.elevatorScale)
+            .velocityConversionFactor(Constants.elevatorScale / 60.0);
+        elevatorMotor.configure(elevatorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         elevLimBotTrigger = new Trigger(elevatorLimitBot::isPressed);
         
         elevLimTopTrigger = new Trigger(elevatorLimitTop::isPressed);
-
 
         //TODO change reset values to whatever they need to be
         elevLimBotTrigger.whileTrue(new EncoderResetCommand(0));
@@ -361,7 +372,7 @@ public class Elevator extends SubsystemBase {
      * @return current elevator position (in)
      */
     public double getElevatorPos() {
-        return elevatorEncoder.getPosition() * Constants.elevatorScale;
+        return elevatorEncoder.getPosition();
     }
 
     /**
@@ -370,7 +381,7 @@ public class Elevator extends SubsystemBase {
      * @return current elevator velocity (in per sec)
      */
     public double getElevatorVelocity() {
-        return elevatorEncoder.getVelocity() * Constants.elevatorScale / 60.0;
+        return elevatorEncoder.getVelocity();
     }
 
     public double getElevatorVoltage(){
@@ -528,8 +539,8 @@ public class Elevator extends SubsystemBase {
         if(getCurrentCommand() != elevatorRateCommand) elevatorRateCommand.schedule();
     }
 
-    public void setPosCommand(double angle){
-        elevatorPosCommand.setPos(angle);
+    public void setPosCommand(double pos){
+        elevatorPosCommand.setPos(pos);
         if(getCurrentCommand() != elevatorPosCommand) elevatorPosCommand.schedule();
     }
 

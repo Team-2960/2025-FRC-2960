@@ -9,13 +9,16 @@ import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.AbsoluteEncoderConfig;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkFlexConfig;
+import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.units.BaseUnits;
 import edu.wpi.first.units.measure.MutAngle;
 import edu.wpi.first.units.measure.MutAngularVelocity;
 import edu.wpi.first.units.measure.MutCurrent;
@@ -33,6 +36,8 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 import static edu.wpi.first.units.Units.*;
+
+import java.util.prefs.BackingStoreException;
 
 public class Arm extends SubsystemBase {
     private static Arm arm = null;
@@ -232,9 +237,10 @@ public class Arm extends SubsystemBase {
      */
     private Arm() {        
         motor = new SparkFlex(Constants.armMotor, MotorType.kBrushless);
-        motor.configure(new SparkFlexConfig().inverted(true), com.revrobotics.spark.SparkBase.ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        motor.configure(new SparkFlexConfig().inverted(true).apply(new AbsoluteEncoderConfig().zeroCentered(true)), com.revrobotics.spark.SparkBase.ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         absEncoder = motor.getAbsoluteEncoder();
         relEncoder = motor.getExternalEncoder();
+
 
         armPID = new PIDController(Constants.armPID.kP, Constants.armPID.kP, Constants.armPID.kP);
 
@@ -244,6 +250,13 @@ public class Arm extends SubsystemBase {
         armVolt = 0;
         armRate = 0;
 
+        //Motor Config
+        SparkFlexConfig armConfig = new SparkFlexConfig();
+        armConfig.absoluteEncoder
+            .zeroCentered(true);
+
+        armConfig.encoder
+            .velocityConversionFactor(1/60 * 360 / 100);
         // Initialize Timer        
         shuffleBoardInit();
 
@@ -252,7 +265,7 @@ public class Arm extends SubsystemBase {
         armAngleCommand = new ArmAngleCommand(Rotation2d.fromDegrees(0));
         armHoldCommand = new ArmHoldCommand();
 
-        setDefaultCommand(armHoldCommand);
+        //setDefaultCommand(armHoldCommand);
 
         //System Identification
         sysIdRoutine = new SysIdRoutine(
@@ -268,7 +281,7 @@ public class Arm extends SubsystemBase {
 
         appliedVoltage = Volts.mutable(0);
         appliedCurrent = Amps.mutable(0);
-        angle = Degrees.mutable(0);
+        angle = Degrees.mutable(Degrees.toBaseUnits(0));
         angularVelocity =  DegreesPerSecond.mutable(0);
         
         sysIdCommandUpQuasi = sysIdRoutine.quasistatic(edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction.kForward);
@@ -319,12 +332,7 @@ public class Arm extends SubsystemBase {
      * @return current arm angle
      */
     public Rotation2d getArmAngle() {
-        double rotations = absEncoder.getPosition();
-        if (rotations >= 0.5){
-            rotations = rotations - 1.0;
-        }
-        return Rotation2d.fromRotations(rotations);
-        //return Rotation2d.fromRotations(absEncoder.getPosition());
+        return Rotation2d.fromRotations(absEncoder.getPosition());
     }
 
     public double getVoltage(){
@@ -342,7 +350,7 @@ public class Arm extends SubsystemBase {
      * @return current arm angle rate in radians per second
      */
     public double getArmVelocity() {
-        return relEncoder.getVelocity()/60 * 360 / 100;
+        return relEncoder.getVelocity();
     }
 
 
@@ -369,8 +377,8 @@ public class Arm extends SubsystemBase {
         double maxAngleRate = Constants.maxArmAutoSpeed;
         Rotation2d angleError = targetAngle.minus(currentAngle);
 
-        double targetSpeed = maxAngleRate * (angleError.getRadians() > 0 ? 1 : +-1);
-        double rampDownSpeed = angleError.getRadians() / Constants.armRampDownDist.getRadians() * maxAngleRate;
+        double targetSpeed = maxAngleRate * (angleError.getDegrees() > 0 ? 1 : -1);
+        double rampDownSpeed = angleError.getDegrees() / Constants.armRampDownDist.getDegrees() * maxAngleRate;
 
         if (Math.abs(rampDownSpeed) < Math.abs(targetSpeed))
             targetSpeed = rampDownSpeed;
@@ -384,8 +392,6 @@ public class Arm extends SubsystemBase {
      * @param targetSpeed target
      */
     private void setArmRate(double targetSpeed) {
-        double result = this.armRate;
-
         Rotation2d currentAngle = getArmAngle();
         double angleRate = getArmVelocity();            
 
@@ -395,12 +401,12 @@ public class Arm extends SubsystemBase {
         double calcPID = armPID.calculate(angleRate, targetSpeed);
         double calcFF = armFF.calculate(currentAngle.getRadians(), targetSpeed);
 
-        result = calcPID + calcFF;
+        double result = calcPID + calcFF;
         
         setMotorVolt(result);
         
         //Shuffleboard display
-        this.armRate = result;
+        this.armRate = targetSpeed;
     }
 
     /**
@@ -445,7 +451,6 @@ public class Arm extends SubsystemBase {
 
     public boolean botLimitReached(){
         return getArmAngle().getDegrees() <= Constants.armBotLim.getDegrees();
-
     }
 
     private void sysIDLogging(SysIdRoutineLog log){

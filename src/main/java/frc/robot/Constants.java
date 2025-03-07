@@ -93,16 +93,16 @@ public class Constants {
     public static final PIDParam angleAlignPID = new PIDParam(4, 0, 0.3);
 
     // Arm
-    public static final PIDParam armPID = new PIDParam(0.01, 0.0, 0.0);
-    public static final FFParam armFF = FFParam.arm(.1, 2, 0.25, 0.0);
+    public static final PIDParam armPID = new PIDParam(0.001, 0.0, 0.0);
+    public static final FFParam armFF = FFParam.arm(0.01, 0.02948 * 3.0, 0.025, 0.0);
 
     public static final Rotation2d armRampDownDist = Rotation2d.fromDegrees(20);
 
-    public static final double maxArmSpeed = Math.PI;   // radians / s
-    public static final double maxArmAutoSpeed = 1 * Math.PI;  //radians /s
+    public static final double maxArmSpeed = 90;   // Degrees / s
+    public static final double maxArmAutoSpeed = 90;  //Degrees /s
 
     //TODO Change to real limits
-    public static final Rotation2d armTopLim = Rotation2d.fromDegrees(90);
+    public static final Rotation2d armTopLim = Rotation2d.fromDegrees(80);
     public static final Rotation2d armBotLim = Rotation2d.fromDegrees(0);
 
     public static final Rotation2d armIntakeAngle = Rotation2d.fromDegrees(110);
@@ -112,8 +112,8 @@ public class Constants {
     public static final Rotation2d armAlgaeRemoveAngle = Rotation2d.fromDegrees(80);
 
     //Elevator
-    public static PIDParam elevatorPIDS = new PIDParam(0.0017692, 0.0, 0.0); //0.02132
-    public static FFParam elevatorFFS = FFParam.elevator(0.22643, 4.4162, 0, 0.33045);
+    public static PIDParam elevatorPIDS = new PIDParam(0, 0.0, 0.0); //0.02132 0.0017692
+    public static FFParam elevatorFFS = FFParam.elevator(0.22643, 4.4162, 0.33045, 0.32248);
     
     public static final double elevatorGearRatio = 1.0/12.0 * 2.0;    // rot. out / rot. in
     public static final double elevatorOutputDiam = 1.751;  // in.
@@ -143,7 +143,7 @@ public class Constants {
 
     //Algae Roller
     public static final PIDParam algaeAnglePID = new PIDParam(0.0, 0.0, 0.0);
-    public static final FFParam algaeAngleFF = FFParam.arm(0.15488, 5.0985, 0, 0.48409);
+    public static final FFParam algaeAngleFF = FFParam.arm(0.15488, 5.0985, 0.64833, 0.48409);
 
     
     public static final double maxAlgaeAutoSpeed = 1 * Math.PI;  //radians /s

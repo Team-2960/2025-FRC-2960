@@ -8,8 +8,13 @@ import org.opencv.core.Mat;
 
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
+import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.SparkBaseConfig;
+import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
@@ -244,6 +249,15 @@ public class AlgaeAngle extends SubsystemBase {
         voltage = 0;
         rate = 0;
 
+        //Motor Config
+        SparkMaxConfig angleConfig = new SparkMaxConfig();
+        angleConfig.absoluteEncoder
+            .zeroCentered(true)
+            .inverted(true);
+        angleConfig.encoder.velocityConversionFactor(1/60.0 * 360.0 * 22.0/(42.0 * 25.0));
+
+        motor.configure(angleConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
         // Initialize Timer        
         shuffleBoardInit();
 
@@ -320,13 +334,7 @@ public class AlgaeAngle extends SubsystemBase {
      * @return current  angle
      */
     public Rotation2d getAngle() {
-        double rotations = absEncoder.getPosition();
-        if (rotations >= 0.5){
-            rotations = 1.0 - rotations;
-        }else{
-            rotations = -rotations;
-        }
-        return Rotation2d.fromRotations(rotations);
+        return Rotation2d.fromRotations(absEncoder.getPosition());
     }
 
     /**
@@ -336,7 +344,7 @@ public class AlgaeAngle extends SubsystemBase {
      */
     public double getVelocity() {
         //return -absEncoder.getVelocity()/60 * 360;
-        return relEncoder.getVelocity()/60 * 360 * 22.0/(42.0 * 25.0);
+        return relEncoder.getVelocity();
     }
 
     public double getVoltage(){
