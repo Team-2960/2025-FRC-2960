@@ -3,11 +3,13 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import frc.robot.Constants;
 import frc.robot.Util.FieldLayout;
 import frc.robot.Util.FieldLayout.ReefFace;
 import frc.robot.subsystems.Drive.LinearDriveCommands.DriveRateCommand;
 import frc.robot.subsystems.Drive.LinearDriveCommands.GoToPointCommand;
+import frc.robot.subsystems.Drive.LinearDriveCommands.LinearGoToReefCommand;
 import frc.robot.subsystems.Drive.RotationDriveCommands.AngleAlignCommand;
 import frc.robot.subsystems.Drive.RotationDriveCommands.PointAlignCommand;
 import frc.robot.subsystems.Drive.RotationDriveCommands.ReefAlignCommand;
@@ -184,8 +186,27 @@ public class Drive extends SubsystemBase {
             }
         }
 
+        public class LinearGoToReefCommand extends Command{
+            Translation2d offset;
+
+            public LinearGoToReefCommand(Translation2d offset){
+                this.offset = offset;
+                addRequirements(LinearDriveCommands.this);
+            }
+
+            public void setOffset(Translation2d offset){
+                this.offset = offset;
+            }
+
+            @Override
+            public void execute(){
+                linearGoToReef(offset);
+            }
+        }
+
         private final DriveRateCommand driveRateCommand;    /**< Internal instance of Drive Rate command */
         private final GoToPointCommand goToPointCommand;    /**< Internal instance of Goto Point command */
+        private final LinearGoToReefCommand linearGoToReefCommand;
 
         /**
          * Constructor
@@ -193,6 +214,7 @@ public class Drive extends SubsystemBase {
         public LinearDriveCommands() {
             driveRateCommand = new DriveRateCommand(0, 0);
             goToPointCommand = new GoToPointCommand(new Translation2d(0, 0));
+            linearGoToReefCommand = new LinearGoToReefCommand(new Translation2d());
             setDefaultCommand(driveRateCommand);
         }
     }
@@ -340,12 +362,32 @@ public class Drive extends SubsystemBase {
             public void execute() {
                 reefAngleCalc(offset);
             }
+
+            
         }
 
+        public class RotGoToReefCommand extends Command{
+                Rotation2d offset;
+
+                public RotGoToReefCommand(Rotation2d offset){
+                    this.offset = offset;
+                    addRequirements(RotationDriveCommands.this);
+                }
+
+                public void setOffset(Rotation2d offset){
+                    this.offset = offset;
+                }
+
+                @Override
+                public void execute(){
+                    rotGoToReef(offset);
+                }
+            }
         private final RotationRateCommand rotationRateCommand;  /**< Internal rate control command instance */
         private final AngleAlignCommand angleAlignCommand;      /**< Internal angle align command instance */
         private final PointAlignCommand pointAlignCommand;      /**< Internal point align command instance */
         private final ReefAlignCommand reefAlignCommand;        /**< Internal reef align command instance */
+        private final RotGoToReefCommand rotGoToReefCommand;
 
         /**
          * Constructor
@@ -355,13 +397,37 @@ public class Drive extends SubsystemBase {
             pointAlignCommand = new PointAlignCommand(new Translation2d(0, 0), new Rotation2d());
             rotationRateCommand = new RotationRateCommand(0);
             reefAlignCommand = new ReefAlignCommand(new Rotation2d());
+            rotGoToReefCommand = new RotGoToReefCommand(new Rotation2d());
             setDefaultCommand(rotationRateCommand);
+        }
+    }
+
+    public class PresetPoseCommand extends Command{
+        Pose2d pose;
+
+        public PresetPoseCommand(Pose2d pose){
+            this.pose = pose;
+        }
+
+        public void resetPose(Pose2d pose){
+            this.pose = pose;
+        }
+
+        @Override
+        public void initialize(){
+            presetPosition(pose);
+        }
+
+        @Override 
+        public boolean isFinished(){
+            return true;
         }
     }
 
     // Command classes
     public final LinearDriveCommands linearDriveCommands;      /**< Linear motion control subsytem */
     public final RotationDriveCommands rotationDriveCommands;  /**< Rotation motion control subsystem */
+    public final PresetPoseCommand presetPoseCommand;
 
     /**
      * Constructor
@@ -452,6 +518,8 @@ public class Drive extends SubsystemBase {
         // Make instance of Command Classes
         linearDriveCommands = new LinearDriveCommands();
         rotationDriveCommands = new RotationDriveCommands();
+
+        presetPoseCommand = new PresetPoseCommand(new Pose2d());
 
         pathConstraints = PathConstraints.unlimitedConstraints(12);
     }
@@ -682,6 +750,32 @@ public class Drive extends SubsystemBase {
         calcRateToAngle(targetAngle.plus(offset));
     }
 
+    public void linearGoToReef(Translation2d offset){
+        if (isRedAlliance()) {
+            offset = new Translation2d(-offset.getX(), -offset.getY());
+        }
+
+        Rotation2d reefFaceRotation = FieldLayout.getReefFaceZone(getEstimatedPos());
+        Pose2d zeroFace = FieldLayout.getReef(ReefFace.ZERO);
+        Translation2d poseOffset = new Translation2d(zeroFace.getX() + offset.getX(), zeroFace.getY() + offset.getY())
+                .rotateAround(FieldLayout.getReef(ReefFace.CENTER).getTranslation(),
+                        reefFaceRotation);
+        Pose2d finalReefFace = new Pose2d(poseOffset, reefFaceRotation);
+        this.nearestReefFace = finalReefFace;
+
+        setGoToPoint(finalReefFace.getTranslation());
+    }
+
+    public void rotGoToReef(Rotation2d offset){
+        Rotation2d reefFaceRotation = FieldLayout.getReefFaceZone(getEstimatedPos());
+        Pose2d zeroFace = FieldLayout.getReef(ReefFace.ZERO);
+        Translation2d poseOffset = new Translation2d(zeroFace.getX(), zeroFace.getY())
+                .rotateAround(FieldLayout.getReef(ReefFace.CENTER).getTranslation(),
+                        reefFaceRotation);
+        Pose2d finalReefFace = new Pose2d(poseOffset, reefFaceRotation);
+        setAngleAlign(finalReefFace.getRotation().plus(offset));
+    }
+
     /**
      * Moves to the reef
      * @param offset    offet position
@@ -882,6 +976,23 @@ public class Drive extends SubsystemBase {
         reefAlignCommand.setOffset(offset);
         if (rotationDriveCommands.getCurrentCommand() != reefAlignCommand)
             reefAlignCommand.schedule();
+    }
+
+    public void setRotGoToReef(Rotation2d offset){
+        frc.robot.subsystems.Drive.RotationDriveCommands.RotGoToReefCommand rotGoToReefCommand = rotationDriveCommands.rotGoToReefCommand;
+        rotGoToReefCommand.setOffset(offset);
+        if(rotGoToReefCommand != rotationDriveCommands.getCurrentCommand()) rotGoToReefCommand.schedule();
+    }
+
+    public void setLinearGoToReef(Translation2d offset){
+        LinearGoToReefCommand linearGoToReefCommand = linearDriveCommands.linearGoToReefCommand;
+        linearGoToReefCommand.setOffset(offset);
+        if (linearDriveCommands.getCurrentCommand() != linearGoToReefCommand) linearGoToReefCommand.schedule();
+    }
+
+    public void setPresetPose(Pose2d pose){
+        PresetPoseCommand presetPoseCommand = new PresetPoseCommand(pose);
+        presetPoseCommand.schedule();
     }
 
     /**

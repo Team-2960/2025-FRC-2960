@@ -265,7 +265,7 @@ public class Arm extends SubsystemBase {
         armAngleCommand = new ArmAngleCommand(Rotation2d.fromDegrees(0));
         armHoldCommand = new ArmHoldCommand();
 
-        //setDefaultCommand(armHoldCommand);
+        setDefaultCommand(armHoldCommand);
 
         //System Identification
         sysIdRoutine = new SysIdRoutine(

@@ -209,6 +209,10 @@ public class EndEffector extends SubsystemBase{
         setMotorVolt(0);
     }
 
+    public void setReverse(){
+        setMotorVolt(-Constants.coralIntakeVolt);
+    }
+
     public boolean isCoralPresent(){
         return !coralPresentPE.get();
     }
