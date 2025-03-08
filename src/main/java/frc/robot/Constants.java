@@ -105,10 +105,11 @@ public class Constants {
     public static final Rotation2d armTopLim = Rotation2d.fromDegrees(80);
     public static final Rotation2d armBotLim = Rotation2d.fromDegrees(0);
 
-    public static final Rotation2d armIntakeAngle = Rotation2d.fromDegrees(110);
-    public static final Rotation2d armTravelAngle = Rotation2d.fromDegrees(90);
+    public static final Rotation2d armIntakeAngle = Rotation2d.fromDegrees(80);
+    public static final Rotation2d armTravelAngle = Rotation2d.fromDegrees(75);
     public static final Rotation2d armL1CoralScoreAngle = Rotation2d.fromDegrees(73);
-    public static final Rotation2d armCoralScoreAngle = Rotation2d.fromDegrees(73);
+    public static final Rotation2d armCoralScoreAngle = Rotation2d.fromDegrees(60);
+    public static final Rotation2d armCoralL4Angle = Rotation2d.fromDegrees(48.5);
     public static final Rotation2d armAlgaeRemoveAngle = Rotation2d.fromDegrees(80);
 
     //Elevator
@@ -127,11 +128,11 @@ public class Constants {
     public static final double elevatorTopLim = 57.5;         //in.
     public static final double elevatorBotLim = 0.25;        //in.
 
-    public static final double elevIntakePos = 0;       // in.
+    public static final double elevIntakePos = 0.5;       // in.
     public static final double elevL1Pos = 0;           // in.
-    public static final double elevL2Pos = 0;           // in.
-    public static final double elevL3Pos = 0;           // in.
-    public static final double elevL4Pos = 0;           // in.
+    public static final double elevL2Pos = 16;           // in.
+    public static final double elevL3Pos = 31.5;           // in.
+    public static final double elevL4Pos = 56.5;           // in.
     public static final double elevLowAlgaePos = 0;     // in.
     public static final double elevHighAlgaePos = 0;    // in.
 

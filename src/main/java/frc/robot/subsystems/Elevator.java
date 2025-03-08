@@ -142,10 +142,10 @@ public class Elevator extends SubsystemBase {
             setElevatorRate(targetRate);
         }
 
-        // @Override
-        // public boolean isFinished(){
-        //     return targetRate == 0 || Math.abs(targetRate) <= tolerance;
-        // }
+        @Override
+        public boolean isFinished(){
+            return targetRate == 0 || Math.abs(targetRate) <= tolerance;
+        }
     }
 
     public class ElevatorHoldCommand extends Command{
