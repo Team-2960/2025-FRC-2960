@@ -7,11 +7,11 @@ import frc.robot.subsystems.AlgaeRoller;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Drive;
+import frc.robot.subsystems.ElevArmControl;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.EndEffector;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -20,7 +20,9 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.AddressableLED;
@@ -31,8 +33,15 @@ public class OperatorInterface extends SubsystemBase {
     public static OperatorInterface oi = null;
 
     // JOYSTICKS
-    private XboxController driverController;
     private XboxController operatorController;
+    private CommandXboxController driverController;
+    private CommandXboxController operatorController1;
+
+
+    //Manual Control Class Variables
+    double xSpeed;
+    double ySpeed;
+    double rSpeed;
 
     // LED Control
     int led_count = 69;
@@ -61,8 +70,10 @@ public class OperatorInterface extends SubsystemBase {
      */
     private OperatorInterface() {
         // Create Joysticks
-        driverController = new XboxController(0);
         operatorController = new XboxController(1);
+        driverController = new CommandXboxController(0);
+        operatorController1 = new CommandXboxController(1);
+
 
         // Setup LEDs
         leds = new AddressableLED(0);
@@ -112,18 +123,103 @@ public class OperatorInterface extends SubsystemBase {
         sb_rumblePower = rumble_layout.add("Rumble Power", 0).getEntry();
         sb_rumbleTimer = rumble_layout.add("Rumble Timer", 0).getEntry();
         sb_isEndGame = rumble_layout.add("Is End Game", false).getEntry();
+
+        driveTriggers();
+        coralPlacementTriggers();
+        //algaeGrabberTriggers();
+
     }
     
 
-    
+    private void driveTriggers(){
+        Drive drive = Drive.getInstance();
+
+        boolean slowSpeed = driverController.getHID().getRawButton(6);
+        double maxSpeed = (slowSpeed ? .5 : 1) * Constants.maxSpeed;
+        double maxAngleRate = (slowSpeed ? .5 : 1) * Constants.maxAngularSpeed;
+
+        boolean fieldRelative = true;
+        var alliance = DriverStation.getAlliance();
+        double alliance_dir = alliance.isPresent() && alliance.get() == Alliance.Red ? 1 : -1;
+
+        double xAxis = MathUtil.applyDeadband(driverController.getRawAxis(1), 0.07);
+        double yAxis = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.07);
+        double rAxis = MathUtil.applyDeadband(driverController.getRawAxis(4), 0.1);
+
+        driverController.pov(0).whileTrue(drive.new PresetPoseCommand(
+            FieldLayout.getReef(ReefFace.ZERO).plus(new Transform2d(-Constants.robotLength/2, 0, new Rotation2d()))));
+        
+        driverController.y()
+            .onTrue(drive.linearDriveCommands
+                .new LinearGoToReefCommand(
+                    new Translation2d(-Constants.robotLength/2, 0)));
+
+        driverController.y().and(driverController.rightBumper())
+            .whileTrue(
+                drive.linearDriveCommands
+                .new LinearGoToReefCommand(
+                    new Translation2d(-Constants.robotLength/2, -0.3)));
+        
+        driverController.y().and(driverController.leftBumper())
+            .whileTrue(
+                drive.linearDriveCommands
+                .new LinearGoToReefCommand(
+                    new Translation2d(-Constants.robotLength/2, 0.3)));
+
+        
+
+    }
+
+    private void coralPlacementTriggers(){
+        Elevator elevator = Elevator.getInstance();
+        EndEffector endEffector = EndEffector.getInstance();
+        Arm arm = Arm.getInstance();
+        ElevArmControl elevArmControl = ElevArmControl.getInstance();
+
+        //Elevator Arm Triggers
+        operatorController1.y().onTrue(elevArmControl.getGoToL4Command());
+        operatorController1.x().onTrue(elevArmControl.getGoToL3Command());
+        operatorController1.b().onTrue(elevArmControl.getGoToL2Command());
+        operatorController1.a().onTrue(elevArmControl.getGoToIntakeCommand());
+        operatorController1.pov(90).onTrue(elevArmControl.getGoToLowAlgaeCommand());
+
+
+        operatorController1.axisMagnitudeGreaterThan(3, 0.1)
+            .whileTrue(endEffector.new EjectCmd());
+        
+        operatorController1.axisMagnitudeGreaterThan(2, 0.1)
+            .whileTrue(endEffector.new IntakeCmd());
+        
+        operatorController1.pov(90).onTrue(elevArmControl.getGoToLowAlgaeCommand());
+        
+        operatorController1.pov(270).onTrue(elevArmControl.getGoToHighAlgaeCommand());
+
+    }
+
+    private void algaeGrabberTriggers(){
+        AlgaeAngle algaeAngle = AlgaeAngle.getInstance();
+        AlgaeRoller algaeRoller = AlgaeRoller.getInstance();
+
+        operatorController1.pov(180)
+            .onTrue(algaeAngle.new AngleCommand(Rotation2d.fromDegrees(20)));
+        
+        operatorController1.pov(0)
+            .onTrue(algaeAngle.new AngleCommand(Rotation2d.fromDegrees(80)));
+
+        operatorController1.rightBumper().whileTrue(algaeRoller.new EjectCmd());
+        operatorController1.leftBumper().whileTrue(algaeRoller.new IntakeCmd());
+    }
+
+    private void climberTriggers(){
+
+    }
 
     /**
      * Updates the controls for the drivetrain
      */
     private void updateDrive() {
         Drive drive = Drive.getInstance();
-
-        boolean slowSpeed = driverController.getRawButton(5);
+        boolean slowSpeed = driverController.getHID().getRawButton(5);
         double maxSpeed = (slowSpeed ? .5 : 1) * Constants.maxSpeed;
         double maxAngleRate = (slowSpeed ? .5 : 1) * Constants.maxAngularSpeed;
 
@@ -135,56 +231,27 @@ public class OperatorInterface extends SubsystemBase {
         double yAxis = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.05);
         double rAxis = MathUtil.applyDeadband(driverController.getRawAxis(4), 0.1);
 
-        double xSpeed = MathUtil.applyDeadband(driverController.getRawAxis(1), 0.05) * maxSpeed * alliance_dir;
-        double ySpeed = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.05) * maxSpeed * alliance_dir;
+        double xSpeed = xAxis * maxSpeed * alliance_dir;
+        double ySpeed = yAxis * maxSpeed * alliance_dir;
         double rSpeed = rAxis * maxAngleRate * -1;
 
-        if (driverController.getPOV() == 0){
-            drive.presetPosition(FieldLayout.getReef(ReefFace.ZERO).plus(new Transform2d(-Constants.robotLength/2, 0, new Rotation2d())));
+        this.xSpeed = xSpeed;
+        this.ySpeed = ySpeed;
+        this.rSpeed = rSpeed;
+
+
+        if (Math.abs(xAxis) > 0 || Math.abs(yAxis) > 0){
+            drive.setDriveRate(xSpeed, ySpeed);
+            drive.setLinearManualDrive(true);
+        }else{
+            drive.setLinearManualDrive(false);
         }
 
-        if (!driverController.getRawButton(3) && !driverController.getRawButton(4)){
-            if (Math.abs(xAxis) > 0.05 || Math.abs(yAxis) > 0.05 ){
-                drive.setDriveRate(xSpeed, ySpeed);
-
-            } else if (driverController.getRawButton(3)){
-                drive.setGoToPoint(new Translation2d(0, 0));
-                
-            }else{
-                drive.setDriveRate(0, 0);
-            }
-
-
-            if (Math.abs(rAxis) > 0.05){
-                drive.setRotationRate(rSpeed);
-
-            }
-            else if (driverController.getRawButton(1)) {
-                drive.setAngleAlign(Rotation2d.fromDegrees(0));
-
-            }
-            else if (driverController.getRawButton(2)){
-                drive.setPointAlign(new Translation2d(0, 0), Rotation2d.fromDegrees(0));
-
-            } else{
-                drive.setRotationRate(0);
-            }
+        if (Math.abs(rAxis) > 0){
+            drive.setRotationRate(rSpeed);
+            drive.setRotManualDrive(true);
         }else{
-            if (driverController.getRawButton(3)){
-                drive.setGoToPoint(new Translation2d(0, 0));
-                drive.setAngleAlign(Rotation2d.fromDegrees(90));
-                
-            } else if (driverController.getRawButton(4)){
-                //Shuffle distance should be 0.15875
-                if (driverController.getRawButton(5)){
-                    drive.goToReef(new Pose2d(-Constants.robotLength/2, 0.3, Rotation2d.fromDegrees(0)));
-
-                } else if (driverController.getRawButton(6)){
-                    drive.goToReef(new Pose2d(-Constants.robotLength/2, -0.3, Rotation2d.fromDegrees(0)));
-                }else{
-                    drive.goToReef(new Pose2d(-Constants.robotLength/2, 0, Rotation2d.fromDegrees(0)));
-                }
-            }
+            drive.setRotManualDrive(false);
         }
 
         // Update Shuffleboard
@@ -192,15 +259,19 @@ public class OperatorInterface extends SubsystemBase {
         sb_driveY.setDouble(ySpeed);
         sb_driveR.setDouble(rSpeed);
         sb_driveFR.setBoolean(fieldRelative);
+
     }
 
     /**
      * updates controls for elevator, arm, and end effector
      */
-    private void updateCoralPlacement(){//TODO finish whatever is needed for this
+    private void 
+    
+    updateCoralPlacement(){//TODO finish whatever is needed for this
         Elevator elevator = Elevator.getInstance();
         EndEffector endEffector = EndEffector.getInstance();
-        // Arm arm = Arm.getInstance();
+        Arm arm = Arm.getInstance();
+        ElevArmControl elevArmControl = ElevArmControl.getInstance();
 
         // //L2 = button A | L3 = button B | L4 = button Y
         // boolean elevatorL2 = operatorController.getRawButton(1);
@@ -208,15 +279,56 @@ public class OperatorInterface extends SubsystemBase {
         // boolean elevatorL4 = operatorController.getRawButton(4);
 
         double elevatorRate = MathUtil.applyDeadband(operatorController.getRightY(), 0.05);
-        if(Math.abs(elevatorRate) > 0){
-            elevator.setRateCommand(elevatorRate);
-        }else if (operatorController.getAButton()){
-            elevator.setPosCommand(30);
-        }else if(operatorController.getBButton()){
-            elevator.setPosCommand(0);
-        }
+        double armRate = MathUtil.applyDeadband(operatorController.getLeftY(), 0.06);
+        boolean eject = operatorController1.getRightTriggerAxis() > 0.1;
+        boolean intake = operatorController1.getLeftTriggerAxis() > 0.1;
+
+
+
+        // if (operatorController.getRightBumperButton()){
+            if(Math.abs(elevatorRate) > 0){
+                elevator.setRateCommand(elevatorRate);
+            }else if (operatorController1.getHID().getAButton()){
+                elevator.setPosCommand(30);
+            }else if(operatorController1.getHID().getBButton()){
+                elevator.setPosCommand(0);
+            }
+
+            if(Math.abs(armRate) > 0.05){
+                arm.setRateCommand(armRate * 90);
+            }else{
+                arm.setHoldCommand();
+            }
+
+            if(eject){
+                endEffector.setEject();
+            } else if(intake){
+                endEffector.setIntake();
+            } else{
+                endEffector.setStop();
+            }
+
+        // }else{
+        //     if (operatorController.getYButton()){
+        //         elevArmControl.getGoToL4Command().schedule();
+        //     } else if (operatorController.getBButton()){
+        //         elevArmControl.getGoToL2Command().schedule();
+        //     } else if(operatorController.getXButton()){
+        //         elevArmControl.getGoToL3Command().schedule();
+        //     } else if (operatorController.getAButton()){
+        //         elevArmControl.getGoToIntakeCommand().schedule();
+        //     }
+
+        //     if(eject){
+        //         endEffector.setEject();
+        //     } else if(intake){
+        //         endEffector.setIntake();
+        //     } else{
+        //         endEffector.setStop();
+        //     }
+        // }
         //elevator.setRateCommand(elevatorRate);
-        
+
     }
 
 
@@ -403,17 +515,18 @@ public class OperatorInterface extends SubsystemBase {
     public void periodic() {
         if (DriverStation.isTeleop()) {
             updateDrive();
-            updateCoralPlacement();
-            updateAlgaeGrabber();
+            //updateCoralPlacement();
+            //updateAlgaeGrabber();
             //updateClimber();
-            //updateEndEffector();
             //updateDriverFeedback();
             //updateClimberTest();
         } else if(DriverStation.isTest()) {
             //updateDriveTest();
-            updateCoralPlacementTest();
+            //updateCoralPlacementTest();
             //updateAlgaeGrabberTest();
             //updateClimberTest();
+            updateCoralPlacement();
+            updateDrive();
             //sysIdTest();
         }
     }

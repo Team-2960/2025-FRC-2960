@@ -66,15 +66,13 @@ public class ElevArmControl extends SubsystemBase{
         );
 
         gotoLowAlgae = new SequentialCommandGroup(
-            new ParallelRaceGroup(arm.new ArmAngleCommand(Constants.armTravelAngle), elev.new ElevatorHoldCommand()),
-            new ParallelRaceGroup(arm.new ArmHoldCommand(), elev.new ElevatorPosCommand(Constants.elevLowAlgaePos)),
+            new ParallelDeadlineGroup(elev.new ElevatorPosCommand(Constants.elevLowAlgaePos), arm.new ArmAngleCommand(Constants.armTravelAngle)),
             new ParallelRaceGroup(arm.new ArmAngleCommand(Constants.armAlgaeRemoveAngle), elev.new ElevatorHoldCommand()),
             new ParallelRaceGroup(arm.new ArmHoldCommand(), elev.new ElevatorHoldCommand())
         );
 
         gotoHighAlgae = new SequentialCommandGroup(
-            new ParallelRaceGroup(arm.new ArmAngleCommand(Constants.armTravelAngle), elev.new ElevatorHoldCommand()),
-            new ParallelRaceGroup(arm.new ArmHoldCommand(), elev.new ElevatorPosCommand(Constants.elevHighAlgaePos)),
+            new ParallelDeadlineGroup(elev.new ElevatorPosCommand(Constants.elevHighAlgaePos), arm.new ArmAngleCommand(Constants.armTravelAngle)),
             new ParallelRaceGroup(arm.new ArmAngleCommand(Constants.armAlgaeRemoveAngle), elev.new ElevatorHoldCommand()),
             new ParallelRaceGroup(arm.new ArmHoldCommand(), elev.new ElevatorHoldCommand())
         );
@@ -151,8 +149,7 @@ public class ElevArmControl extends SubsystemBase{
     }
     public Command getGoToLowAlgaeCommand(){
         return new SequentialCommandGroup(
-            new ParallelRaceGroup(arm.new ArmAngleCommand(Constants.armTravelAngle), elev.new ElevatorHoldCommand()),
-            new ParallelRaceGroup(arm.new ArmHoldCommand(), elev.new ElevatorPosCommand(Constants.elevLowAlgaePos)),
+            new ParallelDeadlineGroup(elev.new ElevatorPosCommand(Constants.elevLowAlgaePos), arm.new ArmAngleCommand(Constants.armTravelAngle)),
             new ParallelRaceGroup(arm.new ArmAngleCommand(Constants.armAlgaeRemoveAngle), elev.new ElevatorHoldCommand()),
             new ParallelRaceGroup(arm.new ArmHoldCommand(), elev.new ElevatorHoldCommand())
         );
@@ -160,8 +157,7 @@ public class ElevArmControl extends SubsystemBase{
 
     public Command getGoToHighAlgaeCommand(){
         return new SequentialCommandGroup(
-            new ParallelRaceGroup(arm.new ArmAngleCommand(Constants.armTravelAngle), elev.new ElevatorHoldCommand()),
-            new ParallelRaceGroup(arm.new ArmHoldCommand(), elev.new ElevatorPosCommand(Constants.elevHighAlgaePos)),
+            new ParallelDeadlineGroup(elev.new ElevatorPosCommand(Constants.elevHighAlgaePos), arm.new ArmAngleCommand(Constants.armTravelAngle)),
             new ParallelRaceGroup(arm.new ArmAngleCommand(Constants.armAlgaeRemoveAngle), elev.new ElevatorHoldCommand()),
             new ParallelRaceGroup(arm.new ArmHoldCommand(), elev.new ElevatorHoldCommand())
         );

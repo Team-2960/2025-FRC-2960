@@ -24,8 +24,11 @@ import edu.wpi.first.units.measure.MutAngularVelocity;
 import edu.wpi.first.units.measure.MutCurrent;
 import edu.wpi.first.units.measure.MutVoltage;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -51,6 +54,9 @@ public class Arm extends SubsystemBase {
     private PIDController armPID;
 
     private ArmFeedforward armFF;
+
+    private SendableBuilder pidTestDisplay;
+    private double pidTestValue = 0;
 
     private double armVolt;
     private double armRate;
@@ -242,7 +248,7 @@ public class Arm extends SubsystemBase {
         relEncoder = motor.getExternalEncoder();
 
 
-        armPID = new PIDController(Constants.armPID.kP, Constants.armPID.kP, Constants.armPID.kP);
+        armPID = new PIDController(Constants.armPID.kP, Constants.armPID.kI, Constants.armPID.kD);
 
         armFF = new ArmFeedforward(Constants.armFF.kS, Constants.armFF.kG, Constants.armFF.kV);
 
@@ -324,6 +330,7 @@ public class Arm extends SubsystemBase {
         sb_angleTargetVolt = layout.add("Angle Target Voltage", 0).getEntry();
         sb_angleAtTopLim = layout.add("Top Limit Angle", false).getEntry();
         sb_angleAtBotLim = layout.add("Bottom Limit Angle", false).getEntry();
+
     }
 
     /**
@@ -527,6 +534,9 @@ public class Arm extends SubsystemBase {
         if (currentCommand != null) curCommandName = currentCommand.getName();
         
         SmartDashboard.putString("Current Command", curCommandName);
+         
+        pidTestValue = SmartDashboard.getNumber("PID Test P", 0);
+        armPID.setP(pidTestValue);
     }
 
 

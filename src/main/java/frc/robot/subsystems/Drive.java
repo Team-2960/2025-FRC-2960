@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import frc.robot.Constants;
+import frc.robot.OperatorInterface;
 import frc.robot.Util.FieldLayout;
 import frc.robot.Util.FieldLayout.ReefFace;
 import frc.robot.subsystems.Drive.LinearDriveCommands.DriveRateCommand;
@@ -83,6 +84,9 @@ public class Drive extends SubsystemBase {
     private PIDController angleAlignPID;
     private PIDController driveAlignPID;
 
+    private boolean isLinearManualDrive = true;
+    private boolean isRotManualDrive = true;
+
     // Shuffleboard
     private GenericEntry sb_posEstX;
     private GenericEntry sb_posEstY;
@@ -119,6 +123,7 @@ public class Drive extends SubsystemBase {
         /**
          * Command for rate based control
          */
+
         public class DriveRateCommand extends Command {
             double xSpeed;      /**< Desired X axis rate */
             double ySpeed;      /**< Desired Y axis rate */
@@ -152,6 +157,14 @@ public class Drive extends SubsystemBase {
             public void execute() {
                 updateKinematics(xSpeed, ySpeed);
             }
+
+            //HACK this is a temporary solution to finish the drive rate command
+            //You get updates from the OperatorInterface using the setLinearManualDrive method
+            @Override
+            public boolean isFinished(){
+                return !isLinearManualDrive;
+            }
+
         }
 
         /**
@@ -204,9 +217,22 @@ public class Drive extends SubsystemBase {
             }
         }
 
+        public class LinearDoNothingCommand extends Command{
+
+            public LinearDoNothingCommand(){
+                addRequirements(LinearDriveCommands.this);
+            }
+
+            @Override
+            public void execute(){
+                setDriveRate(0, 0);
+            }
+        }
+
         private final DriveRateCommand driveRateCommand;    /**< Internal instance of Drive Rate command */
         private final GoToPointCommand goToPointCommand;    /**< Internal instance of Goto Point command */
         private final LinearGoToReefCommand linearGoToReefCommand;
+        private final LinearDoNothingCommand doNothingCommand;
 
         /**
          * Constructor
@@ -215,7 +241,8 @@ public class Drive extends SubsystemBase {
             driveRateCommand = new DriveRateCommand(0, 0);
             goToPointCommand = new GoToPointCommand(new Translation2d(0, 0));
             linearGoToReefCommand = new LinearGoToReefCommand(new Translation2d());
-            setDefaultCommand(driveRateCommand);
+            doNothingCommand = new LinearDoNothingCommand();
+            setDefaultCommand(doNothingCommand);
         }
     }
 
@@ -223,7 +250,6 @@ public class Drive extends SubsystemBase {
      * Subsystem for controlling rotation of the robot
      */
     public class RotationDriveCommands extends SubsystemBase {
-
         /**
          * Command for controlling the angle rate
          */
@@ -254,6 +280,13 @@ public class Drive extends SubsystemBase {
             @Override
             public void execute() {
                 setAngleRate(rSpeed);
+            }
+
+            //HACK this is a temporary solution to finish the drive rate command
+            //You get updates from the OperatorInterface using the setRotManualDrive method
+            @Override
+            public boolean isFinished(){
+                return !isRotManualDrive;
             }
         }
 
@@ -367,27 +400,40 @@ public class Drive extends SubsystemBase {
         }
 
         public class RotGoToReefCommand extends Command{
-                Rotation2d offset;
+            Rotation2d offset;
 
-                public RotGoToReefCommand(Rotation2d offset){
-                    this.offset = offset;
-                    addRequirements(RotationDriveCommands.this);
-                }
-
-                public void setOffset(Rotation2d offset){
-                    this.offset = offset;
-                }
-
-                @Override
-                public void execute(){
-                    rotGoToReef(offset);
-                }
+            public RotGoToReefCommand(Rotation2d offset){
+                this.offset = offset;
+                addRequirements(RotationDriveCommands.this);
             }
+
+            public void setOffset(Rotation2d offset){
+                this.offset = offset;
+            }
+
+            @Override
+            public void execute(){
+                rotGoToReef(offset);
+            }
+        }
+
+        public class RotDoNothingCommand extends Command{
+            public RotDoNothingCommand(){
+                addRequirements(RotationDriveCommands.this);
+            }
+
+            @Override
+            public void execute(){
+                setAngleRate(0);
+            }
+        }
+
         private final RotationRateCommand rotationRateCommand;  /**< Internal rate control command instance */
         private final AngleAlignCommand angleAlignCommand;      /**< Internal angle align command instance */
         private final PointAlignCommand pointAlignCommand;      /**< Internal point align command instance */
         private final ReefAlignCommand reefAlignCommand;        /**< Internal reef align command instance */
         private final RotGoToReefCommand rotGoToReefCommand;
+        private final RotDoNothingCommand rotDoNothingCommand;
 
         /**
          * Constructor
@@ -398,7 +444,8 @@ public class Drive extends SubsystemBase {
             rotationRateCommand = new RotationRateCommand(0);
             reefAlignCommand = new ReefAlignCommand(new Rotation2d());
             rotGoToReefCommand = new RotGoToReefCommand(new Rotation2d());
-            setDefaultCommand(rotationRateCommand);
+            rotDoNothingCommand = new RotDoNothingCommand();
+            setDefaultCommand(rotDoNothingCommand);
         }
     }
 
@@ -810,6 +857,14 @@ public class Drive extends SubsystemBase {
         } 
 
         return is_red;
+    }
+
+    public void setLinearManualDrive(boolean isLinearManualDrive){
+        this.isLinearManualDrive = isLinearManualDrive;
+    }
+
+    public void setRotManualDrive(boolean isRotManualDrive){
+        this.isRotManualDrive = isRotManualDrive;
     }
 
     /**

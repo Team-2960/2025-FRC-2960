@@ -109,6 +109,18 @@ public class EndEffector extends SubsystemBase{
         }
     }
 
+    public class StopCmd extends Command{
+        public StopCmd(){
+            addRequirements(EndEffector.this);
+        }
+
+        @Override
+        public void initialize(){
+            setStop();
+        }
+
+    }
+
     public class CoralPresentCommand extends Command{
         @Override
         public boolean isFinished(){

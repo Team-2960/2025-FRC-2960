@@ -93,8 +93,8 @@ public class Constants {
     public static final PIDParam angleAlignPID = new PIDParam(4, 0, 0.3);
 
     // Arm
-    public static final PIDParam armPID = new PIDParam(0.001, 0.0, 0.0);
-    public static final FFParam armFF = FFParam.arm(0.01, 0.02948 * 3.0, 0.025, 0.0);
+    public static final PIDParam armPID = new PIDParam(0.002, 0.0, 0.0);
+    public static final FFParam armFF = FFParam.arm(0.01 * 2, 0.02948 * 1.0, 0.025, 0.0);
 
     public static final Rotation2d armRampDownDist = Rotation2d.fromDegrees(20);
 
@@ -102,18 +102,18 @@ public class Constants {
     public static final double maxArmAutoSpeed = 90;  //Degrees /s
 
     //TODO Change to real limits
-    public static final Rotation2d armTopLim = Rotation2d.fromDegrees(80);
+    public static final Rotation2d armTopLim = Rotation2d.fromDegrees(85);
     public static final Rotation2d armBotLim = Rotation2d.fromDegrees(0);
 
-    public static final Rotation2d armIntakeAngle = Rotation2d.fromDegrees(80);
+    public static final Rotation2d armIntakeAngle = Rotation2d.fromDegrees(82.5);
     public static final Rotation2d armTravelAngle = Rotation2d.fromDegrees(75);
     public static final Rotation2d armL1CoralScoreAngle = Rotation2d.fromDegrees(73);
     public static final Rotation2d armCoralScoreAngle = Rotation2d.fromDegrees(60);
     public static final Rotation2d armCoralL4Angle = Rotation2d.fromDegrees(48.5);
-    public static final Rotation2d armAlgaeRemoveAngle = Rotation2d.fromDegrees(80);
+    public static final Rotation2d armAlgaeRemoveAngle = Rotation2d.fromDegrees(25);
 
     //Elevator
-    public static PIDParam elevatorPIDS = new PIDParam(0, 0.0, 0.0); //0.02132 0.0017692
+    public static PIDParam elevatorPIDS = new PIDParam(0.0, 0.0, 0.0); //0.02132 0.0017692
     public static FFParam elevatorFFS = FFParam.elevator(0.22643, 4.4162, 0.33045, 0.32248);
     
     public static final double elevatorGearRatio = 1.0/12.0 * 2.0;    // rot. out / rot. in
@@ -128,17 +128,17 @@ public class Constants {
     public static final double elevatorTopLim = 57.5;         //in.
     public static final double elevatorBotLim = 0.25;        //in.
 
-    public static final double elevIntakePos = 0.5;       // in.
+    public static final double elevIntakePos = 0;       // in.
     public static final double elevL1Pos = 0;           // in.
     public static final double elevL2Pos = 16;           // in.
     public static final double elevL3Pos = 31.5;           // in.
     public static final double elevL4Pos = 56.5;           // in.
-    public static final double elevLowAlgaePos = 0;     // in.
-    public static final double elevHighAlgaePos = 0;    // in.
+    public static final double elevLowAlgaePos = 17.7;     // in.
+    public static final double elevHighAlgaePos = 36;    // in.
 
     //End Effector
     public static final double coralEjectVolt = 6;
-    public static final double coralIntakeVolt = 2;
+    public static final double coralIntakeVolt = 1;
     public static final double algaeRemovalVolt = 12;
     public static final double coralEjectTime = 1;
 

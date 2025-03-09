@@ -269,7 +269,7 @@ public class Elevator extends SubsystemBase {
 
         elevatorLimitBot = elevatorMotor.getReverseLimitSwitch();
 
-        elevatorPID = new PIDController(Constants.elevatorPIDS.kP, Constants.elevatorPIDS.kP, Constants.elevatorPIDS.kP);
+        elevatorPID = new PIDController(Constants.elevatorPIDS.kP, Constants.elevatorPIDS.kI, Constants.elevatorPIDS.kD);
 
         //Doesn't have kA value BECAUSe it doesn't need it to function and you have to actually give the feedforward a calculated acceleration
         elevatorFF = new ElevatorFeedforward(Constants.elevatorFFS.kS, Constants.elevatorFFS.kG, Constants.elevatorFFS.kV);
