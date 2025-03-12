@@ -178,20 +178,46 @@ public class Constants {
     public static final double climberResetVolt = 6;    // voltage
 
     // Cameras
-    public static final Transform3d robotToFrontCamera = new Transform3d(
-        new Translation3d(-robotLength/2+.040, 0, .206), 
-        new Rotation3d(36 * Math.PI / 180, 0, Math.PI)
-    );  
-    
-    public static final Transform3d robotToLeftRearCamera = new Transform3d(
-        new Translation3d(-robotLength/2+.040, 0, .206), 
-        new Rotation3d(36 * Math.PI / 180, 0, Math.PI)
-    );  
-    
-    public static final Transform3d robotToRightRearCamera = new Transform3d(
-        new Translation3d(-robotLength/2+.040, 0, .206), 
-        new Rotation3d(36 * Math.PI / 180, 0, Math.PI)
-    );  
+    public static final class CameraConstants {
+        public static final Transform3d robotToFrontCamera = new Transform3d(
+            new Translation3d(
+                14.056 * 0.0254, 
+                0.000 * 0.0254, 
+                9.005 * 0.0254
+            ), 
+            new Rotation3d(
+                Math.toRadians(0), 
+                Math.toRadians(-10), 
+                Math.toRadians(0)
+            )
+        );  
+        
+        public static final Transform3d robotToLeftCamera = new Transform3d(
+            new Translation3d(
+                -13.944 * 0.0254, 
+                -13.944 * 0.0254, 
+                8.791 * 0.0254
+            ), 
+            new Rotation3d(
+                Math.toRadians(-14.600), 
+                Math.toRadians(14.600), 
+                Math.toRadians(-135.000)
+            )
+        );  
+        
+        public static final Transform3d robotToRightCamera = new Transform3d(
+            new Translation3d(
+                -13.944 * 0.0254, 
+                13.944 * 0.0254, 
+                8.791 * 0.0254
+            ), 
+            new Rotation3d(
+                Math.toRadians(14.600), 
+                Math.toRadians(14.600), 
+                Math.toRadians(135.000)
+            )
+        );  
+    }
 
 
     // Driver Camera

@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import static frc.robot.Constants.CameraConstants;
+
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
 import edu.wpi.first.apriltag.AprilTagFields;
@@ -27,15 +29,15 @@ public class Cameras extends SubsystemBase{
         singleStds = VecBuilder.fill(1, 1, 1);
         multiStds = VecBuilder.fill(1, 1, 1);
         pipeline01 = new AprilTagPipelineSettings(AprilTagFields.k2025ReefscapeWelded,
-            new Transform3d(-Constants.robotLength/2, 0, 0.254, new Rotation3d(Math.toRadians(0), Math.toRadians(0), Math.toRadians(180))),
+            CameraConstants.robotToFrontCamera,
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, 4, singleStds , multiStds);
         
         pipeline02 = new AprilTagPipelineSettings(AprilTagFields.k2025ReefscapeWelded,
-            new Transform3d(Constants.robotLength/2, -Constants.robotWidth/2, 0.254, new Rotation3d(Math.toRadians(0), Math.toRadians(-30), Math.toRadians(-45))),
+            CameraConstants.robotToLeftCamera,
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, 4, singleStds , multiStds);
 
         pipeline03 = new AprilTagPipelineSettings(AprilTagFields.k2025ReefscapeWelded,
-            new Transform3d(Constants.robotLength/2, Constants.robotWidth/2, 0.254, new Rotation3d(Math.toRadians(0), Math.toRadians(-30), Math.toRadians(45))),
+            CameraConstants.robotToRightCamera,
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, 4, singleStds , multiStds);
         
         camera01 = new AprilTagPipeline(pipeline01, "Camera01", "AprilTagPipeline");
