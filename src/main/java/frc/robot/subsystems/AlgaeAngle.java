@@ -241,7 +241,7 @@ public class AlgaeAngle extends SubsystemBase {
         absEncoder = motor.getAbsoluteEncoder();
         relEncoder = motor.getEncoder();
 
-        pid = new PIDController(Constants.algaeAnglePID.kP, Constants.algaeAnglePID.kP, Constants.algaeAnglePID.kP);
+        pid = new PIDController(Constants.algaeAnglePID.kP, Constants.algaeAnglePID.kI, Constants.algaeAnglePID.kD);
 
         ff = new ArmFeedforward(Constants.algaeAngleFF.kS, Constants.algaeAngleFF.kG, Constants.algaeAngleFF.kV);
 
