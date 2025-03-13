@@ -126,7 +126,7 @@ public class OperatorInterface extends SubsystemBase {
 
         driveTriggers();
         coralPlacementTriggers();
-        //algaeGrabberTriggers();
+        algaeGrabberTriggers();
 
     }
     
@@ -200,10 +200,10 @@ public class OperatorInterface extends SubsystemBase {
         AlgaeAngle algaeAngle = AlgaeAngle.getInstance();
         AlgaeRoller algaeRoller = AlgaeRoller.getInstance();
 
-        operatorController1.pov(180)
+        operatorController1.pov(0)
             .onTrue(algaeAngle.new AngleCommand(Rotation2d.fromDegrees(20)));
         
-        operatorController1.pov(0)
+        operatorController1.pov(180)
             .onTrue(algaeAngle.new AngleCommand(Rotation2d.fromDegrees(80)));
 
         operatorController1.rightBumper().whileTrue(algaeRoller.new EjectCmd());
@@ -524,7 +524,7 @@ public class OperatorInterface extends SubsystemBase {
             //updateDriveTest();
             //updateCoralPlacementTest();
             //updateAlgaeGrabberTest();
-            //updateClimberTest();
+            updateClimberTest();
             updateCoralPlacement();
             updateDrive();
             //sysIdTest();

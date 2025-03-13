@@ -551,8 +551,8 @@ public class Drive extends SubsystemBase {
                 this::getChassisSpeeds,
                 (speeds, feedforwards) -> pathPlannerKinematics(speeds),
                 new PPHolonomicDriveController(
-                        new PIDConstants(1, 0, 0),
-                        new PIDConstants(1, 0, 0)),
+                        new PIDConstants(5, 0, 0),
+                        new PIDConstants(5, 0, 0)),
                 config,
                 this::isRedAlliance,
                 this

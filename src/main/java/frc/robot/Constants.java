@@ -102,14 +102,14 @@ public class Constants {
     public static final double maxArmAutoSpeed = 90;  //Degrees /s
 
     //TODO Change to real limits
-    public static final Rotation2d armTopLim = Rotation2d.fromDegrees(85);
+    public static final Rotation2d armTopLim = Rotation2d.fromDegrees(95);
     public static final Rotation2d armBotLim = Rotation2d.fromDegrees(0);
 
-    public static final Rotation2d armIntakeAngle = Rotation2d.fromDegrees(82.5);
+    public static final Rotation2d armIntakeAngle = Rotation2d.fromDegrees(95);
     public static final Rotation2d armTravelAngle = Rotation2d.fromDegrees(75);
     public static final Rotation2d armL1CoralScoreAngle = Rotation2d.fromDegrees(73);
     public static final Rotation2d armCoralScoreAngle = Rotation2d.fromDegrees(60);
-    public static final Rotation2d armCoralL4Angle = Rotation2d.fromDegrees(48.5);
+    public static final Rotation2d armCoralL4Angle = Rotation2d.fromDegrees(60);
     public static final Rotation2d armAlgaeRemoveAngle = Rotation2d.fromDegrees(25);
 
     //Elevator
@@ -120,8 +120,8 @@ public class Constants {
     public static final double elevatorOutputDiam = 1.751;  // in.
 
     public static final double elevatorScale = elevatorGearRatio * elevatorOutputDiam * Math.PI;           // in. / rot.
-    public static final double maxElevatorAutoSpeed = 1;    // in. / s
-    public static final double elevatorRampDownDist = 1;    // in.
+    public static final double maxElevatorAutoSpeed = 2;    // in. / s
+    public static final double elevatorRampDownDist = 10;    // in.
     public static final double elevatorDefTol = .5;         // in.
     public static final double elevatorPosTol = .5;         // in.
 
@@ -138,7 +138,7 @@ public class Constants {
 
     //End Effector
     public static final double coralEjectVolt = 6;
-    public static final double coralIntakeVolt = 1;
+    public static final double coralIntakeVolt = 1.7;
     public static final double algaeRemovalVolt = 12;
     public static final double coralEjectTime = 1;
 
@@ -186,4 +186,9 @@ public class Constants {
         new Translation3d(-robotLength/2+.040, 0, .206), 
         new Rotation3d(36 * Math.PI / 180, 0, Math.PI)
     );  
+
+    //LEDs
+    public static final int frontLEDCount = 0;
+    public static final int leftLEDCount = 0;
+    public static final int rightLEDCount = 0;
 }

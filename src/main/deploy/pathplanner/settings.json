@@ -3,6 +3,7 @@
   "robotLength": 0.914,
   "holonomicMode": true,
   "pathFolders": [
+    "Right Auton",
     "Middle Auton",
     "Left Auton",
     "Test Paths"
@@ -10,8 +11,8 @@
   "autoFolders": [
     "New Folder"
   ],
-  "defaultMaxVel": 4.5,
-  "defaultMaxAccel": 10.0,
+  "defaultMaxVel": 3.0,
+  "defaultMaxAccel": 5.0,
   "defaultMaxAngVel": 540.0,
   "defaultMaxAngAccel": 720.0,
   "defaultNominalVoltage": 12.0,
@@ -22,7 +23,7 @@
   "driveGearing": 5.08,
   "maxDriveSpeed": 5.33,
   "driveMotorType": "vortex",
-  "driveCurrentLimit": 80.0,
+  "driveCurrentLimit": 60.0,
   "wheelCOF": 1.2,
   "flModuleX": 0.33,
   "flModuleY": 0.33,
