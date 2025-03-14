@@ -19,6 +19,7 @@ public class AprilTagPipelineSettings {
     public final double max_dist;                   /**< Maximum acceptable target distance from camera in meters */
     public final Vector<N3> single_tag_std;         /**< Single tag standard deviation vector */
     public final Vector<N3> multi_tag_std;          /**< Multi tag standard deviation vector */
+    public final double ambiguity_threshold;
 
     // TODO Allow the standard deviation to increase based on distance
 
@@ -30,6 +31,7 @@ public class AprilTagPipelineSettings {
      * @param   max_dist            Maximum acceptable target distance from camera in meters
      * @param   single_tag_std      Single tag standard deviation vector
      * @param   multi_tag_std       Multi tag standard deviation vector
+     * @param   ambiguity_threshold The max april tag ambiguity the camera will accept
      */
     public AprilTagPipelineSettings(
         AprilTagFields field_layout, 
@@ -37,7 +39,8 @@ public class AprilTagPipelineSettings {
         PoseStrategy pose_strategy,
         double max_dist,
         Vector<N3> single_tag_std,
-        Vector<N3> multi_tag_std
+        Vector<N3> multi_tag_std,
+        double ambiguity_threshold
     ) {
         this.field_layout = field_layout;
         this.robot_to_camera = robot_to_camera;
@@ -45,24 +48,28 @@ public class AprilTagPipelineSettings {
         this.max_dist = max_dist;
         this.single_tag_std = single_tag_std;
         this.multi_tag_std = multi_tag_std;
+        this.ambiguity_threshold = ambiguity_threshold;
     }
 
     /**
      * Constructor. 
      *      - name is set to camera_name
      *      - field_layout is set to AprilTagFields.kDefault (current season)
-     *      - pose_strategy is set to PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR
+     *      - pose_strategy is set to PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSO
+     * 
      * @param   camera_name         Camera name for the pipeline as configured in PhotoVision
      * @param   robot_to_camera     Robot to Camera transformation
      * @param   max_dist            Maximum acceptable target distance from camera in meters
      * @param   single_tag_std      Single tag standard deviation vector
      * @param   multi_tag_std       Multi tag standard deviation vector
+     * @param   ambiguity_threshold The max april tag ambiguity the camera will accept
      */
     public AprilTagPipelineSettings(
         Transform3d robot_to_camera, 
         double max_dist,
         Vector<N3> single_tag_std,
-        Vector<N3> multi_tag_std
+        Vector<N3> multi_tag_std,
+        double ambiguity_threshold
     ) {            
         this.field_layout = AprilTagFields.kDefaultField;       // TODO: Find non-depricated method to get April Tag Field Locations
         this.robot_to_camera = robot_to_camera;
@@ -70,6 +77,7 @@ public class AprilTagPipelineSettings {
         this.max_dist = max_dist;
         this.single_tag_std = single_tag_std;
         this.multi_tag_std = multi_tag_std;
+        this.ambiguity_threshold = ambiguity_threshold;
     }
 
     /**
@@ -80,6 +88,7 @@ public class AprilTagPipelineSettings {
      *      - max_dist is set to 4 meters
      *      - single_tag_std is set to VecBuilder.fill(4, 4, 8)
      *      - multi_tag_std is set to VecBuilder.fill(0.5, 0.5, 1)
+     *      - ambiguity_threshold is set to 0
      * @param   camera_name         Camera name for the pipeline as configured in PhotoVision
      * @param   robot_to_camera     Robot to Camera transformation
      */
@@ -90,5 +99,6 @@ public class AprilTagPipelineSettings {
         this.max_dist = 4;
         this.single_tag_std = VecBuilder.fill(4, 4, 8);
         this.multi_tag_std = VecBuilder.fill(0.5, 0.5, 1);
+        this.ambiguity_threshold = 0;
     }
 }

@@ -28,6 +28,7 @@ public class AprilTagPipeline extends SubsystemBase {
     private Pose2d last_pose;                       /**< Most recent estimated pose */
     private double last_timestamp;                  /**< Timestamp of the most recent pose estimation */
     private double maxDistance;
+    private final double ambiguity_threshold;
 
     // Shuffleboard 
     private GenericEntry sb_PoseX;
@@ -65,6 +66,7 @@ public class AprilTagPipeline extends SubsystemBase {
         last_pose = new Pose2d();
         last_timestamp = 0;
         maxDistance = settings.max_dist;
+        ambiguity_threshold = settings.ambiguity_threshold;
         
 
         // Setup Shuffleboard

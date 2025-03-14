@@ -37,7 +37,8 @@ public class Cameras extends SubsystemBase{
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, 
             3.5, 
             VecBuilder.fill(3, 3, 8), 
-            multiStds
+            multiStds,
+            0
         );
         
         rightPipeline = new AprilTagPipelineSettings(AprilTagFields.k2025ReefscapeWelded,
@@ -52,7 +53,8 @@ public class Cameras extends SubsystemBase{
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, 
             4, 
             singleStds , 
-            multiStds
+            multiStds,
+            0
         );
 
         leftPipeline = new AprilTagPipelineSettings(AprilTagFields.k2025ReefscapeWelded,
@@ -67,7 +69,8 @@ public class Cameras extends SubsystemBase{
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, 
             4, 
             singleStds , 
-            multiStds
+            multiStds,
+            0
         );
         
         frontCamera = new AprilTagPipeline(frontPipeline, "Camera01", "AprilTagPipeline");
