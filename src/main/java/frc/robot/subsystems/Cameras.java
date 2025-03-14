@@ -8,7 +8,6 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
 import frc.robot.Util.AprilTagPipelineSettings;
 
 public class Cameras extends SubsystemBase{
@@ -36,8 +35,8 @@ public class Cameras extends SubsystemBase{
                     Math.toRadians(-10), 
                     Math.toRadians(0))),
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, 
-            4, 
-            singleStds , 
+            3.5, 
+            VecBuilder.fill(3, 3, 8), 
             multiStds
         );
         

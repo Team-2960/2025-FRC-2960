@@ -1,16 +1,9 @@
 package frc.robot.subsystems;
 
 import frc.robot.Constants;
-import frc.robot.subsystems.Elevator.SoftLimCheckCommand;
-import frc.robot.subsystems.Elevator.SoftLimCheckCommand.SoftLimDirection;
-
-import org.opencv.core.Mat;
-
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
-import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.PersistMode;
@@ -23,8 +16,6 @@ import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.units.measure.MutAngle;
 import edu.wpi.first.units.measure.MutAngularVelocity;
 import edu.wpi.first.units.measure.MutCurrent;
-import edu.wpi.first.units.measure.MutDistance;
-import edu.wpi.first.units.measure.MutLinearVelocity;
 import edu.wpi.first.units.measure.MutVoltage;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;

@@ -6,10 +6,6 @@ import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.subsystems.Arm.ArmAngleCommand;
-import frc.robot.subsystems.Arm.ArmHoldCommand;
-import frc.robot.subsystems.Elevator.ElevatorHoldCommand;
-import frc.robot.subsystems.Elevator.ElevatorPosCommand;
 
 public class ElevArmControl extends SubsystemBase{
     private static ElevArmControl instance = null;

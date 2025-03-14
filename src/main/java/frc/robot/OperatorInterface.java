@@ -20,7 +20,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj.Timer;
@@ -64,6 +63,9 @@ public class OperatorInterface extends SubsystemBase {
     private GenericEntry sb_rumblePower;
     private GenericEntry sb_rumbleTimer;
     private GenericEntry sb_isEndGame;
+
+    private GenericEntry sb_matchTimer;
+    private GenericEntry sb_coralPresent;
 
     /**
      * Constructor
@@ -123,10 +125,17 @@ public class OperatorInterface extends SubsystemBase {
         sb_rumblePower = rumble_layout.add("Rumble Power", 0).getEntry();
         sb_rumbleTimer = rumble_layout.add("Rumble Timer", 0).getEntry();
         sb_isEndGame = rumble_layout.add("Is End Game", false).getEntry();
+        
+        var match_info = Shuffleboard.getTab("OI")
+            .getLayout("Match Info", BuiltInLayouts.kList)
+            .withSize(2, 4);
+
+        sb_matchTimer = match_info.add("Match Timer", -1).getEntry();
 
         driveTriggers();
         coralPlacementTriggers();
         algaeGrabberTriggers();
+        climberTriggers();
 
     }
     
@@ -152,28 +161,29 @@ public class OperatorInterface extends SubsystemBase {
         driverController.y()
             .onTrue(drive.linearDriveCommands
                 .new LinearGoToReefCommand(
-                    new Translation2d(-Constants.robotLength/2, 0)));
+                    new Translation2d(-Constants.robotLength/2, 0)))
+            .onTrue(drive.rotationDriveCommands
+                .new RotGoToReefCommand(Rotation2d.fromDegrees(0)));
 
         driverController.y().and(driverController.rightBumper())
             .whileTrue(
                 drive.linearDriveCommands
                 .new LinearGoToReefCommand(
-                    new Translation2d(-Constants.robotLength/2, -0.3)));
+                    new Translation2d(-Constants.robotLength/2, -0.41)))
+            .whileTrue(drive.rotationDriveCommands
+                .new RotGoToReefCommand(Rotation2d.fromDegrees(0)));
         
         driverController.y().and(driverController.leftBumper())
             .whileTrue(
                 drive.linearDriveCommands
                 .new LinearGoToReefCommand(
-                    new Translation2d(-Constants.robotLength/2, 0.3)));
-
-        
-
+                    new Translation2d(-Constants.robotLength/2, -0.1)))
+            .whileTrue(drive.rotationDriveCommands
+                .new RotGoToReefCommand(Rotation2d.fromDegrees(0)));
     }
 
     private void coralPlacementTriggers(){
-        Elevator elevator = Elevator.getInstance();
         EndEffector endEffector = EndEffector.getInstance();
-        Arm arm = Arm.getInstance();
         ElevArmControl elevArmControl = ElevArmControl.getInstance();
 
         //Elevator Arm Triggers
@@ -184,11 +194,17 @@ public class OperatorInterface extends SubsystemBase {
         operatorController1.pov(90).onTrue(elevArmControl.getGoToLowAlgaeCommand());
 
 
-        operatorController1.axisMagnitudeGreaterThan(3, 0.1)
+        driverController.axisMagnitudeGreaterThan(3, 0.1)
             .whileTrue(endEffector.new EjectCmd());
         
-        operatorController1.axisMagnitudeGreaterThan(2, 0.1)
+        driverController.axisMagnitudeGreaterThan(2, 0.1)
             .whileTrue(endEffector.new IntakeCmd());
+
+        operatorController1.axisMagnitudeGreaterThan(3, 0.1)
+            .whileTrue(endEffector.new ReverseCmd());
+            
+        operatorController1.axisMagnitudeGreaterThan(2, 0.1)
+            .whileTrue(endEffector.new EjectCmd());
         
         operatorController1.pov(90).onTrue(elevArmControl.getGoToLowAlgaeCommand());
         
@@ -211,7 +227,9 @@ public class OperatorInterface extends SubsystemBase {
     }
 
     private void climberTriggers(){
-
+        Climber climber = Climber.getInstance();
+        driverController.rightBumper().whileTrue(climber.new ExtendCmd());
+        driverController.leftBumper().whileTrue(climber.new RetractCmd());
     }
 
     /**
@@ -529,6 +547,12 @@ public class OperatorInterface extends SubsystemBase {
             updateDrive();
             //sysIdTest();
         }
+
+        updateUI();
+    }
+
+    private void updateUI(){
+        sb_matchTimer.setDouble(DriverStation.getMatchTime());
     }
 
     /**

@@ -3,9 +3,7 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import frc.robot.Constants;
-import frc.robot.OperatorInterface;
 import frc.robot.Util.FieldLayout;
 import frc.robot.Util.FieldLayout.ReefFace;
 import frc.robot.subsystems.Drive.LinearDriveCommands.DriveRateCommand;
@@ -521,7 +519,7 @@ public class Drive extends SubsystemBase {
 
         angleAlignPID.enableContinuousInput(-Math.PI, Math.PI);
 
-        driveAlignPID = new PIDController(2, 0, 0);
+        driveAlignPID = new PIDController(3, 0.5, 0);
 
         // Initialize pose estimation
         swerveDrivePoseEstimator = new SwerveDrivePoseEstimator(
