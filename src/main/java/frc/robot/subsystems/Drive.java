@@ -16,6 +16,7 @@ import frc.robot.subsystems.Drive.RotationDriveCommands.RotationRateCommand;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.estimator.PoseEstimator;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -26,6 +27,9 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -81,6 +85,9 @@ public class Drive extends SubsystemBase {
     private ChassisSpeeds chassisSpeeds;
     private PIDController angleAlignPID;
     private PIDController driveAlignPID;
+    private TrapezoidProfile.State xProfileState;
+    private TrapezoidProfile.State yProfileState;
+    private TrapezoidProfile trapezoidProfile;
 
     private boolean isLinearManualDrive = true;
     private boolean isRotManualDrive = true;
@@ -521,6 +528,10 @@ public class Drive extends SubsystemBase {
 
         driveAlignPID = new PIDController(3, 0.5, 0);
 
+        xProfileState = new State();
+        yProfileState = new State();
+        trapezoidProfile = new TrapezoidProfile(Constants.trapConstraints);
+
         // Initialize pose estimation
         swerveDrivePoseEstimator = new SwerveDrivePoseEstimator(
                 kinematics,
@@ -779,9 +790,24 @@ public class Drive extends SubsystemBase {
         Transform2d distance = currentPose.minus(new Pose2d(point, Rotation2d.fromDegrees(0)));
         double xSpeed = driveAlignPID.calculate(distance.getX());
         double ySpeed = driveAlignPID.calculate(distance.getY());
-        SmartDashboard.putNumber("xSpeed PID", xSpeed);
-        SmartDashboard.putNumber("ySpeed PID", ySpeed);
 
+        updateKinematics(xSpeed, ySpeed);
+    }
+
+    public void calcToPointTrapezoidal(Translation2d point){
+        Pose2d currentPose = getEstimatedPos();
+        double xSpeed = trapezoidProfile.calculate(
+            Constants.trapezoidTime,
+            new State(currentPose.getX(), getChassisSpeeds().vxMetersPerSecond),
+            new State(point.getX(), 0)
+        ).velocity;
+
+        double ySpeed = trapezoidProfile.calculate(
+            Constants.trapezoidTime,
+            new State(currentPose.getY(), getChassisSpeeds().vyMetersPerSecond),
+            new State(point.getY(), 0)
+        ).velocity;
+        
         updateKinematics(xSpeed, ySpeed);
     }
 

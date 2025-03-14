@@ -6,6 +6,8 @@ import com.pathplanner.lib.config.RobotConfig;
 
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import frc.robot.Util.*;
 
 public class Constants {
@@ -79,6 +81,7 @@ public class Constants {
     public static PIDConstants driveAngPIDConstants = new PIDConstants(0.05, 0.0, 0.001);
     public static FFParam driveAngFF = FFParam.simpleMotor(0.1, 0.1, 0);
 
+
     public static final double maxSpeed = 4.5;
     public static final double maxAngularSpeed = 1.5 * 2 * Math.PI;
     public static final double maxAutoAngularSpeed = 0.5 * 2 * Math.PI;
@@ -91,6 +94,9 @@ public class Constants {
 
     public static final Rotation2d driveAngleRampDistance = Rotation2d.fromDegrees(10);
     public static final PIDParam angleAlignPID = new PIDParam(4, 0, 0.3);
+    public static final TrapezoidProfile.Constraints trapConstraints = new Constraints(4.5, 5);
+    public static final double trapezoidTime = 0.02;
+
 
     // Arm
     public static final PIDParam armPID = new PIDParam(0.002, 0.0, 0.0);
