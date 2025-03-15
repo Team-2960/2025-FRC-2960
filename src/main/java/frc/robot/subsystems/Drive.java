@@ -216,9 +216,29 @@ public class Drive extends SubsystemBase {
                 this.offset = offset;
             }
 
+
             @Override
             public void execute(){
                 linearGoToReef(offset);
+            }
+        }
+
+        public class TrapLinearGoToReefCommand extends Command{
+            Translation2d offset;
+
+            public TrapLinearGoToReefCommand(Translation2d offset){
+                this.offset = offset;
+                addRequirements(LinearDriveCommands.this);
+            }
+
+            public void setOffset(Translation2d offset){
+                this.offset = offset;
+            }
+
+
+            @Override
+            public void execute(){
+                linearGoToReefTrap(offset);
             }
         }
 
@@ -237,7 +257,9 @@ public class Drive extends SubsystemBase {
         private final DriveRateCommand driveRateCommand;    /**< Internal instance of Drive Rate command */
         private final GoToPointCommand goToPointCommand;    /**< Internal instance of Goto Point command */
         private final LinearGoToReefCommand linearGoToReefCommand;
+        private final TrapLinearGoToReefCommand trapLinearGoToReefCommand;
         private final LinearDoNothingCommand doNothingCommand;
+
 
         /**
          * Constructor
@@ -246,6 +268,7 @@ public class Drive extends SubsystemBase {
             driveRateCommand = new DriveRateCommand(0, 0);
             goToPointCommand = new GoToPointCommand(new Translation2d(0, 0));
             linearGoToReefCommand = new LinearGoToReefCommand(new Translation2d());
+            trapLinearGoToReefCommand = new TrapLinearGoToReefCommand(new Translation2d());
             doNothingCommand = new LinearDoNothingCommand();
             setDefaultCommand(doNothingCommand);
         }
@@ -834,7 +857,24 @@ public class Drive extends SubsystemBase {
         Pose2d finalReefFace = new Pose2d(poseOffset, reefFaceRotation);
         this.nearestReefFace = finalReefFace;
 
-        setGoToPoint(finalReefFace.getTranslation());
+        calcToPoint(finalReefFace.getTranslation());
+    }
+
+    public void linearGoToReefTrap(Translation2d offset){
+        if (isRedAlliance()) {
+            offset = new Translation2d(-offset.getX(), -offset.getY());
+        }
+
+        Rotation2d reefFaceRotation = FieldLayout.getReefFaceZone(getEstimatedPos());
+        Pose2d zeroFace = FieldLayout.getReef(ReefFace.ZERO);
+        Translation2d poseOffset = new Translation2d(zeroFace.getX() + offset.getX(), zeroFace.getY() + offset.getY())
+                .rotateAround(FieldLayout.getReef(ReefFace.CENTER).getTranslation(),
+                        reefFaceRotation);
+        Pose2d finalReefFace = new Pose2d(poseOffset, reefFaceRotation);
+        this.nearestReefFace = finalReefFace;
+
+        calcToPointTrapezoidal(finalReefFace.getTranslation());
+        
     }
 
     public void rotGoToReef(Rotation2d offset){

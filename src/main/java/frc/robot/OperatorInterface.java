@@ -151,9 +151,9 @@ public class OperatorInterface extends SubsystemBase {
         var alliance = DriverStation.getAlliance();
         double alliance_dir = alliance.isPresent() && alliance.get() == Alliance.Red ? 1 : -1;
 
-        double xAxis = MathUtil.applyDeadband(driverController.getRawAxis(1), 0.07);
-        double yAxis = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.07);
-        double rAxis = MathUtil.applyDeadband(driverController.getRawAxis(4), 0.1);
+        double xAxis = MathUtil.applyDeadband(driverController.getRawAxis(1), 0.05);
+        double yAxis = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.05);
+        double rAxis = MathUtil.applyDeadband(driverController.getRawAxis(4), 0.05);
 
         driverController.pov(0).whileTrue(drive.new PresetPoseCommand(
             FieldLayout.getReef(ReefFace.ZERO).plus(new Transform2d(-Constants.robotLength/2, 0, new Rotation2d()))));
@@ -163,7 +163,8 @@ public class OperatorInterface extends SubsystemBase {
                 .new LinearGoToReefCommand(
                     new Translation2d(-Constants.robotLength/2, 0)))
             .onTrue(drive.rotationDriveCommands
-                .new RotGoToReefCommand(Rotation2d.fromDegrees(0)));
+                .new RotGoToReefCommand(Rotation2d.fromDegrees(0))
+        );
 
         driverController.y().and(driverController.rightBumper())
             .whileTrue(
@@ -171,7 +172,8 @@ public class OperatorInterface extends SubsystemBase {
                 .new LinearGoToReefCommand(
                     new Translation2d(-Constants.robotLength/2, -0.41)))
             .whileTrue(drive.rotationDriveCommands
-                .new RotGoToReefCommand(Rotation2d.fromDegrees(0)));
+                .new RotGoToReefCommand(Rotation2d.fromDegrees(0))
+        );
         
         driverController.y().and(driverController.leftBumper())
             .whileTrue(
@@ -179,7 +181,37 @@ public class OperatorInterface extends SubsystemBase {
                 .new LinearGoToReefCommand(
                     new Translation2d(-Constants.robotLength/2, -0.1)))
             .whileTrue(drive.rotationDriveCommands
-                .new RotGoToReefCommand(Rotation2d.fromDegrees(0)));
+                .new RotGoToReefCommand(Rotation2d.fromDegrees(0))
+        );
+
+        driverController.x()
+            .onTrue(
+                drive
+                .rotationDriveCommands
+                .new AngleAlignCommand(Rotation2d.fromDegrees(54))
+        );
+        
+        driverController.b()
+            .onTrue(
+                drive
+                .rotationDriveCommands
+                .new AngleAlignCommand(Rotation2d.fromDegrees(-54))
+        );
+
+        driverController.a()
+            .onTrue(
+                drive
+                .rotationDriveCommands
+                .new AngleAlignCommand(Rotation2d.fromDegrees(-90))
+        );
+
+        driverController.pov(180)
+            .onTrue(
+                drive
+            .linearDriveCommands
+            .new TrapLinearGoToReefCommand(
+                new Translation2d(-Constants.robotLength/2, 0))
+        );
     }
 
     private void coralPlacementTriggers(){

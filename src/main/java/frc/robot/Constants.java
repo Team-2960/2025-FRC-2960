@@ -143,7 +143,7 @@ public class Constants {
     public static final double elevHighAlgaePos = 36;    // in.
 
     //End Effector
-    public static final double coralEjectVolt = 6;
+    public static final double coralEjectVolt = 4;
     public static final double coralIntakeVolt = 1.5;
     public static final double algaeRemovalVolt = 12;
     public static final double coralEjectTime = 1;

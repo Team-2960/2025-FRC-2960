@@ -24,9 +24,22 @@
           }
         },
         {
-          "type": "named",
+          "type": "deadline",
           "data": {
-            "name": "ejectCommand"
+            "commands": [
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 1.0
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ejectCommand"
+                }
+              }
+            ]
           }
         },
         {
@@ -87,12 +100,6 @@
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "ejectCommand"
-          }
-        },
-        {
           "type": "parallel",
           "data": {
             "commands": [
@@ -150,9 +157,22 @@
           }
         },
         {
-          "type": "named",
+          "type": "deadline",
           "data": {
-            "name": "ejectCommand"
+            "commands": [
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 1.0
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ejectCommand"
+                }
+              }
+            ]
           }
         }
       ]

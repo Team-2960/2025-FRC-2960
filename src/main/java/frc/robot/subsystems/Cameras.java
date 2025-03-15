@@ -38,7 +38,7 @@ public class Cameras extends SubsystemBase{
             3.5, 
             VecBuilder.fill(3, 3, 8), 
             multiStds,
-            0
+            .2
         );
         
         rightPipeline = new AprilTagPipelineSettings(AprilTagFields.k2025ReefscapeWelded,
@@ -54,7 +54,7 @@ public class Cameras extends SubsystemBase{
             4, 
             singleStds , 
             multiStds,
-            0
+            .2
         );
 
         leftPipeline = new AprilTagPipelineSettings(AprilTagFields.k2025ReefscapeWelded,
@@ -70,7 +70,7 @@ public class Cameras extends SubsystemBase{
             4, 
             singleStds , 
             multiStds,
-            0
+            .2
         );
         
         frontCamera = new AprilTagPipeline(frontPipeline, "Camera01", "AprilTagPipeline");

@@ -70,7 +70,7 @@ public class AprilTagPipeline extends SubsystemBase {
         
 
         // Setup Shuffleboard
-        var layout = Shuffleboard.getTab("AprilTags" + camera)
+        var layout = Shuffleboard.getTab("AprilTags" + name)
                 .getLayout(name, BuiltInLayouts.kList)
                 .withSize(1, 4);
         sb_PoseX = layout.add("Pose X" + cameraName, 0).getEntry();
@@ -118,53 +118,59 @@ public class AprilTagPipeline extends SubsystemBase {
         
         for(var change : unreadResults) {
 
-                // Get Estimated Position
-                visionEst = pose_est.update(change);
+            // Get Estimated Position
+            visionEst = pose_est.update(change);
 
-                // Check if a pose was estimated
-                if(visionEst.isPresent()) {
+            // Check if a pose was estimated
+            if(visionEst.isPresent()) {
+                
+                Pose2d est_pose = visionEst.get().estimatedPose.toPose2d();
+                double est_timestamp = visionEst.get().timestampSeconds;
+
+                double avg_dist = 0;
+                int tag_count = 0;
+
+                // Get found tag count and average distance
+                for(var tag : visionEst.get().targetsUsed) {
+                    var tag_pose3d = pose_est.getFieldTags().getTagPose(tag.getFiducialId());
                     
-                    Pose2d est_pose = visionEst.get().estimatedPose.toPose2d();
-                    double est_timestamp = visionEst.get().timestampSeconds;
-
-                    double avg_dist = 0;
-                    int tag_count = 0;
-
-                    // Get found tag count and average distance
-                    for(var tag : visionEst.get().targetsUsed) {
-                        var tag_pose3d = pose_est.getFieldTags().getTagPose(tag.getFiducialId());
-                        if(!tag_pose3d.isEmpty()) {
-                            Pose2d tag_pose = tag_pose3d.get().toPose2d();
-                            
-                            avg_dist += tag_pose.getTranslation().getDistance(est_pose.getTranslation());
-                            tag_count++;
-                        }
-                    }
-
-                    // Check if any targets were found
-                    if(tag_count > 0) {
-                        Vector<N3> est_std = settings.single_tag_std;
-
-                        // Calculate average target distance
-                        avg_dist /= tag_count;
-
-                        // Decrease standard deviation if multiple tags are found
-                        if(tag_count > 1) est_std = settings.multi_tag_std;
-
-                        // Increase standard deviation based on average distance and ignore single 
-                        // target results over the settings.max_dist
-                        if(tag_count > 1 || avg_dist < settings.max_dist) {
-                            // TODO Add average distance scaler to settings
-                            est_std = est_std.times(1 + (avg_dist * avg_dist / 30));
-                            
-                            last_pose = est_pose;
-                            last_timestamp = est_timestamp;
-                            drive.addVisionPose(est_pose, est_timestamp, est_std);
-                        }
+                    if(!tag_pose3d.isEmpty()) {
+                        Pose2d tag_pose = tag_pose3d.get().toPose2d();
                         
+                        
+                        if (tag.getPoseAmbiguity() <= ambiguity_threshold
+                             && tag.getBestCameraToTarget().getTranslation().getDistance(new Translation3d()) <= maxDistance){
+                                avg_dist += tag_pose.getTranslation().getDistance(est_pose.getTranslation());
+                                tag_count++;
+                        }
                     }
+                    
                 }
-            
+
+                // Check if any targets were found
+                if(tag_count > 0) {
+                    Vector<N3> est_std = settings.single_tag_std;
+
+                    // Calculate average target distance
+                    avg_dist /= tag_count;
+
+                    // Decrease standard deviation if multiple tags are found
+                    if(tag_count > 1) est_std = settings.multi_tag_std;
+
+                    // Increase standard deviation based on average distance and ignore single 
+                    // target results over the settings.max_dist
+                    if(tag_count > 1 || avg_dist < settings.max_dist) {
+                        // TODO Add average distance scaler to settings
+                        est_std = est_std.times(1 + (avg_dist * avg_dist / 30));
+                        
+                        last_pose = est_pose;
+                        last_timestamp = est_timestamp;
+                        drive.addVisionPose(est_pose, est_timestamp, est_std);
+                    }
+                    
+                }
+            }
+        
         }
     }
     

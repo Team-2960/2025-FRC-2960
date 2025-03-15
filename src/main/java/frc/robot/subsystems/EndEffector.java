@@ -236,7 +236,7 @@ public class EndEffector extends SubsystemBase{
     }
 
     public void setReverse(){
-        setMotorVolt(-Constants.coralIntakeVolt);
+        setMotorVolt(-2);
     }
 
     public boolean isCoralPresent(){
