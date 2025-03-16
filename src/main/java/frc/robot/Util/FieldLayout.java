@@ -68,12 +68,12 @@ public class FieldLayout {
     public static final Pose2d rHPLeft = new Pose2d(16.681, 0.657, Rotation2d.fromDegrees(-54));
     
     public static final Pose2d rReefCenter = new Pose2d(13.045, 4.026, Rotation2d.fromDegrees(0));
-    public static final Pose2d rReef0 = new Pose2d(13.876, 4.026, Rotation2d.fromDegrees(0));
-    public static final Pose2d rReef60 = new Pose2d(13.46, 4.746, Rotation2d.fromDegrees(60));
-    public static final Pose2d rReef120 = new Pose2d(12.629, 4.746, Rotation2d.fromDegrees(120));
-    public static final Pose2d rReef180 = new Pose2d(12.213, 4.026, Rotation2d.fromDegrees(180));
-    public static final Pose2d rReef240 = new Pose2d(12.629, 3.306, Rotation2d.fromDegrees(-60));
-    public static final Pose2d rReef300 = new Pose2d(13.461, 3.306, Rotation2d.fromDegrees(-120));
+    public static final Pose2d rReef0 = new Pose2d(13.876, 4.026, Rotation2d.fromDegrees(180));
+    public static final Pose2d rReef60 = new Pose2d(13.46, 4.746, Rotation2d.fromDegrees(-60));
+    public static final Pose2d rReef120 = new Pose2d(12.629, 4.746, Rotation2d.fromDegrees(-120));
+    public static final Pose2d rReef180 = new Pose2d(12.213, 4.026, Rotation2d.fromDegrees(0));
+    public static final Pose2d rReef240 = new Pose2d(12.629, 3.306, Rotation2d.fromDegrees(60));
+    public static final Pose2d rReef300 = new Pose2d(13.461, 3.306, Rotation2d.fromDegrees(120));
       
     public static final Pose2d bCageProcessor = new Pose2d(8.76, 0.792, Rotation2d.fromDegrees(0));
     public static final Pose2d bCageMiddle = new Pose2d(8.76, 1.883, Rotation2d.fromDegrees(0));
@@ -203,7 +203,7 @@ public class FieldLayout {
     }
 
     public static Rotation2d getReefFaceZone(Pose2d pose){
-        Pose2d reef = getReef(ReefFace.CENTER);
+        Pose2d reef = getReef(ReefFace.CENTER); 
         Transform2d calcPose = pose.minus(reef);
         Rotation2d calcRotation = new Rotation2d(calcPose.getX(), calcPose.getY()).rotateBy(Rotation2d.fromDegrees(180));
         Rotation2d targetAngle = new Rotation2d();

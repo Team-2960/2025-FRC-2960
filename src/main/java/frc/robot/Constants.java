@@ -94,8 +94,8 @@ public class Constants {
 
     public static final Rotation2d driveAngleRampDistance = Rotation2d.fromDegrees(10);
     public static final PIDParam angleAlignPID = new PIDParam(4, 0, 0.3);
-    public static final TrapezoidProfile.Constraints trapConstraints = new Constraints(4.5, 5);
-    public static final double trapezoidTime = 0.02;
+    public static final TrapezoidProfile.Constraints trapConstraints = new Constraints(4.5, 11);
+    public static final double trapezoidTime = 0.1;
 
 
     // Arm
@@ -112,7 +112,7 @@ public class Constants {
     public static final Rotation2d armBotLim = Rotation2d.fromDegrees(0);
 
     public static final Rotation2d armIntakeAngle = Rotation2d.fromDegrees(95);
-    public static final Rotation2d armTravelAngle = Rotation2d.fromDegrees(75);
+    public static final Rotation2d armTravelAngle = Rotation2d.fromDegrees(85);
     public static final Rotation2d armL1CoralScoreAngle = Rotation2d.fromDegrees(73);
     public static final Rotation2d armCoralScoreAngle = Rotation2d.fromDegrees(60);
     public static final Rotation2d armCoralL4Angle = Rotation2d.fromDegrees(60);
@@ -138,7 +138,7 @@ public class Constants {
     public static final double elevL1Pos = 0;           // in.
     public static final double elevL2Pos = 16;           // in.
     public static final double elevL3Pos = 31.5;           // in.
-    public static final double elevL4Pos = 56.5;           // in.
+    public static final double elevL4Pos = 55.5;           // in.
     public static final double elevLowAlgaePos = 17.7;     // in.
     public static final double elevHighAlgaePos = 36;    // in.
 
@@ -194,7 +194,7 @@ public class Constants {
     );  
 
     //LEDs
-    public static final int frontLEDCount = 0;
-    public static final int leftLEDCount = 0;
-    public static final int rightLEDCount = 0;
+    public static final int frontLEDCount = 30;
+    public static final int leftLEDCount = 30;
+    public static final int rightLEDCount = 30;
 }

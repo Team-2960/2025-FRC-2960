@@ -132,6 +132,7 @@ public class OperatorInterface extends SubsystemBase {
 
         sb_matchTimer = match_info.add("Match Timer", -1).getEntry();
 
+
         driveTriggers();
         coralPlacementTriggers();
         algaeGrabberTriggers();
@@ -188,14 +189,14 @@ public class OperatorInterface extends SubsystemBase {
             .onTrue(
                 drive
                 .rotationDriveCommands
-                .new AngleAlignCommand(Rotation2d.fromDegrees(54))
+                .new AngleAlignCommand(Rotation2d.fromDegrees(-54))
         );
         
         driverController.b()
             .onTrue(
                 drive
                 .rotationDriveCommands
-                .new AngleAlignCommand(Rotation2d.fromDegrees(-54))
+                .new AngleAlignCommand(Rotation2d.fromDegrees(54))
         );
 
         driverController.a()
@@ -579,7 +580,11 @@ public class OperatorInterface extends SubsystemBase {
             updateDrive();
             //sysIdTest();
         }
-
+        if (DriverStation.getAlliance().get() == Alliance.Red){
+            offsetMirror = -1;
+        }else{
+            offsetMirror = 1;
+        }
         updateUI();
     }
 

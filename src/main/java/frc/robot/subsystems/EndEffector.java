@@ -2,16 +2,20 @@ package frc.robot.subsystems;
 
 
 
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkFlexConfig;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -31,6 +35,8 @@ public class EndEffector extends SubsystemBase{
     
     private DigitalInput coralPresentPE;//Photoeye coral detector
     private SparkFlex coralDrive;
+    private RelativeEncoder coralEncoder;
+    private PIDController coralPID;
     private SparkBaseConfig coralConfig;
 
     private Trigger intakeTrigger;
@@ -38,10 +44,12 @@ public class EndEffector extends SubsystemBase{
     private final EjectCmd ejectCmd;
     private final Command timedEjectCmd;
     private final IntakeCmd intakeCmd;
+    private final CoralHoldCommand coralHoldCommand;
     
     private GenericEntry sb_currentCmd;
     private GenericEntry sb_motorVoltage;
     private GenericEntry sb_photoeyeState;
+    private GenericEntry sb_coralPosition;
 
     /**
      * Command for ejecting coral
@@ -149,20 +157,45 @@ public class EndEffector extends SubsystemBase{
         }
     }
 
+    public class CoralHoldCommand extends Command{
+        double startPos = 0;
+
+        public CoralHoldCommand(){
+            addRequirements(EndEffector.this);
+        }
+
+        @Override
+        public void initialize(){
+            startPos = getPos();
+        }
+
+        @Override
+        public void execute(){
+            setPos(startPos);
+        }
+    }
+
     /**
      * Constructor
      */
     private EndEffector(){
         coralDrive = new SparkFlex(Constants.coralMotor, MotorType.kBrushless);
+        coralEncoder = coralDrive.getEncoder();
         coralPresentPE = new DigitalInput(Constants.coralPresentPE);
         coralDrive.configure(new SparkFlexConfig().inverted(true), com.revrobotics.spark.SparkBase.ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+        coralPID = new PIDController(5, 0, 0);
 
         ejectCmd = new EjectCmd();
         timedEjectCmd = new TimedEjectCmd();
         intakeCmd = new IntakeCmd();
+        coralHoldCommand = new CoralHoldCommand();
+
 
         intakeTrigger = new Trigger(coralPresentPE::get);
         intakeTrigger.whileFalse(intakeCmd);
+
+        setDefaultCommand(coralHoldCommand);
         
 
         //Setup Shuffleboard
@@ -173,6 +206,7 @@ public class EndEffector extends SubsystemBase{
         sb_currentCmd = layout.add("current command End Effector", "").getEntry();
         sb_motorVoltage = layout.add("motor voltage End Effector", 2960).getEntry();
         sb_photoeyeState = layout.add("photoeye state End Effector", false).getEntry();
+        sb_coralPosition = layout.add("Position End Effector", 0).getEntry();
 
 
     }
@@ -243,6 +277,14 @@ public class EndEffector extends SubsystemBase{
         return !coralPresentPE.get();
     }
 
+    public double getPos(){
+        return coralEncoder.getPosition();
+    }
+
+    public void setPos(double targetPos){
+        setMotorVolt(coralPID.calculate(getPos(), targetPos));
+    }
+
 
     /**
      * Periodic method
@@ -266,6 +308,7 @@ public class EndEffector extends SubsystemBase{
         sb_currentCmd.setString(commandName);
         sb_motorVoltage.setDouble(coralDrive.getBusVoltage() * coralDrive.getAppliedOutput());
         sb_photoeyeState.setBoolean(coralPresentPE.get());
+        sb_coralPosition.setDouble(getPos());
     }
 
      /**

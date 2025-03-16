@@ -549,7 +549,7 @@ public class Drive extends SubsystemBase {
 
         angleAlignPID.enableContinuousInput(-Math.PI, Math.PI);
 
-        driveAlignPID = new PIDController(3, 0.5, 0);
+        driveAlignPID = new PIDController(3, 0, 0);
 
         xProfileState = new State();
         yProfileState = new State();

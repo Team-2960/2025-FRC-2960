@@ -43,6 +43,8 @@ public class Robot extends TimedRobot {
     private EndEffector endEffector;
     private Climber climber;
     private Cameras cameras;
+    //
+    private LEDControl ledControl;
     private Command autonomousCommand;
     
 
@@ -57,6 +59,7 @@ public class Robot extends TimedRobot {
         elevArmControl = ElevArmControl.getInstance();
         elevator = Elevator.getInstance();
         endEffector = EndEffector.getInstance();
+        //ledControl = LEDControl.getInstance();
         cameras = Cameras.getInstance();
 
         CameraServer.startAutomaticCapture();
