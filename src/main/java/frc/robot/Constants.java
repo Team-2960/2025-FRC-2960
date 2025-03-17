@@ -203,4 +203,23 @@ public class Constants {
         new Translation3d(-robotLength/2+.040, 0, .206), 
         new Rotation3d(36 * Math.PI / 180, 0, Math.PI)
     );  
+
+    // Driver Camera
+    public static final class DriverCameraConst {
+        public static final int width = 640;    // pixels
+        public static final int height = 480;   // pixels
+
+        public static final Point leftTop = new Point(100, 0);
+        public static final Point leftBottom = new Point(100, height);
+        public static final Point rightTop = new Point(width - 100, 0);
+        public static final Point rightBottom = new Point(width - 100, height);
+
+        public static final Scalar lineColor = new Scalar(0, 255, 0);
+        public static final int lineWidth = 1;  // pixel
+    }
+
+    // LED Control
+    public static final int frontLEDCount = 60;
+    public static final int leftLEDCount = 60;
+    public static final int rightLEDCount = 60;
 }
