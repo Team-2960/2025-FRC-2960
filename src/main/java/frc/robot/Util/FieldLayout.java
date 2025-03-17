@@ -135,16 +135,6 @@ public class FieldLayout {
     public static final Pose2d rReef180 = new Pose2d(12.213, 4.026, Rotation2d.fromDegrees(0));
     public static final Pose2d rReef240 = new Pose2d(12.629, 3.306, Rotation2d.fromDegrees(60));
     public static final Pose2d rReef300 = new Pose2d(13.461, 3.306, Rotation2d.fromDegrees(120));
-      
-    public static final Pose2d bCageProcessor = new Pose2d(8.76, 0.792, Rotation2d.fromDegrees(0));
-    public static final Pose2d bCageMiddle = new Pose2d(8.76, 1.883, Rotation2d.fromDegrees(0));
-    public static final Pose2d bCageTable = new Pose2d(8.76, 2.973, Rotation2d.fromDegrees(0));
-    public static final Pose2d rReef0 = new Pose2d(13.876, 4.026, Rotation2d.fromDegrees(0));
-    public static final Pose2d rReef60 = new Pose2d(13.46, 4.746, Rotation2d.fromDegrees(60));
-    public static final Pose2d rReef120 = new Pose2d(12.629, 4.746, Rotation2d.fromDegrees(120));
-    public static final Pose2d rReef180 = new Pose2d(12.213, 4.026, Rotation2d.fromDegrees(180));
-    public static final Pose2d rReef240 = new Pose2d(12.629, 3.306, Rotation2d.fromDegrees(-60));
-    public static final Pose2d rReef300 = new Pose2d(13.461, 3.306, Rotation2d.fromDegrees(-120));
     
     public static final Pose2d rBranchA = new Pose2d(13.876, 3.861, Rotation2d.fromDegrees(180.000));
     public static final Pose2d rBranchB = new Pose2d(13.876, 4.191, Rotation2d.fromDegrees(180.000));
@@ -255,15 +245,6 @@ public class FieldLayout {
      */
     public static Pose2d getNearestReefFace(Pose2d pose) {
         return pose.nearest(getReefList());
-    }
-
-        if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
-            reeflist = rReefFaces;
-        } else {
-            reeflist = bReefFaces;
-        }
-
-        return pose.nearest(reeflist);
     }
 
     public static Rotation2d getReefFaceZone(Pose2d pose){

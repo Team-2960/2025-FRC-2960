@@ -1,7 +1,5 @@
 package frc.robot.subsystems;
 
-import static frc.robot.Constants.CameraConstants;
-
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
 import edu.wpi.first.apriltag.AprilTagFields;
