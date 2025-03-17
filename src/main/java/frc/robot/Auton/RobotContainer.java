@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.ElevArmControl;
+import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.EndEffector;
 public class RobotContainer {
   SendableChooser<Command> autoChooser;
@@ -20,6 +21,8 @@ public class RobotContainer {
   public RobotContainer(){
     Drive drive = Drive.getInstance();
     ElevArmControl elevArmControl = ElevArmControl.getInstance();
+    Elevator elevator = Elevator.getInstance();
+    Arm arm = Arm.getInstance();
     EndEffector endEffector = EndEffector.getInstance();
 
     NamedCommands.registerCommand("driveAlignCommand", drive.linearDriveCommands.new GoToPointCommand(new Translation2d()));
@@ -34,6 +37,9 @@ public class RobotContainer {
     NamedCommands.registerCommand("coralNotPresentCommand", endEffector.new CoralNotPresentCommand());
     NamedCommands.registerCommand("ejectCommand", endEffector.new EjectCmd());
     NamedCommands.registerCommand("intakeCommand", endEffector.new IntakeCmd());
+    NamedCommands.registerCommand("elevatorHoldCommand", elevator.new ElevatorHoldCommand());
+    NamedCommands.registerCommand("armHoldCommand", arm.new ArmHoldCommand());
+
     autoChooser = AutoBuilder.buildAutoChooser();
     
     SmartDashboard.putData("Choose Auto", autoChooser);

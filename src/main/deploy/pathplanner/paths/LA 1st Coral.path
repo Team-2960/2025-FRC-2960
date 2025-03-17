@@ -3,40 +3,45 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.068792808219179,
-        "y": 4.02
+        "x": 7.437582236842105,
+        "y": 6.189884868421052
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.172273704729865,
-        "y": 4.109992986113857
+        "x": 6.28297697368421,
+        "y": 6.353453947368421
       },
       "isLocked": false,
-      "linkedName": "Middle Start"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 3.1403681506849312,
-        "y": 4.02
+        "x": 5.195723684210526,
+        "y": 5.179605263157893
       },
       "prevControl": {
-        "x": 4.246873623044017,
-        "y": 3.8905537959966834
+        "x": 6.215625,
+        "y": 6.613240131578945
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Branch G"
+      "linkedName": "LA 1st Coral End"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.5,
+      "rotationDegrees": -119.99999999999999
+    }
+  ],
   "constraintZones": [
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 0.0,
+      "minWaypointRelativePos": 0,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
-        "maxVelocity": 2.0,
-        "maxAcceleration": 2.0,
+        "maxVelocity": 1.5,
+        "maxAcceleration": 5.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
         "nominalVoltage": 12.0,
@@ -55,11 +60,11 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0,
-    "rotation": 180.0
+    "velocity": 0.0,
+    "rotation": -119.99999999999999
   },
   "reversed": false,
-  "folder": "Middle Auton",
+  "folder": "Left Auton",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 180.0

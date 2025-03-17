@@ -3,40 +3,40 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.068792808219179,
-        "y": 4.02
+        "x": 1.135361842105263,
+        "y": 1.1
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.172273704729865,
-        "y": 4.109992986113857
+        "x": 1.6913689801593867,
+        "y": 1.449660361827148
       },
       "isLocked": false,
-      "linkedName": "Middle Start"
+      "linkedName": "RA HP Station End"
     },
     {
       "anchor": {
-        "x": 3.1403681506849312,
-        "y": 4.02
+        "x": 3.916036184210526,
+        "y": 2.793421052631579
       },
       "prevControl": {
-        "x": 4.246873623044017,
-        "y": 3.8905537959966834
+        "x": 2.951568793291906,
+        "y": 2.187844178453525
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Branch G"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
   "constraintZones": [
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 0.0,
+      "minWaypointRelativePos": 0.5080213903743316,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
         "maxVelocity": 2.0,
-        "maxAcceleration": 2.0,
+        "maxAcceleration": 5.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
         "nominalVoltage": 12.0,
@@ -56,13 +56,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": 59.99999999999999
   },
   "reversed": false,
-  "folder": "Middle Auton",
+  "folder": "Right Auton",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": 54.0
   },
   "useDefaultConstraints": true
 }

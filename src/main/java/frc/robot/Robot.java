@@ -5,7 +5,11 @@
 package frc.robot;
 
 
+import org.opencv.video.Video;
+
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.VideoMode;
+import edu.wpi.first.cscore.VideoSource;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -39,7 +43,7 @@ public class Robot extends TimedRobot {
     private EndEffector endEffector;
     private Climber climber;
     private Cameras cameras;
-    private DriverCamera driverCamera;
+    //
     private LEDControl ledControl;
     private Command autonomousCommand;
     
@@ -55,11 +59,10 @@ public class Robot extends TimedRobot {
         elevArmControl = ElevArmControl.getInstance();
         elevator = Elevator.getInstance();
         endEffector = EndEffector.getInstance();
-        // cameras = Cameras.getInstance();
-        driverCamera = DriverCamera.getInstance();
-        ledControl = LEDControl.getInstance();
+        //ledControl = LEDControl.getInstance();
+        cameras = Cameras.getInstance();
 
-        //CameraServer.startAutomaticCapture();
+        CameraServer.startAutomaticCapture();
         robotContainer = RobotContainer.getInstance();
     }
 

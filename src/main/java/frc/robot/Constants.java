@@ -9,6 +9,8 @@ import com.pathplanner.lib.config.RobotConfig;
 
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import frc.robot.Util.*;
 
 public class Constants {
@@ -90,6 +92,7 @@ public class Constants {
     public static PIDConstants driveAngPIDConstants = new PIDConstants(0.05, 0.0, 0.001);
     public static FFParam driveAngFF = FFParam.simpleMotor(0.1, 0.1, 0);
 
+
     public static final double maxSpeed = 4.5;
     public static final double maxAngularSpeed = 1.5 * 2 * Math.PI;
     public static final double maxAutoAngularSpeed = 0.5 * 2 * Math.PI;
@@ -102,6 +105,9 @@ public class Constants {
 
     public static final Rotation2d driveAngleRampDistance = Rotation2d.fromDegrees(10);
     public static final PIDParam angleAlignPID = new PIDParam(4, 0, 0.3);
+    public static final TrapezoidProfile.Constraints trapConstraints = new Constraints(4.5, 11);
+    public static final double trapezoidTime = 0.1;
+
 
     // Arm
     public static final PIDParam armPID = new PIDParam(0.002, 0.0, 0.0);
@@ -113,14 +119,14 @@ public class Constants {
     public static final double maxArmAutoSpeed = 90;  //Degrees /s
 
     //TODO Change to real limits
-    public static final Rotation2d armTopLim = Rotation2d.fromDegrees(85);
+    public static final Rotation2d armTopLim = Rotation2d.fromDegrees(95);
     public static final Rotation2d armBotLim = Rotation2d.fromDegrees(0);
 
-    public static final Rotation2d armIntakeAngle = Rotation2d.fromDegrees(82.5);
-    public static final Rotation2d armTravelAngle = Rotation2d.fromDegrees(75);
+    public static final Rotation2d armIntakeAngle = Rotation2d.fromDegrees(95);
+    public static final Rotation2d armTravelAngle = Rotation2d.fromDegrees(85);
     public static final Rotation2d armL1CoralScoreAngle = Rotation2d.fromDegrees(73);
     public static final Rotation2d armCoralScoreAngle = Rotation2d.fromDegrees(60);
-    public static final Rotation2d armCoralL4Angle = Rotation2d.fromDegrees(48.5);
+    public static final Rotation2d armCoralL4Angle = Rotation2d.fromDegrees(60);
     public static final Rotation2d armAlgaeRemoveAngle = Rotation2d.fromDegrees(25);
 
     //Elevator
@@ -131,8 +137,8 @@ public class Constants {
     public static final double elevatorOutputDiam = 1.751;  // in.
 
     public static final double elevatorScale = elevatorGearRatio * elevatorOutputDiam * Math.PI;           // in. / rot.
-    public static final double maxElevatorAutoSpeed = 1;    // in. / s
-    public static final double elevatorRampDownDist = 1;    // in.
+    public static final double maxElevatorAutoSpeed = 2;    // in. / s
+    public static final double elevatorRampDownDist = 10;    // in.
     public static final double elevatorDefTol = .5;         // in.
     public static final double elevatorPosTol = .5;         // in.
 
@@ -143,13 +149,13 @@ public class Constants {
     public static final double elevL1Pos = 0;           // in.
     public static final double elevL2Pos = 16;           // in.
     public static final double elevL3Pos = 31.5;           // in.
-    public static final double elevL4Pos = 56.5;           // in.
+    public static final double elevL4Pos = 55.5;           // in.
     public static final double elevLowAlgaePos = 17.7;     // in.
     public static final double elevHighAlgaePos = 36;    // in.
 
     //End Effector
-    public static final double coralEjectVolt = 6;
-    public static final double coralIntakeVolt = 1;
+    public static final double coralEjectVolt = 4;
+    public static final double coralIntakeVolt = 1.5;
     public static final double algaeRemovalVolt = 12;
     public static final double coralEjectTime = 1;
 
@@ -178,71 +184,23 @@ public class Constants {
     public static final double climberExtDist = 0; // in.
     public static final double climberRetDist = 0; // in.
 
-    public static final double climberExtVolt = 6;      // voltage
+    public static final double climberExtVolt = -6;      // voltage
     public static final double climberRetVolt = 12;     // voltage
     public static final double climberResetVolt = 6;    // voltage
 
     // Cameras
-    public static final class CameraConstants {
-        public static final Transform3d robotToFrontCamera = new Transform3d(
-            new Translation3d(
-                14.056 * 0.0254, 
-                0.000 * 0.0254, 
-                9.005 * 0.0254
-            ), 
-            new Rotation3d(
-                Math.toRadians(0), 
-                Math.toRadians(-10), 
-                Math.toRadians(0)
-            )
-        );  
-        
-        public static final Transform3d robotToLeftCamera = new Transform3d(
-            new Translation3d(
-                -13.944 * 0.0254, 
-                -13.944 * 0.0254, 
-                8.791 * 0.0254
-            ), 
-            new Rotation3d(
-                Math.toRadians(-14.600), 
-                Math.toRadians(14.600), 
-                Math.toRadians(-135.000)
-            )
-        );  
-        
-        public static final Transform3d robotToRightCamera = new Transform3d(
-            new Translation3d(
-                -13.944 * 0.0254, 
-                13.944 * 0.0254, 
-                8.791 * 0.0254
-            ), 
-            new Rotation3d(
-                Math.toRadians(14.600), 
-                Math.toRadians(14.600), 
-                Math.toRadians(135.000)
-            )
-        );  
-    }
-
-
-    // Driver Camera
-    public static final class DriverCameraConst {
-        public static final int width = 640;    // pixels
-        public static final int height = 480;   // pixels
-
-        public static final Point leftTop = new Point(100, 0);
-        public static final Point leftBottom = new Point(100, height);
-        public static final Point rightTop = new Point(width - 100, 0);
-        public static final Point rightBottom = new Point(width - 100, height);
-
-        public static final Scalar lineColor = new Scalar(0, 255, 0);
-        public static final int lineWidth = 1;  // pixel
-    }
-
-    // LED Control
-    public static final class LEDControlConst {
-        public static final int frontLEDCount = 60;
-        public static final int leftLEDCount = 60;
-        public static final int rightLEDCount = 60;
-    }
+    public static final Transform3d robotToFrontCamera = new Transform3d(
+        new Translation3d(-robotLength/2+.040, 0, .206), 
+        new Rotation3d(36 * Math.PI / 180, 0, Math.PI)
+    );  
+    
+    public static final Transform3d robotToLeftRearCamera = new Transform3d(
+        new Translation3d(-robotLength/2+.040, 0, .206), 
+        new Rotation3d(36 * Math.PI / 180, 0, Math.PI)
+    );  
+    
+    public static final Transform3d robotToRightRearCamera = new Transform3d(
+        new Translation3d(-robotLength/2+.040, 0, .206), 
+        new Rotation3d(36 * Math.PI / 180, 0, Math.PI)
+    );  
 }

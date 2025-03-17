@@ -25,10 +25,10 @@ public class Climber extends SubsystemBase {
             setMotorVolt(Constants.climberExtVolt);
         }
 
-        @Override
-        public boolean isFinished() {
-            return getExtension() >= Constants.climberExtDist;
-        }
+        // @Override
+        // public boolean isFinished() {
+        //     return getExtension() >= Constants.climberExtDist;
+        // }
 
         @Override
         public void end(boolean interrupted) {
@@ -46,10 +46,10 @@ public class Climber extends SubsystemBase {
             setMotorVolt(Constants.climberRetVolt);
         }
 
-        @Override
-        public boolean isFinished() {
-            return getExtension() >= Constants.climberRetDist;
-        }
+        // @Override
+        // public boolean isFinished() {
+        //     return getExtension() >= Constants.climberRetDist;
+        // }
 
         @Override
         public void end(boolean interrupted) {
