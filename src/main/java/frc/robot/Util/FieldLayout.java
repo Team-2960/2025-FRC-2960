@@ -203,24 +203,25 @@ public class FieldLayout {
     }
 
     public static Rotation2d getReefFaceZone(Pose2d pose){
+
         Pose2d reef = getReef(ReefFace.CENTER); 
         Transform2d calcPose = pose.minus(reef);
         Rotation2d calcRotation = new Rotation2d(calcPose.getX(), calcPose.getY()).rotateBy(Rotation2d.fromDegrees(180));
         Rotation2d targetAngle = new Rotation2d();
         if (calcRotation.getDegrees() >= -30 && calcRotation.getDegrees() < 30){
-            targetAngle = Rotation2d.fromDegrees(0);
+            targetAngle = getReef(ReefFace.ZERO).getRotation();
         } else if (calcRotation.getDegrees() >= 30 && calcRotation.getDegrees() < 90){
-            targetAngle = Rotation2d.fromDegrees(60);
+            targetAngle = getReef(ReefFace.SIXTY).getRotation();
         } else if (calcRotation.getDegrees() >= 90 && calcRotation.getDegrees() <= 150){
-            targetAngle = Rotation2d.fromDegrees(120);
+            targetAngle = getReef(ReefFace.ONETWENTY).getRotation();
         } else if (calcRotation.getDegrees() >= 150 && calcRotation.getDegrees() <= 180){
-            targetAngle = Rotation2d.fromDegrees(180);
+            targetAngle = getReef(ReefFace.ONEEIGHTY).getRotation();
         }else if(calcRotation.getDegrees() >= -180 && calcRotation.getDegrees() < -150){
-            targetAngle = Rotation2d.fromDegrees(180);
+            targetAngle = getReef(ReefFace.ONEEIGHTY).getRotation();
         } else if (calcRotation.getDegrees() >= -150 && calcRotation.getDegrees() < -90){
-            targetAngle = Rotation2d.fromDegrees(-120);
+            targetAngle = getReef(ReefFace.TWOFOURTY).getRotation();
         } else if (calcRotation.getDegrees() >= -90 && calcRotation.getDegrees() < -30){
-            targetAngle = Rotation2d.fromDegrees(-60);
+            targetAngle = getReef(ReefFace.THREEHUNDRED).getRotation();
         }
         return targetAngle;
     }
