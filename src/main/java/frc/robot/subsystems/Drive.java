@@ -845,8 +845,10 @@ public class Drive extends SubsystemBase {
     }
 
     public void linearGoToReef(Translation2d offset){
+        Rotation2d rotOffset = Rotation2d.fromDegrees(0);
         if (isRedAlliance()) {
             offset = new Translation2d(-offset.getX(), -offset.getY());
+            rotOffset = Rotation2d.fromDegrees(180);
         }
 
         Rotation2d reefFaceRotation = FieldLayout.getReefFaceZone(getEstimatedPos());
@@ -854,23 +856,26 @@ public class Drive extends SubsystemBase {
         Translation2d poseOffset = new Translation2d(zeroFace.getX() + offset.getX(), zeroFace.getY() + offset.getY())
                 .rotateAround(FieldLayout.getReef(ReefFace.CENTER).getTranslation(),
                         reefFaceRotation);
-        Pose2d finalReefFace = new Pose2d(poseOffset, reefFaceRotation);
+        Pose2d finalReefFace = new Pose2d(poseOffset, reefFaceRotation.rotateBy(rotOffset));
         this.nearestReefFace = finalReefFace;
 
         calcToPoint(finalReefFace.getTranslation());
     }
 
     public void linearGoToReefTrap(Translation2d offset){
+        Rotation2d rotOffset = Rotation2d.fromDegrees(0);
         if (isRedAlliance()) {
             offset = new Translation2d(-offset.getX(), -offset.getY());
+            rotOffset = Rotation2d.fromDegrees(180);
         }
+
 
         Rotation2d reefFaceRotation = FieldLayout.getReefFaceZone(getEstimatedPos());
         Pose2d zeroFace = FieldLayout.getReef(ReefFace.ZERO);
         Translation2d poseOffset = new Translation2d(zeroFace.getX() + offset.getX(), zeroFace.getY() + offset.getY())
                 .rotateAround(FieldLayout.getReef(ReefFace.CENTER).getTranslation(),
                         reefFaceRotation);
-        Pose2d finalReefFace = new Pose2d(poseOffset, reefFaceRotation);
+        Pose2d finalReefFace = new Pose2d(poseOffset, reefFaceRotation.rotateBy(rotOffset));
         this.nearestReefFace = finalReefFace;
 
         calcToPointTrapezoidal(finalReefFace.getTranslation());
@@ -878,12 +883,16 @@ public class Drive extends SubsystemBase {
     }
 
     public void rotGoToReef(Rotation2d offset){
+        Rotation2d rotOffset = Rotation2d.fromDegrees(0);
+        if (isRedAlliance()) {
+            rotOffset = Rotation2d.fromDegrees(180);
+        }
         Rotation2d reefFaceRotation = FieldLayout.getReefFaceZone(getEstimatedPos());
         Pose2d zeroFace = FieldLayout.getReef(ReefFace.ZERO);
         Translation2d poseOffset = new Translation2d(zeroFace.getX(), zeroFace.getY())
                 .rotateAround(FieldLayout.getReef(ReefFace.CENTER).getTranslation(),
                         reefFaceRotation);
-        Pose2d finalReefFace = new Pose2d(poseOffset, reefFaceRotation);
+        Pose2d finalReefFace = new Pose2d(poseOffset, reefFaceRotation.rotateBy(rotOffset));
         setAngleAlign(finalReefFace.getRotation().plus(offset));
     }
 
@@ -892,8 +901,10 @@ public class Drive extends SubsystemBase {
      * @param offset    offet position
      */
     public void goToReef(Pose2d offset) {
+        Rotation2d rotOffset = Rotation2d.fromDegrees(0);
         if (isRedAlliance()) {
             offset = new Pose2d(-offset.getX(), -offset.getY(), offset.getRotation());
+            rotOffset = Rotation2d.fromDegrees(180);
         }
 
         Rotation2d reefFaceRotation = FieldLayout.getReefFaceZone(getEstimatedPos());
@@ -901,7 +912,7 @@ public class Drive extends SubsystemBase {
         Translation2d poseOffset = new Translation2d(zeroFace.getX() + offset.getX(), zeroFace.getY() + offset.getY())
                 .rotateAround(FieldLayout.getReef(ReefFace.CENTER).getTranslation(),
                         reefFaceRotation);
-        Pose2d finalReefFace = new Pose2d(poseOffset, reefFaceRotation);
+        Pose2d finalReefFace = new Pose2d(poseOffset, reefFaceRotation.rotateBy(rotOffset));
         this.nearestReefFace = finalReefFace;
 
         setGoToPoint(finalReefFace.getTranslation());

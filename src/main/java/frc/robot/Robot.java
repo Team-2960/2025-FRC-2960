@@ -43,8 +43,7 @@ public class Robot extends TimedRobot {
     private EndEffector endEffector;
     private Climber climber;
     private Cameras cameras;
-    //
-    private LEDControl ledControl;
+    //private LEDControl ledControl;
     private Command autonomousCommand;
     
 

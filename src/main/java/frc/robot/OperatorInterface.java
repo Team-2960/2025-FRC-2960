@@ -156,12 +156,12 @@ public class OperatorInterface extends SubsystemBase {
         double yAxis = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.05);
         double rAxis = MathUtil.applyDeadband(driverController.getRawAxis(4), 0.05);
 
-        driverController.pov(0).whileTrue(drive.new PresetPoseCommand(
+        driverController.pov(0).onTrue(drive.new PresetPoseCommand(
             FieldLayout.getReef(ReefFace.ZERO).plus(new Transform2d(-Constants.robotLength/2, 0, new Rotation2d()))));
         
         driverController.y()
             .onTrue(drive.linearDriveCommands
-                .new LinearGoToReefCommand(
+                .new TrapLinearGoToReefCommand(
                     new Translation2d(-Constants.robotLength/2, 0)))
             .onTrue(drive.rotationDriveCommands
                 .new RotGoToReefCommand(Rotation2d.fromDegrees(0))
@@ -170,7 +170,7 @@ public class OperatorInterface extends SubsystemBase {
         driverController.y().and(driverController.rightBumper())
             .whileTrue(
                 drive.linearDriveCommands
-                .new LinearGoToReefCommand(
+                .new TrapLinearGoToReefCommand(
                     new Translation2d(-Constants.robotLength/2, -0.41)))
             .whileTrue(drive.rotationDriveCommands
                 .new RotGoToReefCommand(Rotation2d.fromDegrees(0))
@@ -179,7 +179,7 @@ public class OperatorInterface extends SubsystemBase {
         driverController.y().and(driverController.leftBumper())
             .whileTrue(
                 drive.linearDriveCommands
-                .new LinearGoToReefCommand(
+                .new TrapLinearGoToReefCommand(
                     new Translation2d(-Constants.robotLength/2, -0.1)))
             .whileTrue(drive.rotationDriveCommands
                 .new RotGoToReefCommand(Rotation2d.fromDegrees(0))
@@ -206,13 +206,6 @@ public class OperatorInterface extends SubsystemBase {
                 .new AngleAlignCommand(Rotation2d.fromDegrees(-90))
         );
 
-        driverController.pov(180)
-            .onTrue(
-                drive
-            .linearDriveCommands
-            .new TrapLinearGoToReefCommand(
-                new Translation2d(-Constants.robotLength/2, 0))
-        );
     }
 
     private void coralPlacementTriggers(){
