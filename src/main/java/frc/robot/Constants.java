@@ -18,14 +18,19 @@ public class Constants {
     // TODO Convert constants to units library for clarity
     public static final double updatePeriod = 0.02;//seconds
     
-    public static final double robotWidth = 29.5 * .0254;   // Meters 
-    public static final double robotLength = 29.5 * .0254;  // Meters 
-    public static final double wheelInset = 1.75 * .0254;   // Meters
+    public static final double robotWidth = 29.5 * .0254;       // Meters 
+    public static final double robotLength = 29.5 * .0254;      // Meters 
+    public static final double bumperThickness = 3.25 *.0254;   // Meters
+    public static final double wheelInset = 1.75 * .0254;       // Meters
     public static final double robotDiag = Math.sqrt(Math.pow(robotWidth, 2) + Math.pow(robotLength, 2)); // Meters
 
     public static final int revTBEncCountPerRev = 4096;
 
     public static final ModuleConfig moduleConfig = new ModuleConfig(0.0381, 5.450, 1, new DCMotor(12, 4.69, 257, 1.5, 106.33, 1), 257, 1);
+
+    public static final Transform2d coralOffset = new Transform2d(robotLength/2 + bumperThickness, 0.276, Rotation2d.fromDegrees(0));
+    public static final Transform2d algeaOffset = new Transform2d(-robotLength/2 - bumperThickness, 0, Rotation2d.fromDegrees(180));
+    public static final Transform2d climberOffset = new Transform2d(1.75*.0254, -robotWidth/2 - bumperThickness, Rotation2d.fromDegrees(-90));
 
     // CAN IDs
     public static final int elevatorMotor = 11;
