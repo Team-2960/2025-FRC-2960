@@ -499,6 +499,76 @@ public class Drive extends SubsystemBase {
         }
     }
 
+    /**
+     * 
+     */
+    public class GotoPoseCommand extends Command {
+        private Pose2d target;
+        private Transform2d offset;
+        private double linear_tol = 0;
+        private Rotation2d angle_tol = null;
+
+        public GotoPoseCommand(Pose2d target, Transform2d offset){
+            this.target = target;
+            this.offset = offset;
+            addRequirements(Drive.this.linearDriveCommands);
+            addRequirements(Drive.this.rotationDriveCommands);
+        }
+
+        public GotoPoseCommand(Pose2d target, Transform2d offset, double linear_tol, Rotation2d angle_tol){
+            this.target = target;
+            this.offset = offset;
+            this.linear_tol = linear_tol;
+            this.angle_tol = angle_tol;
+            addRequirements(Drive.this.linearDriveCommands);
+            addRequirements(Drive.this.rotationDriveCommands);
+        }
+
+        @Override
+        public void execute(){
+            calcToPointTrapezoidal(target.getTranslation(), offset);
+            calcRateToAngle(target.getRotation().plus(offset.getRotation()));
+        }
+
+        @Override
+        public boolean isFinished() {
+            boolean result = linear_tol != 0 && angle_tol != null;
+
+            if(result) {
+                Pose2d currentPose = getEstimatedPos();
+                Translation2d currentTrans = currentPose.getTranslation();
+                Rotation2d currentRot = currentPose.getRotation();
+                
+                result = Math.abs(currentTrans.getDistance(target.getTranslation())) < linear_tol;
+                result = Math.abs(currentRot.minus(target.getRotation()).getDegrees()) < angle_tol.getDegrees();
+            }
+
+            return result;
+        }
+
+        public void setTarget(Pose2d target) {
+            this.target = target;
+        }
+    }
+
+    
+    /**
+     * Moves to the nearest scoring pose for a branch
+     */
+    public class GoToNearsetBranchCommand extends GotoPoseCommand {
+        public GoToNearsetBranchCommand(Transform2d offset) {
+            super(FieldLayout.getNearestBranch(getEstimatedPos()), offset);
+        }
+
+        public GoToNearsetBranchCommand(Transform2d offset, double linear_tol, Rotation2d angle_tol) {
+            super(FieldLayout.getNearestBranch(getEstimatedPos()), offset, linear_tol, angle_tol);
+        }
+
+        public void initialize() {
+            setTarget(FieldLayout.getNearestBranch(getEstimatedPos()));
+        }
+    }
+
     // Command classes
     public final LinearDriveCommands linearDriveCommands;      /**< Linear motion control subsytem */
     public final RotationDriveCommands rotationDriveCommands;  /**< Rotation motion control subsystem */
@@ -817,8 +887,22 @@ public class Drive extends SubsystemBase {
         updateKinematics(xSpeed, ySpeed);
     }
 
-    public void calcToPointTrapezoidal(Translation2d point){
-        Pose2d currentPose = getEstimatedPos();
+    /**
+     * Moves to a point of the field using a tranpezoidal profile. Robot center offset is set to 0.
+     * @param point     target point
+     */
+
+    public void calcToPointTrapezoidal(Translation2d point) {
+        calcToPointTrapezoidal(point, new Transform2d(0,0, new Rotation2d()));
+    }
+
+    /**
+     * Moves to a point of the field using a tranpezoidal profile
+     * @param point     target point
+     * @param offset    robot center offset transform
+     */
+    public void calcToPointTrapezoidal(Translation2d point, Transform2d offset){
+        Pose2d currentPose = getEstimatedPos().transformBy(offset);
         double xSpeed = trapezoidProfile.calculate(
             Constants.trapezoidTime,
             new State(currentPose.getX(), getChassisSpeeds().vxMetersPerSecond),
