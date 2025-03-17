@@ -580,11 +580,7 @@ public class OperatorInterface extends SubsystemBase {
             updateDrive();
             //sysIdTest();
         }
-        if (DriverStation.getAlliance().get() == Alliance.Red){
-            offsetMirror = -1;
-        }else{
-            offsetMirror = 1;
-        }
+        
         updateUI();
     }
 
