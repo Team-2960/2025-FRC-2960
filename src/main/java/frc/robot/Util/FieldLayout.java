@@ -1,5 +1,6 @@
 package frc.robot.Util;
 
+import java.sql.Driver;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -7,6 +8,7 @@ import java.util.Map;
 
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.Constants;
 
 public class FieldLayout {
@@ -57,8 +59,8 @@ public class FieldLayout {
     public static final Pose2d bReef60 = new Pose2d(4.059, 3.306, Rotation2d.fromDegrees(60));
     public static final Pose2d bReef120 = new Pose2d(4.891, 3.306, Rotation2d.fromDegrees(120));
     public static final Pose2d bReef180 = new Pose2d(5.662, 4.026, Rotation2d.fromDegrees(180));
-    public static final Pose2d bReef240 = new Pose2d(5.096, 5.054, Rotation2d.fromDegrees(-60));
-    public static final Pose2d bReef300 = new Pose2d(4.059, 4.746, Rotation2d.fromDegrees(-120));
+    public static final Pose2d bReef240 = new Pose2d(5.096, 5.054, Rotation2d.fromDegrees(-120));
+    public static final Pose2d bReef300 = new Pose2d(4.059, 4.746, Rotation2d.fromDegrees(-60));
 
     public static final Pose2d bBranchA = new Pose2d(3.643, 4.191, Rotation2d.fromDegrees(0.000));
     public static final Pose2d bBranchB = new Pose2d(3.643, 3.861, Rotation2d.fromDegrees(0.000));
@@ -129,6 +131,7 @@ public class FieldLayout {
     public static final Pose2d rHPLeft = new Pose2d(16.681, 0.657, Rotation2d.fromDegrees(-54));
 
     public static final Pose2d rReefCenter = new Pose2d(13.045, 4.026, Rotation2d.fromDegrees(0));
+
     public static final Pose2d rReef0 = new Pose2d(13.876, 4.026, Rotation2d.fromDegrees(180));
     public static final Pose2d rReef60 = new Pose2d(13.46, 4.746, Rotation2d.fromDegrees(-60));
     public static final Pose2d rReef120 = new Pose2d(12.629, 4.746, Rotation2d.fromDegrees(-120));
@@ -248,6 +251,13 @@ public class FieldLayout {
     }
 
     public static Rotation2d getReefFaceZone(Pose2d pose){
+        Rotation2d rotOffset = new Rotation2d();
+        if(DriverStation.getAlliance().get() == Alliance.Blue){
+            rotOffset = Rotation2d.fromDegrees(180);
+        }else{
+            rotOffset = Rotation2d.fromDegrees(0);
+        }
+
         Pose2d reef = getReef(ReefFace.CENTER); 
         Transform2d calcPose = pose.minus(reef);
         Rotation2d calcRotation = calcPose.getRotation().rotateBy(Rotation2d.fromDegrees(180));

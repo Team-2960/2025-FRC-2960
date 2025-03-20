@@ -156,12 +156,10 @@ public class OperatorInterface extends SubsystemBase {
         double yAxis = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.05);
         double rAxis = MathUtil.applyDeadband(driverController.getRawAxis(4), 0.05);
 
-        driverController.pov(0).whileTrue(drive.new PresetPoseCommand(
-            FieldLayout.getReef(ReefFace.ZERO).plus(new Transform2d(-Constants.robotLength/2, 0, new Rotation2d()))));
         
         driverController.y()
             .onTrue(drive.linearDriveCommands
-                .new LinearGoToReefCommand(
+                .new TrapLinearGoToReefCommand(
                     new Translation2d(-Constants.robotLength/2, 0)))
             .onTrue(drive.rotationDriveCommands
                 .new RotGoToReefCommand(Rotation2d.fromDegrees(0))
@@ -170,7 +168,7 @@ public class OperatorInterface extends SubsystemBase {
         driverController.y().and(driverController.rightBumper())
             .whileTrue(
                 drive.linearDriveCommands
-                .new LinearGoToReefCommand(
+                .new TrapLinearGoToReefCommand(
                     new Translation2d(-Constants.robotLength/2, -0.41)))
             .whileTrue(drive.rotationDriveCommands
                 .new RotGoToReefCommand(Rotation2d.fromDegrees(0))
@@ -179,7 +177,7 @@ public class OperatorInterface extends SubsystemBase {
         driverController.y().and(driverController.leftBumper())
             .whileTrue(
                 drive.linearDriveCommands
-                .new LinearGoToReefCommand(
+                .new TrapLinearGoToReefCommand(
                     new Translation2d(-Constants.robotLength/2, -0.1)))
             .whileTrue(drive.rotationDriveCommands
                 .new RotGoToReefCommand(Rotation2d.fromDegrees(0))
@@ -206,13 +204,6 @@ public class OperatorInterface extends SubsystemBase {
                 .new AngleAlignCommand(Rotation2d.fromDegrees(-90))
         );
 
-        driverController.pov(180)
-            .onTrue(
-                drive
-            .linearDriveCommands
-            .new TrapLinearGoToReefCommand(
-                new Translation2d(-Constants.robotLength/2, 0))
-        );
     }
 
     private void coralPlacementTriggers(){
@@ -261,8 +252,8 @@ public class OperatorInterface extends SubsystemBase {
 
     private void climberTriggers(){
         Climber climber = Climber.getInstance();
-        driverController.rightBumper().whileTrue(climber.new ExtendCmd());
-        driverController.leftBumper().whileTrue(climber.new RetractCmd());
+        driverController.pov(90).whileTrue(climber.new ExtendCmd());
+        driverController.pov(270).whileTrue(climber.new RetractCmd());
     }
 
     /**
@@ -286,6 +277,10 @@ public class OperatorInterface extends SubsystemBase {
         double ySpeed = yAxis * maxSpeed * alliance_dir;
         double rSpeed = rAxis * maxAngleRate * -1;
 
+        double presetMirror = (drive.isRedAlliance() ? -1 : 1);
+        Rotation2d rotationMirror = (drive.isRedAlliance() ? Rotation2d.fromDegrees(180) : Rotation2d.fromDegrees(0));
+
+
         this.xSpeed = xSpeed;
         this.ySpeed = ySpeed;
         this.rSpeed = rSpeed;
@@ -305,6 +300,11 @@ public class OperatorInterface extends SubsystemBase {
             drive.setRotManualDrive(false);
         }
 
+        if(driverController.getHID().getPOV() == 0){
+            drive.setPresetPose(
+                FieldLayout.getReef(ReefFace.ZERO).plus(new Transform2d(Constants.robotLength/2 * -presetMirror, 0, rotationMirror)));
+        }
+
         // Update Shuffleboard
         sb_driveX.setDouble(xSpeed);
         sb_driveY.setDouble(ySpeed);
@@ -316,9 +316,7 @@ public class OperatorInterface extends SubsystemBase {
     /**
      * updates controls for elevator, arm, and end effector
      */
-    private void 
-    
-    updateCoralPlacement(){//TODO finish whatever is needed for this
+    private void updateCoralPlacement(){//TODO finish whatever is needed for this
         Elevator elevator = Elevator.getInstance();
         EndEffector endEffector = EndEffector.getInstance();
         Arm arm = Arm.getInstance();
@@ -580,7 +578,7 @@ public class OperatorInterface extends SubsystemBase {
             updateDrive();
             //sysIdTest();
         }
-        
+
         updateUI();
     }
 

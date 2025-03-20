@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.Timer;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.PhotonUtils;
 
 /**
  * Manages connection to a single PhotonVision AprilTag Pipeline
@@ -117,58 +118,49 @@ public class AprilTagPipeline extends SubsystemBase {
         // visionSim.update(new Pose2d(17.526/2, 8.05/2, new Rotation2d()));
         
         for(var change : unreadResults) {
-
-            // Get Estimated Position
             visionEst = pose_est.update(change);
 
             // Check if a pose was estimated
             if(visionEst.isPresent()) {
-                
-                Pose2d est_pose = visionEst.get().estimatedPose.toPose2d();
-                double est_timestamp = visionEst.get().timestampSeconds;
-
-                double avg_dist = 0;
-                int tag_count = 0;
+                double est_timestamp = change.getTimestampSeconds();
 
                 // Get found tag count and average distance
-                for(var tag : visionEst.get().targetsUsed) {
+                for(var tag : change.getTargets()) {
                     var tag_pose3d = pose_est.getFieldTags().getTagPose(tag.getFiducialId());
                     
                     if(!tag_pose3d.isEmpty()) {
                         Pose2d tag_pose = tag_pose3d.get().toPose2d();
-                        
-                        
+                        Pose3d estPose = PhotonUtils.estimateFieldToRobotAprilTag(tag.getBestCameraToTarget(), tag_pose3d.get(), settings.robot_to_camera.inverse());
                         if (tag.getPoseAmbiguity() <= ambiguity_threshold
                              && tag.getBestCameraToTarget().getTranslation().getDistance(new Translation3d()) <= maxDistance){
-                                avg_dist += tag_pose.getTranslation().getDistance(est_pose.getTranslation());
-                                tag_count++;
+                                drive.addVisionPose(estPose.toPose2d(), est_timestamp, settings.multi_tag_std);
                         }
                     }
                     
                 }
 
                 // Check if any targets were found
-                if(tag_count > 0) {
-                    Vector<N3> est_std = settings.single_tag_std;
+                // if(tag_count > 0) {
+                //     Vector<N3> est_std = settings.single_tag_std;
 
-                    // Calculate average target distance
-                    avg_dist /= tag_count;
+                //     // Calculate average target distance
+                //     avg_dist /= tag_count;
 
-                    // Decrease standard deviation if multiple tags are found
-                    if(tag_count > 1) est_std = settings.multi_tag_std;
+                //     // Decrease standard deviation if multiple tags are found
+                //     if(tag_count > 1) est_std = settings.multi_tag_std;
 
-                    // Increase standard deviation based on average distance and ignore single 
-                    // target results over the settings.max_dist
-                    if(tag_count > 1 || avg_dist < settings.max_dist) {
-                        // TODO Add average distance scaler to settings
-                        est_std = est_std.times(1 + (avg_dist * avg_dist / 30));
+                //     // Increase standard deviation based on average distance and ignore single 
+                //     // target results over the settings.max_dist
+                //     if(tag_count > 1 || avg_dist < settings.max_dist) {
+                //         // TODO Add average distance scaler to settings
+                //         est_std = est_std.times(1 + (avg_dist * avg_dist / 30));
                         
-                        last_pose = est_pose;
-                        last_timestamp = est_timestamp;
-                        drive.addVisionPose(est_pose, est_timestamp, est_std);
-                    }
+                //         last_pose = est_pose;
+                //         last_timestamp = est_timestamp;
+                //         drive.addVisionPose(est_pose, est_timestamp, est_std);
+                //     }
                     
-                }
+                // }
             }
         
         }
