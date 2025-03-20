@@ -819,19 +819,37 @@ public class Drive extends SubsystemBase {
 
     public void calcToPointTrapezoidal(Translation2d point){
         Pose2d currentPose = getEstimatedPos();
-        double xSpeed = trapezoidProfile.calculate(
-            Constants.trapezoidTime,
-            new State(currentPose.getX(), getChassisSpeeds().vxMetersPerSecond),
-            new State(point.getX(), 0)
-        ).velocity;
+        // double xSpeed = trapezoidProfile.calculate(
+        //     Constants.trapezoidTime,
+        //     new State(currentPose.getX(), getChassisSpeeds().vxMetersPerSecond),
+        //     new State(point.getX(), 0)
+        // ).velocity;
+        // Calculate trapezoidal profile
+        double maxDriveRate = Constants.maxSpeed;
+        double xError = point.getX() - currentPose.getX();
 
-        double ySpeed = trapezoidProfile.calculate(
-            Constants.trapezoidTime,
-            new State(currentPose.getY(), getChassisSpeeds().vyMetersPerSecond),
-            new State(point.getY(), 0)
-        ).velocity;
+        double xTargetSpeed = maxDriveRate * (xError > 0 ? 1 : -1);
+        double xRampDownSpeed = xError / 1 * maxDriveRate;
+
+        if (Math.abs(xRampDownSpeed) < Math.abs(xTargetSpeed)) xTargetSpeed = xRampDownSpeed;
+
+        double yError = point.getY() - currentPose.getY();
+
+        double yTargetSpeed = maxDriveRate * (yError > 0 ? 1 : -1);
+        double yRampDownSpeed = yError / 1 * maxDriveRate;
+
+        if (Math.abs(yRampDownSpeed) < Math.abs(yTargetSpeed)) yTargetSpeed = yRampDownSpeed;
+
+
         
-        updateKinematics(xSpeed, ySpeed);
+
+        // double ySpeed = trapezoidProfile.calculate(
+        //     Constants.trapezoidTime,
+        //     new State(currentPose.getY(), getChassisSpeeds().vyMetersPerSecond),
+        //     new State(point.getY(), 0)
+        // ).velocity;
+        
+        updateKinematics(xTargetSpeed, yTargetSpeed);
     }
 
     // 
@@ -868,7 +886,6 @@ public class Drive extends SubsystemBase {
             offset = new Translation2d(-offset.getX(), -offset.getY());
             rotOffset = Rotation2d.fromDegrees(180);
         }
-
 
         Rotation2d reefFaceRotation = FieldLayout.getReefFaceZone(getEstimatedPos());
         Pose2d zeroFace = FieldLayout.getReef(ReefFace.ZERO);

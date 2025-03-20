@@ -35,7 +35,7 @@ public class Cameras extends SubsystemBase{
                     Math.toRadians(-10), 
                     Math.toRadians(0))),
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, 
-            3.5, 
+            3, 
             VecBuilder.fill(3, 3, 8), 
             multiStds,
             .2
@@ -51,7 +51,7 @@ public class Cameras extends SubsystemBase{
                     Math.toRadians(14.6), 
                     Math.toRadians(135))),
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, 
-            4, 
+            3, 
             singleStds , 
             multiStds,
             .2
@@ -67,7 +67,7 @@ public class Cameras extends SubsystemBase{
                     Math.toRadians(14.6), 
                     Math.toRadians(-135))),
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, 
-            4, 
+            3, 
             singleStds , 
             multiStds,
             .2

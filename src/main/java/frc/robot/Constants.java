@@ -95,7 +95,7 @@ public class Constants {
     public static final Rotation2d driveAngleRampDistance = Rotation2d.fromDegrees(10);
     public static final PIDParam angleAlignPID = new PIDParam(4, 0, 0.3);
     public static final TrapezoidProfile.Constraints trapConstraints = new Constraints(4.5, 11);
-    public static final double trapezoidTime = 0.1;
+    public static final double trapezoidTime = 0.15;
 
 
     // Arm

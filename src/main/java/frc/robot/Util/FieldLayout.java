@@ -54,8 +54,8 @@ public class FieldLayout {
     public static final Pose2d bReef60 = new Pose2d(4.059, 3.306, Rotation2d.fromDegrees(60));
     public static final Pose2d bReef120 = new Pose2d(4.891, 3.306, Rotation2d.fromDegrees(120));
     public static final Pose2d bReef180 = new Pose2d(5.662, 4.026, Rotation2d.fromDegrees(180));
-    public static final Pose2d bReef240 = new Pose2d(5.096, 5.054, Rotation2d.fromDegrees(-60));
-    public static final Pose2d bReef300 = new Pose2d(4.059, 4.746, Rotation2d.fromDegrees(-120));
+    public static final Pose2d bReef240 = new Pose2d(5.096, 5.054, Rotation2d.fromDegrees(-120));
+    public static final Pose2d bReef300 = new Pose2d(4.059, 4.746, Rotation2d.fromDegrees(-60));
 
     public static final Pose2d bAlgaeLeft = new Pose2d(1.205, 2.197, Rotation2d.fromDegrees(0));
     public static final Pose2d bAlgaeMiddle = new Pose2d(1.205, 4.026, Rotation2d.fromDegrees(0));
