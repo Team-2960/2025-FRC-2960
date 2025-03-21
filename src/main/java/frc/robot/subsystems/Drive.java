@@ -33,6 +33,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
@@ -75,6 +76,8 @@ public class Drive extends SubsystemBase {
     private MutAngle mut_angle;
     private MutLinearVelocity mut_linVel;
     private MutAngularVelocity mut_angVel;
+
+    private MutAngularVelocity mut_targetAV;
 
     // Shuffleboard
     private GenericEntry sb_currentCommand;
@@ -623,6 +626,14 @@ public class Drive extends SubsystemBase {
             VecBuilder.fill(0.5, 0.5, Units.degreesToRadians(30))
         );
 
+        // Setup Mutable units
+        mut_dist = Meters.mutable(0);
+        mut_angle = Degrees.mutable(0);
+        mut_linVel = MetersPerSecond.mutable(0);
+        mut_angVel = DegreesPerSecond.mutable(0);
+
+        mut_targetAV = RadiansPerSecond.mutable(0);
+
         // Setup PathPlanner
 
         // TODO move PathPlanner initialization to robot container
@@ -829,7 +840,7 @@ public class Drive extends SubsystemBase {
      * @param currentAngle  current angle
      */
     private AngularVelocity calcRateToAngle(Rotation2d targetAngle, Rotation2d currentAngle) {
-        return AngularVelocity.ofBaseUnits(
+        return mut_targetAV.mut_replace(
             angleAlignPID.calculate(currentAngle.getRadians(), targetAngle.getRadians()), 
             RadiansPerSecond
         );
