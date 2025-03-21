@@ -1,14 +1,11 @@
 package frc.robot.Util;
 
-import java.sql.Driver;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.Constants;
 
 public class FieldLayout {
@@ -251,13 +248,6 @@ public class FieldLayout {
     }
 
     public static Rotation2d getReefFaceZone(Pose2d pose){
-        Rotation2d rotOffset = new Rotation2d();
-        if(DriverStation.getAlliance().get() == Alliance.Blue){
-            rotOffset = Rotation2d.fromDegrees(180);
-        }else{
-            rotOffset = Rotation2d.fromDegrees(0);
-        }
-
         Pose2d reef = getReef(ReefFace.CENTER); 
         Transform2d calcPose = pose.minus(reef);
         Rotation2d calcRotation = calcPose.getRotation().rotateBy(Rotation2d.fromDegrees(180));
