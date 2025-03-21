@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Util.FieldLayout;
+import frc.robot.Util.Limits;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.controller.PIDController;
@@ -18,17 +19,12 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.networktables.StructPublisher;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.units.measure.MutAngularVelocity;
+import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.ComplexWidget;
@@ -36,6 +32,7 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
@@ -52,12 +49,6 @@ import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 
 public class Drive extends SubsystemBase {
-    public enum AngleControlMode {
-        AngleRate,
-        Angle,
-        LookAtPoint
-    }
-
     private static Drive drive = null; // Statically initialized instance
 
     private final Translation2d frontLeftLocation;
@@ -76,14 +67,14 @@ public class Drive extends SubsystemBase {
 
     private final SwerveDriveKinematics kinematics;
 
-    private double rSpeed;
     private Translation2d targetPoint = new Translation2d();
     private boolean fieldRelative = false;
     private PIDController angleAlignPID;
-    private 
 
-
-    private MutAngularVelocity angularVelocity = RadiansPerSecond.mutable(0);
+    private MutDistance mut_dist;
+    private MutAngle mut_angle;
+    private MutLinearVelocity mut_linVel;
+    private MutAngularVelocity mut_angVel;
 
     // Shuffleboard
     private GenericEntry sb_currentCommand;
@@ -92,14 +83,20 @@ public class Drive extends SubsystemBase {
     private GenericEntry sb_posEstY;
     private GenericEntry sb_posEstR;
 
+    private GenericEntry sb_xTarget;
+    private GenericEntry sb_yTarget;
+    private GenericEntry sb_rTarget;
+
     private GenericEntry sb_speedX;
     private GenericEntry sb_speedY;
     private GenericEntry sb_speedR;
-    private GenericEntry sb_robotTargetAngle;
-    private GenericEntry sb_speedTargetR;
+    
+    private GenericEntry sb_speedXTarget;
+    private GenericEntry sb_speedYTarget;
+    private GenericEntry sb_speedRTarget;
 
     private ComplexWidget sb_field2d;
-    private Pose2d nearestReefFace;
+    private Pose2d nearestBranch;
 
     private Field2d field2d;
     private FieldObject2d fieldTargetPoint;
@@ -201,6 +198,9 @@ public class Drive extends SubsystemBase {
             );
 
             pathPlannerKinematics(speeds);
+
+            // Update UI
+            sb_rTarget.setString(mut_angle.mut_replace(target.getDegrees(), Degrees).toShortString());
         }
 
         /**
@@ -212,15 +212,18 @@ public class Drive extends SubsystemBase {
         public boolean isFinished() {
             boolean result = tolerance != null;
 
-            if(result) {
-                Rotation2d current = getPose().getRotation();
-                Rotation2d error = current.minus(target);
-                
-                // TODO deal with angle wrap around
-                result = error.getDegrees() > -tolerance.getDegrees() && error.getDegrees() < tolerance.getDegrees();
-            }
+            if(result) result = Limits.inTol(target, tolerance, getPose().getRotation());
 
             return result;
+        }
+
+        /**
+         * Clear target angle
+         * @param   interrupted     true if command was interrupted
+         */
+        @Override
+        public void end(boolean interruped) {
+            sb_rTarget.setString("---");
         }
 
         /**
@@ -262,7 +265,7 @@ public class Drive extends SubsystemBase {
          * @param tolerance Target angle tolerance
          */
         public AlignToPointCommand(Supplier<LinearVelocity> xRate, Supplier<LinearVelocity> yRate, Translation2d target, Rotation2d offset, Rotation2d tolerance) {
-            super(xRate, yRate, getPose().getTranslation().minus(target).getAngle(), tolerance);
+            super(xRate, yRate, getPose().getTranslation().minus(target).getAngle().plus(offset), tolerance);
 
             this.target = target;
             this.offset = offset;
@@ -273,7 +276,7 @@ public class Drive extends SubsystemBase {
          */
         @Override
         public void initialize() {
-            setTarget(getPose().getTranslation().minus(target).getAngle());
+            setTarget(getPose().getTranslation().minus(target).getAngle().plus(offset));
         }
 
         /**
@@ -281,7 +284,7 @@ public class Drive extends SubsystemBase {
          */
         @Override
         public void execute() {
-            setTarget(getPose().getTranslation().minus(target).getAngle());
+            setTarget(getPose().getTranslation().minus(target).getAngle().plus(offset));
             super.execute();
         }
 
@@ -343,9 +346,19 @@ public class Drive extends SubsystemBase {
          */
         @Override
         public void execute() {
-            updateGotoPose(target, offset);
+            ChassisSpeeds speeds = calcGotoPose(target, offset);
+            updateKinematics(speeds);
+
+            // Update UI
+            sb_xTarget.setString(mut_dist.mut_replace(target.getX(), Meters).toShortString());
+            sb_yTarget.setString(mut_dist.mut_replace(target.getY(), Meters).toShortString());
+            sb_rTarget.setString(mut_angle.mut_replace(target.getRotation().getDegrees(), Degrees).toShortString());
         }
 
+        /**
+         * Check if the robot is within tolerance of the target pose
+         * @return  true if robot is in tolerance of the target pose
+         */
         @Override
         public boolean isFinished() {
             boolean result = linearTol != null && angleTol != null;
@@ -353,22 +366,23 @@ public class Drive extends SubsystemBase {
             if(result) {
                 Pose2d currentPose = getPose();
 
-                // Check Rotation
-                Rotation2d angleError = currentPose.getRotation().minus(target.getRotation());
-                
-                // TODO create angle tolerance checker methods
-                // TODO deal with angle wrap around
-                result = angleError.getDegrees() > -angleTol.getDegrees() && angleError.getDegrees() < angleTol.getDegrees();
-
-                // Check Linear Distance
-                // TODO create translation2d tolerance checker methods
-                double linearError = currentPose.getTranslation().getDistance(target.getTranslation());
-                double linearTolVal = linearTol.in(Meters);
-
-                result &= linearError > -linearTolVal && linearError < linearTolVal;
+                result = Limits.inTol(target.getRotation(), angleTol, currentPose.getRotation());
+                result &= Limits.inTol(target.getTranslation(), linearTol, currentPose.getTranslation());
             }
 
             return result;
+        }
+
+        /**
+         * Clear UI
+         * @param   interrupted     true if command was interrupted
+         */
+        @Override
+        public void end(boolean interrupted) {
+            // Update UI
+            sb_xTarget.setString("---");
+            sb_yTarget.setString("---");
+            sb_rTarget.setString("---");
         }
 
         /**
@@ -519,55 +533,95 @@ public class Drive extends SubsystemBase {
      */
     private Drive() {
         // Set swerve drive positions
-        frontLeftLocation = new Translation2d((Constants.robotLength / 2 - Constants.wheelInset),
-                (Constants.robotWidth / 2 - Constants.wheelInset));
-        frontRightLocation = new Translation2d((Constants.robotLength / 2 - Constants.wheelInset),
-                -(Constants.robotWidth / 2 - Constants.wheelInset));
-        backLeftLocation = new Translation2d(-(Constants.robotLength / 2 - Constants.wheelInset),
-                (Constants.robotWidth / 2 - Constants.wheelInset));
-        backRightLocation = new Translation2d(-(Constants.robotLength / 2 - Constants.wheelInset),
-                -(Constants.robotWidth / 2 - Constants.wheelInset));
+        // TODO Move to constants
+        frontLeftLocation = new Translation2d(
+            (Constants.robotLength / 2 - Constants.wheelInset),
+            (Constants.robotWidth / 2 - Constants.wheelInset)
+        );
+
+        frontRightLocation = new Translation2d(
+            (Constants.robotLength / 2 - Constants.wheelInset),
+            -(Constants.robotWidth / 2 - Constants.wheelInset)
+        );
+        
+        backLeftLocation = new Translation2d(
+            -(Constants.robotLength / 2 - Constants.wheelInset),
+            (Constants.robotWidth / 2 - Constants.wheelInset)
+        );
+        
+        backRightLocation = new Translation2d(
+            -(Constants.robotLength / 2 - Constants.wheelInset),
+            -(Constants.robotWidth / 2 - Constants.wheelInset)
+        );
 
         // Initialize Swerve Kinematics
         kinematics = new SwerveDriveKinematics(
                 frontLeftLocation, frontRightLocation, backLeftLocation, backRightLocation);
+        
         // Create swerve drive module objects
-        frontLeft = new Swerve(Constants.frontLeftDriveM, Constants.frontLeftAngleM, "FrontLeft",
-                Rotation2d.fromDegrees(0), true, true);
-        frontRight = new Swerve(Constants.frontRightDriveM, Constants.frontRightAngleM, "FrontRight",
-                Rotation2d.fromDegrees(0), false, true);
-        backLeft = new Swerve(Constants.backLeftDriveM, Constants.backLeftAngleM, "BackLeft", Rotation2d.fromDegrees(0),
-                true, true);
-        backRight = new Swerve(Constants.backRightDriveM, Constants.backRightAngleM, "BackRight",
-                Rotation2d.fromDegrees(0), false, true);
+        frontLeft = new Swerve(
+            Constants.frontLeftDriveM, 
+            Constants.frontLeftAngleM, 
+            "FrontLeft",
+            Rotation2d.fromDegrees(0), 
+            true, 
+            true
+        );
+
+        frontRight = new Swerve(
+            Constants.frontRightDriveM, 
+            Constants.frontRightAngleM, 
+            "FrontRight",
+            Rotation2d.fromDegrees(0), 
+            false, 
+            true
+        );
+
+        backLeft = new Swerve(
+            Constants.backLeftDriveM, 
+            Constants.backLeftAngleM, 
+            "BackLeft", 
+            Rotation2d.fromDegrees(0),
+            true, 
+            true
+        );
+        
+        backRight = new Swerve(
+            Constants.backRightDriveM, 
+            Constants.backRightAngleM, 
+            "BackRight",
+            Rotation2d.fromDegrees(0), 
+            false, 
+            true
+        );
 
         // Initialize NavX
         navx = new AHRS(NavXComType.kMXP_SPI);
         navx.reset();
-        field2d = new Field2d();
-        field2d.getObject("fieldTargetPoint").setPose(targetPoint.getX(), targetPoint.getY(),
-                Rotation2d.fromDegrees(0));
-        nearestReefFace = new Pose2d();
-        field2d.getObject("nearestReefFace").setPose(nearestReefFace);
 
-        angleAlignPID = new PIDController(Constants.angleAlignPID.kP, Constants.angleAlignPID.kI,
-                Constants.angleAlignPID.kD);
+        // Initialize angle align PID
+        angleAlignPID = new PIDController(
+            Constants.angleAlignPID.kP, 
+            Constants.angleAlignPID.kI,
+            Constants.angleAlignPID.kD
+        );
 
         angleAlignPID.enableContinuousInput(-Math.PI, Math.PI);
 
         // Initialize pose estimation
         swerveDrivePoseEstimator = new SwerveDrivePoseEstimator(
-                kinematics,
-                navx.getRotation2d(),
-                new SwerveModulePosition[] {
-                        frontLeft.getPosition(),
-                        frontRight.getPosition(),
-                        backLeft.getPosition(),
-                        backRight.getPosition()
-                },
-                new Pose2d(),
-                VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(5)),
-                VecBuilder.fill(0.5, 0.5, Units.degreesToRadians(30)));
+            kinematics,
+            navx.getRotation2d(),
+            new SwerveModulePosition[] {
+                frontLeft.getPosition(),
+                frontRight.getPosition(),
+                backLeft.getPosition(),
+                backRight.getPosition()
+            },
+            new Pose2d(),
+            VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(5)),
+            VecBuilder.fill(0.5, 0.5, Units.degreesToRadians(30))
+        );
 
         // Setup PathPlanner
 
@@ -595,38 +649,97 @@ public class Drive extends SubsystemBase {
 
         pathConstraints = PathConstraints.unlimitedConstraints(12);
 
-        // Call method to initialize shuffleboard
+        // Initialize Shuffleboard
         shuffleBoardInit();
+
+        // Initialize Advantage Scope
+        initAdvantageScope();
     }
 
     /**
      * Initialize suffleboard
      */
-    public void shuffleBoardInit() {
+    private void shuffleBoardInit() {
+        // Setup Layout
+        var pose_layout = Shuffleboard.getTab("Drive")
+                .getLayout("Drive Pose", BuiltInLayouts.kList)
+                .withSize(1, 4);
+
+        // Setup Current Pose display
+        Pose2d estPose = getPose();
+        sb_posEstX = pose_layout.add(
+            "Pose X", 
+            mut_dist.mut_replace(estPose.getX(), Meters).toShortString()
+        ).getEntry();
+        
+        sb_posEstY = pose_layout.add(
+            "Pose Y", 
+            mut_dist.mut_replace(estPose.getY(), Meters).toShortString()
+        ).getEntry();
+
+        sb_posEstR = pose_layout.add(
+            "Pose R", 
+            mut_angle.mut_replace(estPose.getRotation().getDegrees(), Degrees).toShortString()
+        ).getEntry();
+
+        // Setup Target Pose display
+        sb_xTarget = pose_layout.add("Target X", "---").getEntry();
+        sb_yTarget = pose_layout.add("Target Y", "---").getEntry();
+        sb_rTarget = pose_layout.add("Target R", "---").getEntry();
+
+        // Setup Current Speed display
+        sb_speedX = pose_layout.add(
+            "Speed X", 
+            mut_linVel.mut_replace(0, MetersPerSecond).toShortString()
+        ).getEntry();
+
+        sb_speedY = pose_layout.add(
+            "Speed Y", 
+            mut_linVel.mut_replace(0, MetersPerSecond).toShortString()
+        ).getEntry();
+
+        sb_speedR = pose_layout.add(
+            "Speed R", 
+            mut_angVel.mut_replace(0, RadiansPerSecond).toShortString()
+        ).getEntry();
+
+        // Setup Target Speed Display
+        sb_speedXTarget = pose_layout.add(
+            "Target Speed X", 
+            mut_linVel.mut_replace(0, MetersPerSecond).toShortString()
+        ).getEntry();
+
+        sb_speedYTarget = pose_layout.add(
+            "Target Speed Y", 
+            mut_linVel.mut_replace(0, MetersPerSecond).toShortString()
+        ).getEntry();
+
+        sb_speedRTarget = pose_layout.add(
+            "Target Speed R", 
+            mut_angVel.mut_replace(0, RadiansPerSecond).toShortString()
+        ).getEntry();
+
+        // Setup 2d Field Widget
+        field2d = new Field2d();
+        field2d.getObject("fieldTargetPoint").setPose(targetPoint.getX(), targetPoint.getY(),
+                Rotation2d.fromDegrees(0));
+        nearestBranch = new Pose2d();
+        field2d.getObject("nearestReefFace").setPose(nearestBranch);
+        sb_field2d = Shuffleboard.getTab("Drive").add(field2d).withWidget("Field");
+
+        
+    }
+
+    /**
+     * Initialize AdvantageScope
+     */
+    private void initAdvantageScope() {
         odometryPose = NetworkTableInstance.getDefault()
                 .getStructTopic("Odometry Pose", Pose2d.struct).publish();
         arrayPose = NetworkTableInstance.getDefault()
                 .getStructArrayTopic("Pose Array", Pose2d.struct).publish();
         swerveModules = NetworkTableInstance.getDefault()
                 .getStructArrayTopic("Swerve States", SwerveModuleState.struct).publish();
-
-        // Setup Shuffleboard
-        var pose_layout = Shuffleboard.getTab("Drive")
-                .getLayout("Drive Pose", BuiltInLayouts.kList)
-                .withSize(1, 4);
-        sb_posEstX = pose_layout.add("Pose X", swerveDrivePoseEstimator.getEstimatedPosition().getX()).getEntry();
-        sb_posEstY = pose_layout.add("Pose Y", swerveDrivePoseEstimator.getEstimatedPosition().getY()).getEntry();
-        sb_posEstR = pose_layout
-                .add("Pose R", swerveDrivePoseEstimator.getEstimatedPosition().getRotation().getDegrees()).getEntry();
-
-        sb_speedX = pose_layout.add("Speed X", 0).getEntry();
-        sb_speedY = pose_layout.add("Speed Y", 0).getEntry();
-        sb_speedR = pose_layout.add("Speed R", 0).getEntry();
-        sb_robotTargetAngle = pose_layout.add("Robot Target Angle", 0).getEntry();
-
-        sb_speedTargetR = pose_layout.add("Target Speed R", 0).getEntry();
-
-        sb_field2d = Shuffleboard.getTab("Drive").add(field2d).withWidget("Field");
     }
 
     /*
@@ -679,12 +792,15 @@ public class Drive extends SubsystemBase {
 
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.maxSpeed);
 
-        sb_speedTargetR.setDouble(rSpeed);
-
         frontLeft.setDesiredState(swerveModuleStates[0]);
         frontRight.setDesiredState(swerveModuleStates[1]);
         backLeft.setDesiredState(swerveModuleStates[2]);
         backRight.setDesiredState(swerveModuleStates[3]);
+
+        // Update target speed ui
+        sb_speedXTarget.setString(mut_linVel.mut_replace(speeds.vxMetersPerSecond, MetersPerSecond).toShortString());
+        sb_speedYTarget.setString(mut_linVel.mut_replace(speeds.vyMetersPerSecond, MetersPerSecond).toShortString());
+        sb_speedRTarget.setString(mut_angVel.mut_replace(speeds.omegaRadiansPerSecond, RadiansPerSecond).toShortString());
     }
 
     /**
@@ -713,7 +829,33 @@ public class Drive extends SubsystemBase {
      * @param currentAngle  current angle
      */
     private AngularVelocity calcRateToAngle(Rotation2d targetAngle, Rotation2d currentAngle) {
-        return angularVelocity.mut_replace(angleAlignPID.calculate(currentAngle.getRadians(), targetAngle.getRadians()), RadiansPerSecond);
+        return AngularVelocity.ofBaseUnits(
+            angleAlignPID.calculate(currentAngle.getRadians(), targetAngle.getRadians()), 
+            RadiansPerSecond
+        );
+    }
+
+    /**
+     * Calculates the lnear rate to move to a target point
+     * @param point     target point
+     * @param offset    offset from robot center
+     */
+    public ChassisSpeeds calcGotoPose(Pose2d target, Transform2d offset){
+        Pose2d currentPose = getPose().transformBy(offset);
+        double error = currentPose.getTranslation().getDistance(target.getTranslation());
+        Rotation2d angle = currentPose.getTranslation().minus(target.getTranslation()).getAngle();
+
+        double maxDriveRate = Constants.maxSpeed;
+        double targetSpeed = maxDriveRate * (error > 0 ? 1 : -1);
+        double rampDownSpeed = error / 1 * maxDriveRate;
+
+        if (Math.abs(rampDownSpeed) < Math.abs(targetSpeed)) targetSpeed = rampDownSpeed;
+
+        double xRate = targetSpeed * angle.getCos();
+        double yRate = targetSpeed * angle.getSin();
+        double rRate = calcRateToAngle(target.getRotation()).in(RadiansPerSecond);
+
+        return new ChassisSpeeds(xRate, yRate, rRate);
     }
 
     /**
@@ -730,55 +872,41 @@ public class Drive extends SubsystemBase {
     }
 
     /**
-     * Calculates the lnear rate to move to a target point
-     * @param point     target point
-     * @param offset    offset from robot center
-     */
-    public void updateGotoPose(Pose2d target, Transform2d offset){
-        Pose2d currentPose = getPose().transformBy(offset);
-        double error = currentPose.getTranslation().getDistance(target.getTranslation());
-        Rotation2d angle = currentPose.getTranslation().minus(target.getTranslation()).getAngle();
-
-        double maxDriveRate = Constants.maxSpeed;
-        double targetSpeed = maxDriveRate * (error > 0 ? 1 : -1);
-        double rampDownSpeed = error / 1 * maxDriveRate;
-
-        if (Math.abs(rampDownSpeed) < Math.abs(targetSpeed)) targetSpeed = rampDownSpeed;
-
-        double xRate = targetSpeed * angle.getCos();
-        double yRate = targetSpeed * angle.getSin();
-        double rRate = calcRateToAngle(target.getRotation()).in(RadiansPerSecond);
-
-        updateKinematics(new ChassisSpeeds(xRate, yRate, rRate));
-    }
-
-    /**
      * Updates shuffleboard
      */
     private void updateUI() {
+        // Update Current Command
+        String curCommandName = "null";
+        var currentCommand = Drive.getInstance().getCurrentCommand();
+
+        if (currentCommand != null)
+            curCommandName = currentCommand.getName();
+        
+        sb_currentCommand.setString(curCommandName);
+
+        // Update current speeds
+        ChassisSpeeds currentSpeeds = getChassisSpeeds();
+
+        sb_speedX.setDouble(currentSpeeds.vxMetersPerSecond);
+        sb_speedY.setDouble(currentSpeeds.vyMetersPerSecond);
+        sb_speedR.setDouble(currentSpeeds.omegaRadiansPerSecond);
+
+        // Update robot pose
         Pose2d pose = getPose();
         sb_posEstX.setDouble(pose.getX());
         sb_posEstY.setDouble(pose.getY());
         sb_posEstR.setDouble(pose.getRotation().getDegrees());
 
-        sb_speedR.setDouble(rSpeed);
-        field2d.setRobotPose(getPose());
+        field2d.setRobotPose(pose);
         field2d.getObject("fieldTargetPoint").setPose(targetPoint.getX(), targetPoint.getY(),
                 Rotation2d.fromDegrees(0));
-        field2d.getObject("nearestReefFace").setPose(nearestReefFace);
-        var currentCommand = Drive.getInstance().getCurrentCommand();
-        String curCommandName = "null";
-        if (currentCommand != null)
-            curCommandName = currentCommand.getName();
-        
-            // TODO Display current command
+        field2d.getObject("nearestReefFace").setPose(nearestBranch);
     }
 
     /**
      * Updates advantage scope
      */
     private void updateScope() {
-        // TODO Move to UpdateUI
         swerveModules.set(new SwerveModuleState[] {
                 frontLeft.getState(),
                 frontRight.getState(),
