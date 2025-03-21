@@ -5,18 +5,9 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Util.FieldLayout;
-import frc.robot.Util.FieldLayout.ReefFace;
-import frc.robot.subsystems.Drive.LinearDriveCommands.DriveRateCommand;
-import frc.robot.subsystems.Drive.LinearDriveCommands.GoToPointCommand;
-import frc.robot.subsystems.Drive.LinearDriveCommands.LinearGoToReefCommand;
-import frc.robot.subsystems.Drive.RotationDriveCommands.AngleAlignCommand;
-import frc.robot.subsystems.Drive.RotationDriveCommands.PointAlignCommand;
-import frc.robot.subsystems.Drive.RotationDriveCommands.ReefAlignCommand;
-import frc.robot.subsystems.Drive.RotationDriveCommands.RotationRateCommand;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.estimator.PoseEstimator;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -28,32 +19,27 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.networktables.StructPublisher;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.units.measure.Velocity;
+import edu.wpi.first.units.measure.MutAngularVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.ComplexWidget;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
-import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -92,19 +78,16 @@ public class Drive extends SubsystemBase {
 
     private double rSpeed;
     private Translation2d targetPoint = new Translation2d();
-    private AngleControlMode angleMode = AngleControlMode.AngleRate;
     private boolean fieldRelative = false;
-    private ChassisSpeeds chassisSpeeds;
     private PIDController angleAlignPID;
-    private PIDController driveAlignPID;
-    private TrapezoidProfile.State xProfileState;
-    private TrapezoidProfile.State yProfileState;
-    private TrapezoidProfile trapezoidProfile;
+    private 
 
-    private boolean isLinearManualDrive = true;
-    private boolean isRotManualDrive = true;
+
+    private MutAngularVelocity angularVelocity = RadiansPerSecond.mutable(0);
 
     // Shuffleboard
+    private GenericEntry sb_currentCommand;
+
     private GenericEntry sb_posEstX;
     private GenericEntry sb_posEstY;
     private GenericEntry sb_posEstR;
@@ -165,7 +148,7 @@ public class Drive extends SubsystemBase {
                 rRate.get().in(RadiansPerSecond)
             );
 
-            Drive.this.pathPlannerKinematics(speeds);
+            updateKinematics(speeds);
         }
     }
 
@@ -567,20 +550,10 @@ public class Drive extends SubsystemBase {
         nearestReefFace = new Pose2d();
         field2d.getObject("nearestReefFace").setPose(nearestReefFace);
 
-        chassisSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, 0, new Rotation2d());
-
-        rSpeed = 0;
-
         angleAlignPID = new PIDController(Constants.angleAlignPID.kP, Constants.angleAlignPID.kI,
                 Constants.angleAlignPID.kD);
 
         angleAlignPID.enableContinuousInput(-Math.PI, Math.PI);
-
-        driveAlignPID = new PIDController(3, 0, 0);
-
-        xProfileState = new State();
-        yProfileState = new State();
-        trapezoidProfile = new TrapezoidProfile(Constants.trapConstraints);
 
         // Initialize pose estimation
         swerveDrivePoseEstimator = new SwerveDrivePoseEstimator(
@@ -726,7 +699,7 @@ public class Drive extends SubsystemBase {
      * Calculates the angle rate to move to the target angle from the current angle
      * @param targetAngle   target angle
      */
-    private double calcRateToAngle(Rotation2d targetAngle) {
+    private AngularVelocity calcRateToAngle(Rotation2d targetAngle) {
         // Get current angle position
         Pose2d pose = getPose();
         Rotation2d currentAngle = pose.getRotation();
@@ -739,8 +712,8 @@ public class Drive extends SubsystemBase {
      * @param targetAngle   target angle
      * @param currentAngle  current angle
      */
-    private double calcRateToAngle(Rotation2d targetAngle, Rotation2d currentAngle) {
-        return angleAlignPID.calculate(currentAngle.getRadians(), targetAngle.getRadians());
+    private AngularVelocity calcRateToAngle(Rotation2d targetAngle, Rotation2d currentAngle) {
+        return angularVelocity.mut_replace(angleAlignPID.calculate(currentAngle.getRadians(), targetAngle.getRadians()), RadiansPerSecond);
     }
 
     /**
@@ -761,110 +734,22 @@ public class Drive extends SubsystemBase {
      * @param point     target point
      * @param offset    offset from robot center
      */
-    public void updateGotoPose(Pose2d point, Transform2d offset){
+    public void updateGotoPose(Pose2d target, Transform2d offset){
         Pose2d currentPose = getPose().transformBy(offset);
+        double error = currentPose.getTranslation().getDistance(target.getTranslation());
+        Rotation2d angle = currentPose.getTranslation().minus(target.getTranslation()).getAngle();
 
         double maxDriveRate = Constants.maxSpeed;
-        double xError = point.getX() - currentPose.getX();
+        double targetSpeed = maxDriveRate * (error > 0 ? 1 : -1);
+        double rampDownSpeed = error / 1 * maxDriveRate;
 
-        double xTargetSpeed = maxDriveRate * (xError > 0 ? 1 : -1);
-        double xRampDownSpeed = xError / 1 * maxDriveRate;
+        if (Math.abs(rampDownSpeed) < Math.abs(targetSpeed)) targetSpeed = rampDownSpeed;
 
-        if (Math.abs(xRampDownSpeed) < Math.abs(xTargetSpeed)) xTargetSpeed = xRampDownSpeed;
+        double xRate = targetSpeed * angle.getCos();
+        double yRate = targetSpeed * angle.getSin();
+        double rRate = calcRateToAngle(target.getRotation()).in(RadiansPerSecond);
 
-        double yError = point.getY() - currentPose.getY();
-
-        double yTargetSpeed = maxDriveRate * (yError > 0 ? 1 : -1);
-        double yRampDownSpeed = yError / 1 * maxDriveRate;
-
-        if (Math.abs(yRampDownSpeed) < Math.abs(yTargetSpeed)) yTargetSpeed = yRampDownSpeed;
-
-        updateKinematics(xTargetSpeed, yTargetSpeed);
-    }
-
-    // 
-    /**
-     * Calculates the angle the robot should go at to align with the reef.
-     * @param offset    offset angle
-     */
-    // TODO Integrate into command
-    public void updateGotoReefAngle(Rotation2d offset) {
-        Rotation2d targetAngle = FieldLayout.getReefFaceZone(getPose());
-        updateRateToAngle(targetAngle.plus(offset));
-    }
-
-    /**
-     * Sets the robot to move to the nearest reef scoring position
-     * @param offset    offset from the target position
-     */
-    // TODO Integrate into command
-    public void updateGotoReefPoint(Translation2d offset){
-        Rotation2d rotOffset = Rotation2d.fromDegrees(0);
-        if (FieldLayout.isRedAlliance()) {
-            offset = new Translation2d(-offset.getX(), -offset.getY());
-            rotOffset = Rotation2d.fromDegrees(180);
-        }
-
-        Rotation2d reefFaceRotation = FieldLayout.getReefFaceZone(getPose());
-        Pose2d zeroFace = FieldLayout.getReef(ReefFace.ZERO);
-        Translation2d poseOffset = new Translation2d(zeroFace.getX() + offset.getX(), zeroFace.getY() + offset.getY())
-                .rotateAround(FieldLayout.getReef(ReefFace.CENTER).getTranslation(),
-                        reefFaceRotation);
-        Pose2d finalReefFace = new Pose2d(poseOffset, reefFaceRotation.rotateBy(rotOffset));
-        this.nearestReefFace = finalReefFace;
-
-        updateGotoPoint(finalReefFace.getTranslation());
-        
-    }
-
-    /**
-     * Orients the robot to point to the nearest reef face
-     * @param offset
-     */
-    // TODO Integrate into command
-    public void updateGotoReefFaceAngle(Rotation2d offset){
-        Rotation2d rotOffset = Rotation2d.fromDegrees(FieldLayout.isRedAlliance() ? 180 : 0);
-
-        Rotation2d reefFaceRotation = FieldLayout.getReefFaceZone(getPose());
-        Pose2d zeroFace = FieldLayout.getReef(ReefFace.ZERO);
-        Translation2d poseOffset = new Translation2d(zeroFace.getX(), zeroFace.getY())
-                .rotateAround(FieldLayout.getReef(ReefFace.CENTER).getTranslation(),
-                        reefFaceRotation);
-        Pose2d finalReefFace = new Pose2d(poseOffset, reefFaceRotation.rotateBy(rotOffset));
-        setAngleAlign(finalReefFace.getRotation().plus(offset));
-    }
-
-    /**
-     * Moves to the nearest reef scoring pose
-     * @param offset    offet position
-     */
-    // TODO Integrate into command
-    public void updateGotoReefFace(Pose2d offset) {
-        Rotation2d rotOffset = Rotation2d.fromDegrees(0);
-        if (FieldLayout.isRedAlliance()) {
-            offset = new Pose2d(-offset.getX(), -offset.getY(), offset.getRotation());
-            rotOffset = Rotation2d.fromDegrees(180);
-        }
-
-        Rotation2d reefFaceRotation = FieldLayout.getReefFaceZone(getPose());
-        Pose2d zeroFace = FieldLayout.getReef(ReefFace.ZERO);
-        Translation2d poseOffset = new Translation2d(zeroFace.getX() + offset.getX(), zeroFace.getY() + offset.getY())
-                .rotateAround(FieldLayout.getReef(ReefFace.CENTER).getTranslation(),
-                        reefFaceRotation);
-        Pose2d finalReefFace = new Pose2d(poseOffset, reefFaceRotation.rotateBy(rotOffset));
-        this.nearestReefFace = finalReefFace;
-
-        setGoToPoint(finalReefFace.getTranslation());
-        setAngleAlign(finalReefFace.getRotation().plus(offset.getRotation()));
-    }
-
-
-    public void setLinearManualDrive(boolean isLinearManualDrive){
-        this.isLinearManualDrive = isLinearManualDrive;
-    }
-
-    public void setRotManualDrive(boolean isRotManualDrive){
-        this.isRotManualDrive = isRotManualDrive;
+        updateKinematics(new ChassisSpeeds(xRate, yRate, rRate));
     }
 
     /**
@@ -881,11 +766,12 @@ public class Drive extends SubsystemBase {
         field2d.getObject("fieldTargetPoint").setPose(targetPoint.getX(), targetPoint.getY(),
                 Rotation2d.fromDegrees(0));
         field2d.getObject("nearestReefFace").setPose(nearestReefFace);
-        var currentCommand = Drive.getInstance().rotationDriveCommands.getCurrentCommand();
+        var currentCommand = Drive.getInstance().getCurrentCommand();
         String curCommandName = "null";
         if (currentCommand != null)
             curCommandName = currentCommand.getName();
-        SmartDashboard.putString("Current Drive Command", curCommandName);
+        
+            // TODO Display current command
     }
 
     /**
@@ -947,67 +833,6 @@ public class Drive extends SubsystemBase {
             return Commands.none();
         }
     }
-    
-    /**
-     * Sets the target linear rate
-     * @param xSpeed    Target X rate
-     * @param ySpeed    Target Y rate
-     */
-    public void setDriveRate(double xSpeed, double ySpeed) {
-        DriveRateCommand driveRate = linearDriveCommands.driveRateCommand;
-        driveRate.setSpeeds(xSpeed, ySpeed);
-        
-        if (linearDriveCommands.getCurrentCommand() != driveRate) driveRate.schedule();
-    }
-
-    /**
-     * Sets the target angle rate
-     * @param rSpeed    Target angle rate
-     */
-    public void setRotationRate(double rSpeed) {
-        RotationRateCommand rotationRate = rotationDriveCommands.rotationRateCommand;
-        rotationRate.setRotationRate(rSpeed);
-
-        if (rotationDriveCommands.getCurrentCommand() != rotationRate)
-            rotationRate.schedule();
-    }
-
-    /**
-     * Sets the robot to align to an angle
-     * @param targetAngle   target angle
-     */
-    public void setAngleAlign(Rotation2d targetAngle) {
-        AngleAlignCommand rotationCommand = rotationDriveCommands.angleAlignCommand;
-        rotationCommand.setAngle(targetAngle);
-        if (rotationDriveCommands.getCurrentCommand() != rotationCommand)
-            rotationCommand.schedule();
-    }
-
-    /**
-     * Sets the robot to align to a point
-     * @param targetPoint       target point
-     * @param rotationOffset    offset angle
-     */
-    public void setPointAlign(Translation2d targetPoint, Rotation2d rotationOffset) {
-        PointAlignCommand pointAlign = rotationDriveCommands.pointAlignCommand;
-
-        pointAlign.setPoint(targetPoint);
-        pointAlign.setOffset(rotationOffset);
-
-        if (rotationDriveCommands.getCurrentCommand() != pointAlign)
-            pointAlign.schedule();
-    }
-
-    /**
-     * Sets the robot to move to a point
-     * @param targetPoint   target point
-     */
-    public void setGoToPoint(Translation2d targetPoint) {
-        GoToPointCommand goToPointCommand = linearDriveCommands.goToPointCommand;
-        goToPointCommand.setPoint(targetPoint);
-        if (linearDriveCommands.getCurrentCommand() != goToPointCommand)
-            goToPointCommand.schedule();
-    }
 
     /**
      * Sets the robot to follow a PathPlanner path command
@@ -1015,34 +840,9 @@ public class Drive extends SubsystemBase {
      */
     public void followPath(Command path) {
         if (getCurrentCommand() != path) {
-            linearDriveCommands.getCurrentCommand().cancel();
-            rotationDriveCommands.getCurrentCommand().cancel();
-            path.addRequirements(linearDriveCommands, rotationDriveCommands);
+            path.addRequirements(this);
             path.schedule();
         }
-    }
-
-    /**
-     * Aligns to the reef
-     * @param offset    offset angle
-     */
-    public void setReefAlign(Rotation2d offset) {
-        ReefAlignCommand reefAlignCommand = rotationDriveCommands.reefAlignCommand;
-        reefAlignCommand.setOffset(offset);
-        if (rotationDriveCommands.getCurrentCommand() != reefAlignCommand)
-            reefAlignCommand.schedule();
-    }
-
-    public void setRotGoToReef(Rotation2d offset){
-        frc.robot.subsystems.Drive.RotationDriveCommands.RotGoToReefCommand rotGoToReefCommand = rotationDriveCommands.rotGoToReefCommand;
-        rotGoToReefCommand.setOffset(offset);
-        if(rotGoToReefCommand != rotationDriveCommands.getCurrentCommand()) rotGoToReefCommand.schedule();
-    }
-
-    public void setLinearGoToReef(Translation2d offset){
-        LinearGoToReefCommand linearGoToReefCommand = linearDriveCommands.linearGoToReefCommand;
-        linearGoToReefCommand.setOffset(offset);
-        if (linearDriveCommands.getCurrentCommand() != linearGoToReefCommand) linearGoToReefCommand.schedule();
     }
 
     public void setPresetPose(Pose2d pose){
@@ -1071,7 +871,7 @@ public class Drive extends SubsystemBase {
         } else if (DriverStation.isTeleop()) {
             fieldRelative = true;
         }
-        update_odometry();
+        updateOdometry();
         updateUI();
         updateScope();
     }

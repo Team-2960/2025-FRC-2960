@@ -11,11 +11,16 @@ import frc.robot.subsystems.ElevArmControl;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.EndEffector;
 
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
@@ -35,7 +40,6 @@ public class OperatorInterface extends SubsystemBase {
     private XboxController operatorController;
     private CommandXboxController driverController;
     private CommandXboxController operatorController1;
-
 
     //Manual Control Class Variables
     double xSpeed;
@@ -156,53 +160,38 @@ public class OperatorInterface extends SubsystemBase {
         double yAxis = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.05);
         double rAxis = MathUtil.applyDeadband(driverController.getRawAxis(4), 0.05);
 
-        
-        driverController.y()
-            .onTrue(drive.linearDriveCommands
-                .new TrapLinearGoToReefCommand(
-                    new Translation2d(-Constants.robotLength/2, 0)))
-            .onTrue(drive.rotationDriveCommands
-                .new RotGoToReefCommand(Rotation2d.fromDegrees(0))
-        );
+        drive.setDefaultCommand(drive.new RateControlCommand(this::getXSpeed, this::getYSpeed, this::getAngleRate));
 
-        driverController.y().and(driverController.rightBumper())
-            .whileTrue(
-                drive.linearDriveCommands
-                .new TrapLinearGoToReefCommand(
-                    new Translation2d(-Constants.robotLength/2, -0.41)))
-            .whileTrue(drive.rotationDriveCommands
-                .new RotGoToReefCommand(Rotation2d.fromDegrees(0))
-        );
-        
-        driverController.y().and(driverController.leftBumper())
-            .whileTrue(
-                drive.linearDriveCommands
-                .new TrapLinearGoToReefCommand(
-                    new Translation2d(-Constants.robotLength/2, -0.1)))
-            .whileTrue(drive.rotationDriveCommands
-                .new RotGoToReefCommand(Rotation2d.fromDegrees(0))
-        );
+
+        driverController.y()
+            .onTrue(drive.new GotoNearestBranchCommand(Constants.coralOffset));
 
         driverController.x()
             .onTrue(
-                drive
-                .rotationDriveCommands
-                .new AngleAlignCommand(Rotation2d.fromDegrees(-54))
-        );
-        
+                drive.new AngleAlignCommand(
+                    this::getXSpeed, 
+                    this::getYSpeed, 
+                    Rotation2d.fromDegrees(-45)
+                )
+            );
+
         driverController.b()
             .onTrue(
-                drive
-                .rotationDriveCommands
-                .new AngleAlignCommand(Rotation2d.fromDegrees(54))
-        );
+                drive.new AngleAlignCommand(
+                    this::getXSpeed, 
+                    this::getYSpeed, 
+                    Rotation2d.fromDegrees(54)
+                )
+            );
 
         driverController.a()
             .onTrue(
-                drive
-                .rotationDriveCommands
-                .new AngleAlignCommand(Rotation2d.fromDegrees(-90))
-        );
+                drive.new AngleAlignCommand(
+                    this::getXSpeed, 
+                    this::getYSpeed, 
+                    Rotation2d.fromDegrees(-90)
+                )
+            );
 
     }
 
@@ -254,63 +243,6 @@ public class OperatorInterface extends SubsystemBase {
         Climber climber = Climber.getInstance();
         driverController.pov(90).whileTrue(climber.new ExtendCmd());
         driverController.pov(270).whileTrue(climber.new RetractCmd());
-    }
-
-    /**
-     * Updates the controls for the drivetrain
-     */
-    private void updateDrive() {
-        Drive drive = Drive.getInstance();
-        boolean slowSpeed = driverController.getHID().getRawButton(5);
-        double maxSpeed = (slowSpeed ? .5 : 1) * Constants.maxSpeed;
-        double maxAngleRate = (slowSpeed ? .5 : 1) * Constants.maxAngularSpeed;
-
-        boolean fieldRelative = true;
-        var alliance = DriverStation.getAlliance();
-        double alliance_dir = alliance.isPresent() && alliance.get() == Alliance.Red ? 1 : -1;
-
-        double xAxis = MathUtil.applyDeadband(driverController.getRawAxis(1), 0.05);
-        double yAxis = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.05);
-        double rAxis = MathUtil.applyDeadband(driverController.getRawAxis(4), 0.1);
-
-        double xSpeed = xAxis * maxSpeed * alliance_dir;
-        double ySpeed = yAxis * maxSpeed * alliance_dir;
-        double rSpeed = rAxis * maxAngleRate * -1;
-
-        double presetMirror = (drive.isRedAlliance() ? -1 : 1);
-        Rotation2d rotationMirror = (drive.isRedAlliance() ? Rotation2d.fromDegrees(180) : Rotation2d.fromDegrees(0));
-
-
-        this.xSpeed = xSpeed;
-        this.ySpeed = ySpeed;
-        this.rSpeed = rSpeed;
-
-
-        if (Math.abs(xAxis) > 0 || Math.abs(yAxis) > 0){
-            drive.setDriveRate(xSpeed, ySpeed);
-            drive.setLinearManualDrive(true);
-        }else{
-            drive.setLinearManualDrive(false);
-        }
-
-        if (Math.abs(rAxis) > 0){
-            drive.setRotationRate(rSpeed);
-            drive.setRotManualDrive(true);
-        }else{
-            drive.setRotManualDrive(false);
-        }
-
-        if(driverController.getHID().getPOV() == 0){
-            drive.setPresetPose(
-                FieldLayout.getReef(ReefFace.ZERO).plus(new Transform2d(Constants.robotLength/2 * -presetMirror, 0, rotationMirror)));
-        }
-
-        // Update Shuffleboard
-        sb_driveX.setDouble(xSpeed);
-        sb_driveY.setDouble(ySpeed);
-        sb_driveR.setDouble(rSpeed);
-        sb_driveFR.setBoolean(fieldRelative);
-
     }
 
     /**
@@ -424,16 +356,6 @@ public class OperatorInterface extends SubsystemBase {
      */
     private void updateDriverFeedback() {
         // TODO Implement
-    }
-
-
-    /**
-     * updates drive (test mode)
-     */
-    private void updateDriveTest() {
-        // TODO Implement test mode for drivetrain
-
-        updateDrive();
     }
 
     /**
@@ -563,7 +485,6 @@ public class OperatorInterface extends SubsystemBase {
     @Override
     public void periodic() {
         if (DriverStation.isTeleop()) {
-            updateDrive();
             //updateCoralPlacement();
             //updateAlgaeGrabber();
             //updateClimber();
@@ -575,7 +496,6 @@ public class OperatorInterface extends SubsystemBase {
             //updateAlgaeGrabberTest();
             updateClimberTest();
             updateCoralPlacement();
-            updateDrive();
             //sysIdTest();
         }
 
@@ -584,6 +504,38 @@ public class OperatorInterface extends SubsystemBase {
 
     private void updateUI(){
         sb_matchTimer.setDouble(DriverStation.getMatchTime());
+    }
+
+    public LinearVelocity getXSpeed() {
+        double axis = MathUtil.applyDeadband(driverController.getLeftX(), 0.05);
+        return MetersPerSecond.of(axis * getMaxSpeed() * getAllianceDir());
+    }
+
+    public LinearVelocity getYSpeed() {
+        double axis = MathUtil.applyDeadband(driverController.getLeftY(), 0.05);
+        return MetersPerSecond.of(axis * getMaxSpeed() * getAllianceDir());
+    }
+
+    public AngularVelocity getAngleRate() {
+        
+        double axis = MathUtil.applyDeadband(driverController.getRightY(), 0.1);
+        return RadiansPerSecond.of(axis * getMaxAngleSpeed() * -1);
+    }
+
+    public boolean isSlowDown() {
+        return driverController.getHID().getRawButton(5);
+    }
+
+    public double getMaxSpeed() {
+        return (isSlowDown() ? .5 : 1) * Constants.maxSpeed;
+    }
+
+    public double getMaxAngleSpeed() {
+        return (isSlowDown() ? .5 : 1) * Constants.maxAngularSpeed;
+    }
+
+    public double getAllianceDir() {
+        return FieldLayout.isRedAlliance() ? 1 : -1;
     }
 
     /**
