@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.CameraConst;
 import frc.robot.Util.AprilTagPipelineSettings;
 
 public class Cameras extends SubsystemBase{
@@ -25,15 +26,10 @@ public class Cameras extends SubsystemBase{
     public Cameras(){
         singleStds = VecBuilder.fill(4, 4, 8);
         multiStds = VecBuilder.fill(0.5, 0.5, 1);
-        frontPipeline = new AprilTagPipelineSettings(AprilTagFields.k2025ReefscapeWelded,
-            new Transform3d(
-                14 /*in  */ * .0254, 
-                0.125 * 0.0254, 
-                8.875 * .0254, 
-                new Rotation3d(
-                    Math.toRadians(0), 
-                    Math.toRadians(-10), 
-                    Math.toRadians(0))),
+
+        frontPipeline = new AprilTagPipelineSettings(
+            AprilTagFields.k2025ReefscapeWelded,
+            CameraConst.robotToFrontCamera,
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, 
             3, 
             VecBuilder.fill(3, 3, 8), 
@@ -41,15 +37,9 @@ public class Cameras extends SubsystemBase{
             .2
         );
         
-        rightPipeline = new AprilTagPipelineSettings(AprilTagFields.k2025ReefscapeWelded,
-            new Transform3d(
-                -13.944 /*in  */ * .0254, 
-                13.944 * 0.0254, 
-                8.791 * .0254, 
-                new Rotation3d(
-                    Math.toRadians(14.6),
-                    Math.toRadians(14.6), 
-                    Math.toRadians(135))),
+        rightPipeline = new AprilTagPipelineSettings(
+            AprilTagFields.k2025ReefscapeWelded,
+            CameraConst.robotToRightRearCamera,
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, 
             3, 
             singleStds , 
@@ -57,15 +47,9 @@ public class Cameras extends SubsystemBase{
             .2
         );
 
-        leftPipeline = new AprilTagPipelineSettings(AprilTagFields.k2025ReefscapeWelded,
-            new Transform3d(
-                -13.944 /*in  */ * .0254, 
-                -13.944 * 0.0254, 
-                8.791 * .0254, 
-                new Rotation3d(
-                    Math.toRadians(-14.6),
-                    Math.toRadians(14.6), 
-                    Math.toRadians(-135))),
+        leftPipeline = new AprilTagPipelineSettings(
+            AprilTagFields.k2025ReefscapeWelded,
+            CameraConst.robotToLeftRearCamera,
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, 
             3, 
             singleStds , 

@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
-import frc.robot.Constants;
+import frc.robot.Constants.AlgaeConst;
+import frc.robot.Constants.CAN_IDS;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
@@ -228,13 +229,13 @@ public class AlgaeAngle extends SubsystemBase {
      * Constructor
      */
     private AlgaeAngle() {        
-        motor = new SparkMax(Constants.algaeAngleMotor, MotorType.kBrushless);
+        motor = new SparkMax(CAN_IDS.algaeAngleMotor, MotorType.kBrushless);
         absEncoder = motor.getAbsoluteEncoder();
         relEncoder = motor.getEncoder();
 
-        pid = new PIDController(Constants.algaeAnglePID.kP, Constants.algaeAnglePID.kI, Constants.algaeAnglePID.kD);
+        pid = new PIDController(AlgaeConst.anglePID.kP, AlgaeConst.anglePID.kI, AlgaeConst.anglePID.kD);
 
-        ff = new ArmFeedforward(Constants.algaeAngleFF.kS, Constants.algaeAngleFF.kG, Constants.algaeAngleFF.kV);
+        ff = new ArmFeedforward(AlgaeConst.angleFF.kS, AlgaeConst.angleFF.kG, AlgaeConst.angleFF.kV);
 
         // Set control mode
         voltage = 0;
@@ -367,11 +368,11 @@ public class AlgaeAngle extends SubsystemBase {
         
         // Calculate trapezoidal profile
         Rotation2d currentAngle = getAngle();
-        double maxAngleRate = Constants.maxAlgaeAutoSpeed/7;
+        double maxAngleRate = AlgaeConst.maxAngleAutoSpeed.in(RadiansPerSecond)/7;
         Rotation2d angleError = targetAngle.minus(currentAngle);
 
         double targetSpeed = maxAngleRate * (angleError.getRadians() > 0 ? 1 : -1);
-        double rampDownSpeed = angleError.getRadians() / Constants.algaeRampDownDist.getRadians() * maxAngleRate;
+        double rampDownSpeed = angleError.getRadians() / AlgaeConst.angleRampDownDist.in(Radians) * maxAngleRate;
 
         if (Math.abs(rampDownSpeed) < Math.abs(targetSpeed))
             targetSpeed = rampDownSpeed;
@@ -441,11 +442,11 @@ public class AlgaeAngle extends SubsystemBase {
     }
 
     public boolean topLimitReached(){
-        return getAngle().getDegrees() >= Constants.algaeTopLim.getDegrees();
+        return getAngle().getDegrees() >= AlgaeConst.topLim.in(Degrees);
     }
 
     public boolean botLimitReached(){
-        return getAngle().getDegrees() <= Constants.algaeBotLim.getDegrees();
+        return getAngle().getDegrees() <= AlgaeConst.botLim.in(Degrees);
 
     }
 

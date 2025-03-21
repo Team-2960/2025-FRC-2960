@@ -3,9 +3,6 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
-import frc.robot.Util.FieldLayout;
-import frc.robot.Util.Limits;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.controller.PIDController;
@@ -37,6 +34,7 @@ import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
 
 import java.util.function.Supplier;
 
@@ -49,13 +47,14 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 
+import frc.robot.Util.FieldLayout;
+import frc.robot.Util.Limits;
+import static frc.robot.Constants.CAN_IDS;
+import static frc.robot.Constants.RobotConst;
+import static frc.robot.Constants.DriveConst;
+
 public class Drive extends SubsystemBase {
     private static Drive drive = null; // Statically initialized instance
-
-    private final Translation2d frontLeftLocation;
-    private final Translation2d frontRightLocation;
-    private final Translation2d backLeftLocation;
-    private final Translation2d backRightLocation;
 
     private final Swerve frontLeft;
     private final Swerve frontRight;
@@ -535,36 +534,19 @@ public class Drive extends SubsystemBase {
      * Constructor
      */
     private Drive() {
-        // Set swerve drive positions
-        // TODO Move to constants
-        frontLeftLocation = new Translation2d(
-            (Constants.robotLength / 2 - Constants.wheelInset),
-            (Constants.robotWidth / 2 - Constants.wheelInset)
-        );
-
-        frontRightLocation = new Translation2d(
-            (Constants.robotLength / 2 - Constants.wheelInset),
-            -(Constants.robotWidth / 2 - Constants.wheelInset)
-        );
-        
-        backLeftLocation = new Translation2d(
-            -(Constants.robotLength / 2 - Constants.wheelInset),
-            (Constants.robotWidth / 2 - Constants.wheelInset)
-        );
-        
-        backRightLocation = new Translation2d(
-            -(Constants.robotLength / 2 - Constants.wheelInset),
-            -(Constants.robotWidth / 2 - Constants.wheelInset)
-        );
 
         // Initialize Swerve Kinematics
         kinematics = new SwerveDriveKinematics(
-                frontLeftLocation, frontRightLocation, backLeftLocation, backRightLocation);
+            DriveConst.frontLeftLocation, 
+            DriveConst.frontRightLocation, 
+            DriveConst.backLeftLocation, 
+            DriveConst.backRightLocation
+        );
         
         // Create swerve drive module objects
         frontLeft = new Swerve(
-            Constants.frontLeftDriveM, 
-            Constants.frontLeftAngleM, 
+            CAN_IDS.frontLeftDriveM, 
+            CAN_IDS.frontLeftAngleM, 
             "FrontLeft",
             Rotation2d.fromDegrees(0), 
             true, 
@@ -572,8 +554,8 @@ public class Drive extends SubsystemBase {
         );
 
         frontRight = new Swerve(
-            Constants.frontRightDriveM, 
-            Constants.frontRightAngleM, 
+            CAN_IDS.frontRightDriveM, 
+            CAN_IDS.frontRightAngleM, 
             "FrontRight",
             Rotation2d.fromDegrees(0), 
             false, 
@@ -581,8 +563,8 @@ public class Drive extends SubsystemBase {
         );
 
         backLeft = new Swerve(
-            Constants.backLeftDriveM, 
-            Constants.backLeftAngleM, 
+            CAN_IDS.backLeftDriveM, 
+            CAN_IDS.backLeftAngleM, 
             "BackLeft", 
             Rotation2d.fromDegrees(0),
             true, 
@@ -590,8 +572,8 @@ public class Drive extends SubsystemBase {
         );
         
         backRight = new Swerve(
-            Constants.backRightDriveM, 
-            Constants.backRightAngleM, 
+            CAN_IDS.backRightDriveM, 
+            CAN_IDS.backRightAngleM, 
             "BackRight",
             Rotation2d.fromDegrees(0), 
             false, 
@@ -604,9 +586,9 @@ public class Drive extends SubsystemBase {
 
         // Initialize angle align PID
         angleAlignPID = new PIDController(
-            Constants.angleAlignPID.kP, 
-            Constants.angleAlignPID.kI,
-            Constants.angleAlignPID.kD
+            DriveConst.angleAlignPID.kP, 
+            DriveConst.angleAlignPID.kI,
+            DriveConst.angleAlignPID.kD
         );
 
         angleAlignPID.enableContinuousInput(-Math.PI, Math.PI);
@@ -797,11 +779,11 @@ public class Drive extends SubsystemBase {
             speeds = ChassisSpeeds.fromFieldRelativeSpeeds(speeds, getPose().getRotation());
         }
 
-        speeds = ChassisSpeeds.discretize(speeds, Constants.updatePeriod);
+        speeds = ChassisSpeeds.discretize(speeds, RobotConst.updatePeriod.in(Seconds));
 
         var swerveModuleStates = kinematics.toSwerveModuleStates(speeds);
 
-        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.maxSpeed);
+        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, DriveConst.maxSpeed);
 
         frontLeft.setDesiredState(swerveModuleStates[0]);
         frontRight.setDesiredState(swerveModuleStates[1]);
@@ -856,7 +838,7 @@ public class Drive extends SubsystemBase {
         double error = currentPose.getTranslation().getDistance(target.getTranslation());
         Rotation2d angle = currentPose.getTranslation().minus(target.getTranslation()).getAngle();
 
-        double maxDriveRate = Constants.maxSpeed;
+        double maxDriveRate = DriveConst.maxSpeed.in(MetersPerSecond);
         double targetSpeed = maxDriveRate * (error > 0 ? 1 : -1);
         double rampDownSpeed = error / 1 * maxDriveRate;
 

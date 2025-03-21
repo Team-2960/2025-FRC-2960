@@ -1,5 +1,6 @@
 package frc.robot;
 
+import frc.robot.Constants.DriveConst;
 import frc.robot.Util.FieldLayout;
 import frc.robot.subsystems.AlgaeAngle;
 import frc.robot.subsystems.AlgaeRoller;
@@ -60,7 +61,7 @@ public class OperatorInterface {
 
         // Goto nearest branch
         driverController.y()
-            .onTrue(drive.new GotoNearestBranchCommand(Constants.coralOffset));
+            .onTrue(drive.new GotoNearestBranchCommand(Constants.RobotConst.coralOffset));
 
         // Align to -45 degrees 
         driverController.x()
@@ -189,11 +190,11 @@ public class OperatorInterface {
      * @return
      */
     public double getMaxSpeed() {
-        return (isSlowDown() ? .5 : 1) * Constants.maxSpeed;
+        return (isSlowDown() ? .5 : 1) * DriveConst.maxSpeed.in(MetersPerSecond);
     }
 
     public double getMaxAngleSpeed() {
-        return (isSlowDown() ? .5 : 1) * Constants.maxAngularSpeed;
+        return (isSlowDown() ? .5 : 1) * DriveConst.maxAngularSpeed.in(RadiansPerSecond);
     }
 
     public double getAllianceDir() {

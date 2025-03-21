@@ -6,6 +6,10 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Constants.ClimberConst;
+
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Volts;
 
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkFlex;
@@ -22,7 +26,7 @@ public class Climber extends SubsystemBase {
 
         @Override
         public void initialize() {
-            setMotorVolt(Constants.climberExtVolt);
+            setMotorVolt(ClimberConst.extVolt.in(Volts));
         }
 
         // @Override
@@ -43,7 +47,7 @@ public class Climber extends SubsystemBase {
         
         @Override
         public void initialize() {
-            setMotorVolt(Constants.climberRetVolt);
+            setMotorVolt(ClimberConst.retVolt.in(Volts));
         }
 
         // @Override
@@ -64,7 +68,7 @@ public class Climber extends SubsystemBase {
 
         @Override
         public void initialize() {
-            setMotorVolt(Constants.climberResetVolt);
+            setMotorVolt(ClimberConst.resetVolt.in(Volts));
         }
 
         @Override
@@ -113,7 +117,7 @@ public class Climber extends SubsystemBase {
      */
     private Climber() {
         // Initialize Motors
-        motor = new SparkFlex(Constants.climberMotor, MotorType.kBrushless);
+        motor = new SparkFlex(Constants.CAN_IDS.climberMotor, MotorType.kBrushless);
 
         // Initialize Encoder
         encoder = motor.getEncoder();
@@ -140,7 +144,7 @@ public class Climber extends SubsystemBase {
      * @return distance the climber is extended
      */
     public double getExtension() {
-        return encoder.getPosition() * Constants.winchCircum;
+        return encoder.getPosition() * ClimberConst.posScale.in(Inches);
     }
 
     /**

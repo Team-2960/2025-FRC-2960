@@ -2,6 +2,9 @@ package frc.robot.subsystems;
 
 
 
+import static edu.wpi.first.units.Units.Seconds;
+import static edu.wpi.first.units.Units.Volts;
+
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkBase.PersistMode;
@@ -18,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
+import frc.robot.Constants.EndEffectorConst;
 
 /**
  * Manages coral end effector
@@ -72,7 +76,7 @@ public class EndEffector extends SubsystemBase{
      */
     public class TimedEjectCmd extends WaitCommand {
         public TimedEjectCmd() {
-            super(Constants.coralEjectTime);
+            super(EndEffectorConst.coralEjectTime.in(Seconds));
             addRequirements(EndEffector.this);
         }
 
@@ -175,9 +179,9 @@ public class EndEffector extends SubsystemBase{
      * Constructor
      */
     private EndEffector(){
-        coralDrive = new SparkFlex(Constants.coralMotor, MotorType.kBrushless);
+        coralDrive = new SparkFlex(Constants.CAN_IDS.coralMotor, MotorType.kBrushless);
         coralEncoder = coralDrive.getEncoder();
-        coralPresentPE = new DigitalInput(Constants.coralPresentPE);
+        coralPresentPE = new DigitalInput(Constants.DIO_PORTS.coralPresentPE);
         coralDrive.configure(new SparkFlexConfig().inverted(true), com.revrobotics.spark.SparkBase.ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         coralPID = new PIDController(5, 0, 0);
@@ -248,14 +252,14 @@ public class EndEffector extends SubsystemBase{
      * set motor voltage for ejection
      */
     public void setEject(){
-        setMotorVolt(Constants.coralEjectVolt);
+        setMotorVolt(EndEffectorConst.coralEjectVolt.in(Volts));
     }
 
     /**
      * set motor voltage for intake
      */
     public void setIntake(){
-        setMotorVolt(Constants.coralIntakeVolt);
+        setMotorVolt(EndEffectorConst.coralIntakeVolt.in(Volts));
     }
 
     /**

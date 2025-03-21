@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import frc.robot.Constants;
+import frc.robot.Constants.ArmConst;
 import frc.robot.subsystems.Arm.SoftLimCheckCommand.SoftLimDirection;
 
 import com.revrobotics.RelativeEncoder;
@@ -228,15 +229,15 @@ public class Arm extends SubsystemBase {
      * Constructor
      */
     private Arm() {        
-        motor = new SparkFlex(Constants.armMotor, MotorType.kBrushless);
+        motor = new SparkFlex(Constants.CAN_IDS.armMotor, MotorType.kBrushless);
         motor.configure(new SparkFlexConfig().inverted(true).apply(new AbsoluteEncoderConfig().zeroCentered(true)), com.revrobotics.spark.SparkBase.ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         absEncoder = motor.getAbsoluteEncoder();
         relEncoder = motor.getExternalEncoder();
 
 
-        armPID = new PIDController(Constants.armPID.kP, Constants.armPID.kI, Constants.armPID.kD);
+        armPID = new PIDController(ArmConst.pid.kP, ArmConst.pid.kI, ArmConst.pid.kD);
 
-        armFF = new ArmFeedforward(Constants.armFF.kS, Constants.armFF.kG, Constants.armFF.kV);
+        armFF = new ArmFeedforward(ArmConst.ff.kS, ArmConst.ff.kG, ArmConst.ff.kV);
 
         // Set control mode
         armVolt = 0;
@@ -367,11 +368,11 @@ public class Arm extends SubsystemBase {
         
         // Calculate trapezoidal profile
         Rotation2d currentAngle = getArmAngle();
-        double maxAngleRate = Constants.maxArmAutoSpeed;
+        double maxAngleRate = ArmConst.maxAutoSpeed.in(DegreesPerSecond);
         Rotation2d angleError = targetAngle.minus(currentAngle);
 
         double targetSpeed = maxAngleRate * (angleError.getDegrees() > 0 ? 1 : -1);
-        double rampDownSpeed = angleError.getDegrees() / Constants.armRampDownDist.getDegrees() * maxAngleRate;
+        double rampDownSpeed = angleError.getDegrees() / ArmConst.rampDownDist.in(Degrees) * maxAngleRate;
 
         if (Math.abs(rampDownSpeed) < Math.abs(targetSpeed))
             targetSpeed = rampDownSpeed;
@@ -439,11 +440,11 @@ public class Arm extends SubsystemBase {
     }
 
     public boolean topLimitReached(){
-        return getArmAngle().getDegrees() >= Constants.armTopLim.getDegrees();
+        return getArmAngle().getDegrees() >= ArmConst.topLim.in(Degrees);
     }
 
     public boolean botLimitReached(){
-        return getArmAngle().getDegrees() <= Constants.armBotLim.getDegrees();
+        return getArmAngle().getDegrees() <= ArmConst.botLim.in(Degrees);
     }
 
     private void sysIDLogging(SysIdRoutineLog log){

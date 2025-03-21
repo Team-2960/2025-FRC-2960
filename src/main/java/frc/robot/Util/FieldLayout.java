@@ -1,14 +1,22 @@
 package frc.robot.Util;
 
+import static edu.wpi.first.units.Units.Meters;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.MutDistance;
 import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.Constants;
+import frc.robot.Constants.AutonConst;
+import frc.robot.Constants.RobotConst;
 
 public class FieldLayout {
+    public static final Transform2d fieldCenterOffset = new Transform2d(8.270875, 4.105275, new Rotation2d(0.0));
+
     public enum StageFace {
         AMP,
         SOURCE,
@@ -120,7 +128,7 @@ public class FieldLayout {
             AlgaeType.MIDDLE, bAlgaeMiddle,
             AlgaeType.RIGHT, bAlgaeRight);
 
-    public static final double bAutoLineX = -6.137 + Constants.fieldCenterOffset.getX(); // Meters
+    public static final Distance bAutoLineX = Meters.of(-6.137 + fieldCenterOffset.getX()); // Meters
 
     public static final Pose2d rProcessor = new Pose2d(11.54, 8.051, Rotation2d.fromDegrees(0));
 
@@ -196,7 +204,7 @@ public class FieldLayout {
             AlgaeType.MIDDLE, bAlgaeMiddle,
             AlgaeType.RIGHT, bAlgaeRight);
 
-    public static final double rAutoLineX = 6.137 + Constants.fieldCenterOffset.getX(); // Meters
+    public static final Distance rAutoLineX = Meters.of(6.137 + fieldCenterOffset.getX()); // Meters
 
     /**
      * Checks if the current alliance is red. defaults to blue if no alliance is set
@@ -367,7 +375,7 @@ public class FieldLayout {
      * 
      * @return x position of the autoline for the current alliance
      */
-    public static double getAutoLineX() {
+    public static Distance getAutoLineX() {
         return isRedAlliance() ? rAutoLineX : bAutoLineX;
     }
 
@@ -376,13 +384,13 @@ public class FieldLayout {
      * 
      * @return x position that will ensure the robot is clear of the auto zone line
      */
-    public static double getAutoClearX() {
-        double distance = 0;
+    public static Distance getAutoClearX() {
+        MutDistance distance = rAutoLineX.mutableCopy();
 
         if (isRedAlliance()) {
-            distance = rAutoLineX - Constants.robotDiag - Constants.autoClearance;
+            distance.minus(RobotConst.fullDiag).minus(AutonConst.autoClearance);
         } else {
-            distance = bAutoLineX + Constants.robotDiag + Constants.autoClearance;
+            distance.plus(RobotConst.fullDiag).plus(AutonConst.autoClearance);
         }
 
         return distance;

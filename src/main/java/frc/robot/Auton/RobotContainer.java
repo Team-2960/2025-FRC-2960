@@ -24,7 +24,7 @@ public class RobotContainer {
     Arm arm = Arm.getInstance();
     EndEffector endEffector = EndEffector.getInstance();
 
-    NamedCommands.registerCommand("gotoNearestBranch", drive.new GotoNearestBranchCommand(Constants.coralOffset));
+    NamedCommands.registerCommand("gotoNearestBranch", drive.new GotoNearestBranchCommand(Constants.RobotConst.coralOffset));
     NamedCommands.registerCommand("goToIntakeCommand", elevArmControl.getGoToIntakeCommand());
     NamedCommands.registerCommand("goToL1Command", elevArmControl.getGoToL1Command());
     NamedCommands.registerCommand("goToL2Command", elevArmControl.getGoToL2Command());

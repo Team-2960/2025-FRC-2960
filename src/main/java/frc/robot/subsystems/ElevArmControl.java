@@ -1,11 +1,15 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Inches;
+
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
+import frc.robot.Constants.ArmConst;
+import frc.robot.Constants.ElevConst;
 
 public class ElevArmControl extends SubsystemBase{
     private static ElevArmControl instance = null;
@@ -16,7 +20,8 @@ public class ElevArmControl extends SubsystemBase{
     public final Command gotoL3;        /**< Command sequence to move to the L3 scoring position */
     public final Command gotoL4;        /**< Command sequence to move to the L4 scoring position */
     public final Command gotoLowAlgae;  /**< Command sequence to move to the low algae removal position */
-    public final Command gotoHighAlgae; /**< Command sequence to move to the high algae removal position   */   
+    public final Command gotoHighAlgae; /**< Command sequence to move to the high algae removal position   */  
+     
     private Arm arm = Arm.getInstance();
     private Elevator elev = Elevator.getInstance();
 
@@ -24,53 +29,19 @@ public class ElevArmControl extends SubsystemBase{
      * Constructor
      */
     private ElevArmControl(){
-        //Arm arm = Arm.getInstance();
-        //Elevator elev = Elevator.getInstance();
+        gotoIntake = getGoToIntakeCommand();
 
-        gotoIntake = new SequentialCommandGroup(
-            new ParallelRaceGroup(arm.new ArmAngleCommand(Constants.armTravelAngle), elev.new ElevatorHoldCommand()),
-            new ParallelRaceGroup(arm.new ArmHoldCommand(), elev.new ElevatorPosCommand(Constants.elevIntakePos)),
-            new ParallelRaceGroup(arm.new ArmAngleCommand(Constants.armIntakeAngle), elev.new ElevatorHoldCommand())
-        );
+        gotoL1 = getGoToL1Command();
 
-        gotoL1 = new SequentialCommandGroup(
-            new ParallelRaceGroup(arm.new ArmAngleCommand(Constants.armTravelAngle), elev.new ElevatorHoldCommand()),
-            new ParallelRaceGroup(arm.new ArmHoldCommand(), elev.new ElevatorPosCommand(Constants.elevL1Pos)),
-            new ParallelRaceGroup(arm.new ArmAngleCommand(Constants.armCoralScoreAngle), elev.new ElevatorHoldCommand()),
-            new ParallelRaceGroup(arm.new ArmHoldCommand(), elev.new ElevatorHoldCommand())
-        );
+        gotoL2 = getGoToL2Command();
 
-        gotoL2 = new SequentialCommandGroup(
-            new ParallelDeadlineGroup(elev.new ElevatorPosCommand(Constants.elevL2Pos), arm.new ArmAngleCommand(Constants.armTravelAngle)),
-            new ParallelRaceGroup(arm.new ArmAngleCommand(Constants.armCoralL4Angle), elev.new ElevatorHoldCommand()),
-            new ParallelRaceGroup(arm.new ArmHoldCommand(), elev.new ElevatorHoldCommand())
-        );
+        gotoL3 = getGoToL3Command();
 
-        gotoL3 = new SequentialCommandGroup(
-            new ParallelDeadlineGroup(elev.new ElevatorPosCommand(Constants.elevL3Pos), arm.new ArmAngleCommand(Constants.armTravelAngle)),
-            new ParallelRaceGroup(arm.new ArmAngleCommand(Constants.armCoralScoreAngle), elev.new ElevatorHoldCommand()),
-            new ParallelRaceGroup(arm.new ArmHoldCommand(), elev.new ElevatorHoldCommand())
-        );
+        gotoL4 = getGoToL4Command();
 
-        gotoL4 = new SequentialCommandGroup(
-            // new ParallelRaceGroup(arm.new ArmAngleCommand(Constants.armTravelAngle), elev.new ElevatorHoldCommand()),
-            // new ParallelRaceGroup(arm.new ArmHoldCommand(), elev.new ElevatorPosCommand(Constants.elevL4Pos)),
-            new ParallelDeadlineGroup(elev.new ElevatorPosCommand(Constants.elevL4Pos), arm.new ArmAngleCommand(Constants.armTravelAngle)),
-            new ParallelRaceGroup(arm.new ArmAngleCommand(Constants.armCoralL4Angle), elev.new ElevatorHoldCommand())
-            //new ParallelRaceGroup(arm.new ArmHoldCommand(), elev.new ElevatorHoldCommand())
-        );
+        gotoLowAlgae = getGoToLowAlgaeCommand();
 
-        gotoLowAlgae = new SequentialCommandGroup(
-            new ParallelDeadlineGroup(elev.new ElevatorPosCommand(Constants.elevLowAlgaePos), arm.new ArmAngleCommand(Constants.armTravelAngle)),
-            new ParallelRaceGroup(arm.new ArmAngleCommand(Constants.armAlgaeRemoveAngle), elev.new ElevatorHoldCommand()),
-            new ParallelRaceGroup(arm.new ArmHoldCommand(), elev.new ElevatorHoldCommand())
-        );
-
-        gotoHighAlgae = new SequentialCommandGroup(
-            new ParallelDeadlineGroup(elev.new ElevatorPosCommand(Constants.elevHighAlgaePos), arm.new ArmAngleCommand(Constants.armTravelAngle)),
-            new ParallelRaceGroup(arm.new ArmAngleCommand(Constants.armAlgaeRemoveAngle), elev.new ElevatorHoldCommand()),
-            new ParallelRaceGroup(arm.new ArmHoldCommand(), elev.new ElevatorHoldCommand())
-        );
+        gotoHighAlgae = getGoToHighAlgaeCommand();
     }
 
     public void gotoIntakePos() {
@@ -102,53 +73,53 @@ public class ElevArmControl extends SubsystemBase{
     }
     public Command getGoToIntakeCommand(){
         return new SequentialCommandGroup(
-            new ParallelDeadlineGroup(elev.new ElevatorPosCommand(Constants.elevIntakePos), arm.new ArmAngleCommand(Constants.armTravelAngle)),
-            new ParallelRaceGroup(arm.new ArmAngleCommand(Constants.armIntakeAngle), elev.new ElevatorHoldCommand())
+            new ParallelRaceGroup(arm.new ArmAngleCommand(new Rotation2d(ArmConst.travelAngle)), elev.new ElevatorHoldCommand()),
+            new ParallelRaceGroup(arm.new ArmHoldCommand(), elev.new ElevatorPosCommand(ElevConst.intakePos.in(Inches))),
+            new ParallelRaceGroup(arm.new ArmAngleCommand(new Rotation2d(ArmConst.intakeAngle)), elev.new ElevatorHoldCommand())
         );
     }
 
     public Command getGoToL1Command(){
         return new SequentialCommandGroup(
-            new ParallelRaceGroup(arm.new ArmAngleCommand(Constants.armTravelAngle), elev.new ElevatorHoldCommand()),
-            new ParallelRaceGroup(arm.new ArmHoldCommand(), elev.new ElevatorPosCommand(Constants.elevIntakePos)),
-            new ParallelRaceGroup(arm.new ArmAngleCommand(Constants.armIntakeAngle), elev.new ElevatorHoldCommand())
+            new ParallelRaceGroup(arm.new ArmAngleCommand(new Rotation2d(ArmConst.travelAngle)), elev.new ElevatorHoldCommand()),
+            new ParallelRaceGroup(arm.new ArmHoldCommand(), elev.new ElevatorPosCommand(ElevConst.L1Pos.in(Inches))),
+            new ParallelRaceGroup(arm.new ArmAngleCommand(new Rotation2d(ArmConst.coralScoreAngle)), elev.new ElevatorHoldCommand())
         );
     }
 
     public Command getGoToL2Command(){
         return new SequentialCommandGroup(
-            new ParallelDeadlineGroup(elev.new ElevatorPosCommand(Constants.elevL2Pos), arm.new ArmAngleCommand(Constants.armTravelAngle)),
-            new ParallelRaceGroup(arm.new ArmAngleCommand(Constants.armCoralScoreAngle), elev.new ElevatorHoldCommand())
+            new ParallelDeadlineGroup(elev.new ElevatorPosCommand(ElevConst.L2Pos.in(Inches)), arm.new ArmAngleCommand(new Rotation2d(ArmConst.travelAngle))),
+            new ParallelRaceGroup(arm.new ArmAngleCommand(new Rotation2d(ArmConst.coralScoreAngle)), elev.new ElevatorHoldCommand())
         );
     }
 
 
     public Command getGoToL3Command(){
         return new SequentialCommandGroup(
-            new ParallelDeadlineGroup(elev.new ElevatorPosCommand(Constants.elevL3Pos), arm.new ArmAngleCommand(Constants.armTravelAngle)),
-            new ParallelRaceGroup(arm.new ArmAngleCommand(Constants.armCoralScoreAngle), elev.new ElevatorHoldCommand())
+            new ParallelDeadlineGroup(elev.new ElevatorPosCommand(ElevConst.L3Pos.in(Inches)), arm.new ArmAngleCommand(new Rotation2d(ArmConst.travelAngle))),
+            new ParallelRaceGroup(arm.new ArmAngleCommand(new Rotation2d(ArmConst.coralScoreAngle)), elev.new ElevatorHoldCommand())
         );
     }
 
 
     public Command getGoToL4Command(){
         return new SequentialCommandGroup(
-            new ParallelDeadlineGroup(elev.new ElevatorPosCommand(Constants.elevL4Pos), arm.new ArmAngleCommand(Constants.armTravelAngle)),
-            new ParallelRaceGroup(arm.new ArmAngleCommand(Constants.armCoralL4Angle), elev.new ElevatorHoldCommand())
-            //new ParallelRaceGroup(arm.new ArmHoldCommand(), elev.new ElevatorHoldCommand())
+            new ParallelDeadlineGroup(elev.new ElevatorPosCommand(ElevConst.L4Pos.in(Inches)), arm.new ArmAngleCommand(new Rotation2d(ArmConst.travelAngle))),
+            new ParallelRaceGroup(arm.new ArmAngleCommand(new Rotation2d(ArmConst.coralL4Angle)), elev.new ElevatorHoldCommand())
         );
     }
     public Command getGoToLowAlgaeCommand(){
         return new SequentialCommandGroup(
-            new ParallelDeadlineGroup(elev.new ElevatorPosCommand(Constants.elevLowAlgaePos), arm.new ArmAngleCommand(Constants.armTravelAngle)),
-            new ParallelRaceGroup(arm.new ArmAngleCommand(Constants.armAlgaeRemoveAngle), elev.new ElevatorHoldCommand())
+            new ParallelDeadlineGroup(elev.new ElevatorPosCommand(ElevConst.lowAlgaePos.in(Inches)), arm.new ArmAngleCommand(new Rotation2d(ArmConst.travelAngle))),
+            new ParallelRaceGroup(arm.new ArmAngleCommand(new Rotation2d(ArmConst.algaeRemoveAngle)), elev.new ElevatorHoldCommand())
         );
     }
 
     public Command getGoToHighAlgaeCommand(){
         return new SequentialCommandGroup(
-            new ParallelDeadlineGroup(elev.new ElevatorPosCommand(Constants.elevHighAlgaePos), arm.new ArmAngleCommand(Constants.armTravelAngle)),
-            new ParallelRaceGroup(arm.new ArmAngleCommand(Constants.armAlgaeRemoveAngle), elev.new ElevatorHoldCommand())
+            new ParallelDeadlineGroup(elev.new ElevatorPosCommand(ElevConst.highAlgaePos.in(Inches)), arm.new ArmAngleCommand(new Rotation2d(ArmConst.travelAngle))),
+            new ParallelRaceGroup(arm.new ArmAngleCommand(new Rotation2d(ArmConst.algaeRemoveAngle)), elev.new ElevatorHoldCommand())
         );
     }
 

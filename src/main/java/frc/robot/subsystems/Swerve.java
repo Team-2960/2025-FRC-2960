@@ -1,5 +1,10 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Value;
+
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkMax;
@@ -21,6 +26,8 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Constants.DriveConst;
+import frc.robot.Constants.SwerveConst;
 
 public class Swerve extends SubsystemBase {
 
@@ -75,16 +82,30 @@ public class Swerve extends SubsystemBase {
     
 
         // Initialize Drive rate controllers
-        drivePIDcontroller = new PIDController(Constants.drivePID.kP, Constants.drivePID.kI,
-                Constants.drivePID.kD);
-        driveFeedforward = new SimpleMotorFeedforward(Constants.driveFF.kS, Constants.driveFF.kV,
-                Constants.driveFF.kA);
+        drivePIDcontroller = new PIDController(
+            SwerveConst.drivePID.kP, 
+            SwerveConst.drivePID.kI,
+            SwerveConst.drivePID.kD
+        );
+
+        driveFeedforward = new SimpleMotorFeedforward(
+            SwerveConst.driveFF.kS, 
+            SwerveConst.driveFF.kV,
+            SwerveConst.driveFF.kA
+        );
 
         // Initialize angle position controllers
-        anglePIDController = new PIDController(Constants.driveAngPID.kP, Constants.driveAngPID.kI,
-                Constants.driveAngPID.kD);
-        angleFeedforward = new SimpleMotorFeedforward(Constants.driveAngFF.kS, Constants.driveAngFF.kV,
-                Constants.driveAngFF.kA);
+        anglePIDController = new PIDController(
+            SwerveConst.anglePID.kP, 
+            SwerveConst.anglePID.kI,
+            SwerveConst.anglePID.kD
+        );
+
+        angleFeedforward = new SimpleMotorFeedforward(
+            SwerveConst.angleFF.kS, 
+            SwerveConst.angleFF.kV,
+            SwerveConst.angleFF.kA
+        );
 
         // Initialize desired state
         desiredState = new SwerveModuleState();
@@ -126,7 +147,7 @@ public class Swerve extends SubsystemBase {
      * @return current swerve module drive distance
      */
     public double getDrivePos() {
-        return encDrive.getPosition() * Constants.driveRatio;
+        return encDrive.getPosition() * DriveConst.driveRatio.in(Meters);
     }
 
     /**
@@ -135,7 +156,7 @@ public class Swerve extends SubsystemBase {
      * @return current swerve module drive speed
      */
     public double getDriveVelocity() {
-        return encDrive.getVelocity()/60 * Constants.driveRatio;
+        return encDrive.getVelocity() * DriveConst.driveRatio.in(Meters) / 60;
     }
 
     /**
@@ -209,7 +230,7 @@ public class Swerve extends SubsystemBase {
         if (compareError == compError)
             direction *= -1;
 
-        double targetRate = Math.min(1.0, compareError / Constants.swerveAngleRampDist.getRadians()) * Constants.maxSwerveAngularSpeed;
+        double targetRate = Math.min(1.0, compareError / SwerveConst.angleRampDist.in(Radians)) * SwerveConst.maxAngularSpeed.in(RadiansPerSecond);
         double angleVelocity = targetRate * direction;
 
         // Calculate motor output
@@ -221,7 +242,7 @@ public class Swerve extends SubsystemBase {
         mAngle.setVoltage(pidOutput + ffOutput);
 
         sb_angleRate.setDouble(angleVelocity);
-        sb_angleError.setDouble(Constants.swerveAngleRampDist.getRadians());
+        sb_angleError.setDouble(SwerveConst.angleRampDist.in(Radians));
 
     }
 

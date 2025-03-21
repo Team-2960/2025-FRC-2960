@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
-import frc.robot.Constants;
+import frc.robot.Constants.CAN_IDS;
+import frc.robot.Constants.ElevConst;
 import frc.robot.subsystems.Elevator.SoftLimCheckCommand.SoftLimDirection;
 
 import com.revrobotics.RelativeEncoder;
@@ -180,7 +181,7 @@ public class Elevator extends SubsystemBase {
         
         @Override
         public boolean isFinished(){
-            return atPos(elevatorPos, Constants.elevatorPosTol);
+            return atPos(elevatorPos, ElevConst.posTol.in(Inches));
         }
     }
 
@@ -255,7 +256,7 @@ public class Elevator extends SubsystemBase {
      */
     private Elevator() {        
 
-        elevatorMotor = new SparkFlex(Constants.elevatorMotor, MotorType.kBrushless);
+        elevatorMotor = new SparkFlex(CAN_IDS.elevatorMotor, MotorType.kBrushless);
 
         elevatorEncoder = elevatorMotor.getEncoder();
 
@@ -263,16 +264,16 @@ public class Elevator extends SubsystemBase {
 
         elevatorLimitBot = elevatorMotor.getReverseLimitSwitch();
 
-        elevatorPID = new PIDController(Constants.elevatorPIDS.kP, Constants.elevatorPIDS.kI, Constants.elevatorPIDS.kD);
+        elevatorPID = new PIDController(ElevConst.pid.kP, ElevConst.pid.kI, ElevConst.pid.kD);
 
         //Doesn't have kA value BECAUSe it doesn't need it to function and you have to actually give the feedforward a calculated acceleration
-        elevatorFF = new ElevatorFeedforward(Constants.elevatorFFS.kS, Constants.elevatorFFS.kG, Constants.elevatorFFS.kV);
+        elevatorFF = new ElevatorFeedforward(ElevConst.ff.kS, ElevConst.ff.kG, ElevConst.ff.kV);
 
         //Motor Config
         SparkFlexConfig elevatorConfig = new SparkFlexConfig();
         elevatorConfig.encoder
-            .positionConversionFactor(Constants.elevatorScale)
-            .velocityConversionFactor(Constants.elevatorScale / 60.0);
+            .positionConversionFactor(ElevConst.distScale.in(Inches))
+            .velocityConversionFactor(ElevConst.velScale.in(InchesPerSecond));
         elevatorMotor.configure(elevatorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         elevLimBotTrigger = new Trigger(elevatorLimitBot::isPressed);
@@ -406,11 +407,11 @@ public class Elevator extends SubsystemBase {
         
         // Calculate trapezoidal profile
         double currentPos = getElevatorPos();
-        double maxPosRate = Constants.maxElevatorAutoSpeed;
+        double maxPosRate = ElevConst.maxAutoSpeed.in(InchesPerSecond);
         double posError = targetPos - currentPos;
 
         double targetSpeed = maxPosRate * (posError > 0 ? 1 : +-1);
-        double rampDownSpeed = posError / Constants.elevatorRampDownDist * maxPosRate;
+        double rampDownSpeed = posError / ElevConst.rampDownDist.in(Inches) * maxPosRate;
 
         if (Math.abs(rampDownSpeed) < Math.abs(targetSpeed))
             targetSpeed = rampDownSpeed;
@@ -474,11 +475,11 @@ public class Elevator extends SubsystemBase {
     }
 
     public boolean topLimitReached(){
-        return getElevatorPos() >= Constants.elevatorTopLim;
+        return getElevatorPos() >= ElevConst.topLim.in(Inches);
     }
 
     public boolean botLimitReached(){
-        return getElevatorPos() <= Constants.elevatorBotLim;
+        return getElevatorPos() <= ElevConst.botLim.in(Inches);
 
     }
 

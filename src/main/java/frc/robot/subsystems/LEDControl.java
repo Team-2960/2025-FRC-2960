@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants;
+import frc.robot.Constants.LEDConst;
 
 /**
  * Manages the robot LEDs
@@ -118,24 +118,24 @@ public class LEDControl extends SubsystemBase{
         
         // Initialize LED buffer
         ledBuffer = new AddressableLEDBuffer(
-            Constants.frontLEDCount + Constants.leftLEDCount + Constants.rightLEDCount
+            LEDConst.frontLEDCount + LEDConst.leftLEDCount + LEDConst.rightLEDCount
         );
 
         // Initialize Left LED buffer view
         leftLEDs = ledBuffer.createView(
             0, 
-            Constants.leftLEDCount-1
+            LEDConst.leftLEDCount-1
         );
         
         // Initialize Right LED buffer view
         rightLEDs = ledBuffer.createView(
-            Constants.leftLEDCount, 
-            Constants.leftLEDCount + Constants.rightLEDCount - 1
+            LEDConst.leftLEDCount, 
+            LEDConst.leftLEDCount + LEDConst.rightLEDCount - 1
         );
         
         // Initialize Front LED buffer view
         frontLEDs = ledBuffer.createView(
-            Constants.leftLEDCount + Constants.rightLEDCount, 
+            LEDConst.leftLEDCount + LEDConst.rightLEDCount, 
             ledBuffer.getLength() - 1
         );
 

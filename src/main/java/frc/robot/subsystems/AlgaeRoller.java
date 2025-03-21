@@ -2,6 +2,8 @@ package frc.robot.subsystems;
 
 
 
+import static edu.wpi.first.units.Units.Volts;
+
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
@@ -11,6 +13,7 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Constants.AlgaeConst;
 
 public class AlgaeRoller extends SubsystemBase{
     /*Algae intake/eject
@@ -73,7 +76,7 @@ public class AlgaeRoller extends SubsystemBase{
      * Constructor
      */
     private AlgaeRoller(){
-        algaeDrive = new SparkFlex(Constants.algaeRollerMotor, MotorType.kBrushless);
+        algaeDrive = new SparkFlex(Constants.CAN_IDS.algaeRollerMotor, MotorType.kBrushless);
 
         ejectCmd = new EjectCmd();
         intakeCmd = new IntakeCmd();
@@ -123,14 +126,14 @@ public class AlgaeRoller extends SubsystemBase{
      * set motor voltage for ejection
      */
     public void setEject(){
-        setMotorVolt(Constants.algaeEjectVolt);
+        setMotorVolt(AlgaeConst.ejectVolt.in(Volts));
     }
 
     /**
      * set motor voltage for intake
      */
     public void setIntake(){
-        setMotorVolt(Constants.algaeIntakeVolt);
+        setMotorVolt(AlgaeConst.intakeVolt.in(Volts));
     }
 
     /**
