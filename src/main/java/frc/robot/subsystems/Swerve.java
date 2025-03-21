@@ -1,9 +1,10 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.Value;
+import static edu.wpi.first.units.Units.RevolutionsPerSecond;
+import static edu.wpi.first.units.Units.Rotations;
 
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
@@ -22,10 +23,12 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
 import frc.robot.Constants.DriveConst;
 import frc.robot.Constants.SwerveConst;
 
@@ -131,14 +134,14 @@ public class Swerve extends SubsystemBase {
      * @return current swerve module angle
      */
     public Rotation2d getAnglePos() {
-        return Rotation2d.fromRotations(encAngle.getPosition());
+        return new Rotation2d(Rotations.of(encAngle.getPosition()));
     }
 
     /**
      * Get the current swerve module angle rate
      */
-    public double getAngleRate() {
-        return encAngle.getVelocity();
+    public AngularVelocity getAngleRate() {
+        return RevolutionsPerSecond.of(encAngle.getVelocity());
     }
 
     /**
@@ -146,8 +149,8 @@ public class Swerve extends SubsystemBase {
      * 
      * @return current swerve module drive distance
      */
-    public double getDrivePos() {
-        return encDrive.getPosition() * DriveConst.driveRatio.in(Meters);
+    public Distance getDrivePos() {
+        return DriveConst.distRatio.times(encDrive.getPosition());
     }
 
     /**
@@ -155,8 +158,8 @@ public class Swerve extends SubsystemBase {
      * 
      * @return current swerve module drive speed
      */
-    public double getDriveVelocity() {
-        return encDrive.getVelocity() * DriveConst.driveRatio.in(Meters) / 60;
+    public LinearVelocity getDriveVelocity() {
+        return  DriveConst.velRatio.times(encDrive.getVelocity());
     }
 
     /**
@@ -174,8 +177,7 @@ public class Swerve extends SubsystemBase {
      * @return current swerve module state
      */
     public SwerveModuleState getState() {
-        return new SwerveModuleState(getDriveVelocity(),
-                getAnglePos());
+        return new SwerveModuleState(getDriveVelocity(), getAnglePos());
     }
 
     /**
@@ -204,7 +206,7 @@ public class Swerve extends SubsystemBase {
      */
     private void updateDrive(SwerveModuleState state) {
         // Calculate the drive output from the drive PID controller.
-        double pidOutput = drivePIDcontroller.calculate(getDriveVelocity(),
+        double pidOutput = drivePIDcontroller.calculate(getDriveVelocity().in(MetersPerSecond),
                 state.speedMetersPerSecond);
 
         double ffOutput = driveFeedforward.calculate(state.speedMetersPerSecond);
@@ -234,7 +236,7 @@ public class Swerve extends SubsystemBase {
         double angleVelocity = targetRate * direction;
 
         // Calculate motor output
-        double pidOutput = anglePIDController.calculate(getAngleRate(), angleVelocity);
+        double pidOutput = anglePIDController.calculate(getAngleRate().in(RadiansPerSecond), angleVelocity);
 
         double ffOutput = angleFeedforward.calculate(angleVelocity);
 
@@ -254,7 +256,7 @@ public class Swerve extends SubsystemBase {
         sb_angleCurrent.setDouble(getAnglePos().getDegrees());
         sb_angleVolt.setDouble(mAngle.getBusVoltage() * mAngle.getAppliedOutput());
         sb_driveSetPoint.setDouble(desiredState.speedMetersPerSecond);
-        sb_driveCurrent.setDouble(getDriveVelocity());
+        sb_driveCurrent.setString(getDriveVelocity().toShortString());
         sb_driveVolt.setDouble(mDrive.getAppliedOutput() * mDrive.getBusVoltage());
     }
 }

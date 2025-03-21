@@ -119,7 +119,8 @@ public class Constants {
         public static final Distance wheelDiameter = Inches.of(2.95);
         public static final Distance wheelRadius = wheelDiameter.div(2);
         public static final Distance wheelCirc = wheelDiameter.times(Math.PI);
-        public static final Distance driveRatio = wheelCirc.div(driveGearRatio);
+        public static final Distance distRatio = wheelCirc.div(driveGearRatio);
+        public static final LinearVelocity velRatio = distRatio.div(Seconds.of(60));
 
         public static final Distance wheelXOffset = RobotConst.frameLength.div(2).minus(RobotConst.wheelInset);
         public static final Distance wheelYOffset = RobotConst.frameWidth.div(2).minus(RobotConst.wheelInset);
