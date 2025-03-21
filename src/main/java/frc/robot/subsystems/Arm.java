@@ -19,7 +19,6 @@ import edu.wpi.first.units.measure.MutAngularVelocity;
 import edu.wpi.first.units.measure.MutCurrent;
 import edu.wpi.first.units.measure.MutVoltage;
 import edu.wpi.first.units.measure.Voltage;
-import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
@@ -44,9 +43,6 @@ public class Arm extends SubsystemBase {
     private PIDController armPID;
 
     private ArmFeedforward armFF;
-
-    private SendableBuilder pidTestDisplay;
-    private double pidTestValue = 0;
 
     private double armVolt;
     private double armRate;
@@ -460,26 +456,6 @@ public class Arm extends SubsystemBase {
             .angularVelocity(angularVelocity.mut_replace(velocity, DegreesPerSecond));
     }
 
-    /**
-     * Updates shuffleboard
-     */
-    private void updateUI(double targetRate, double targetVolt) {
-        Command currentCmd = getCurrentCommand();
-        String currentCmdName = "<null>";
-
-        if(currentCmd != null) currentCmdName = currentCmd.getName();
-
-        sb_armCommand.setString(currentCmdName);
-        sb_anglePosCurrent.setDouble(getArmAngle().getDegrees());
-        sb_anglePosSetPoint.setDouble(armAngleCommand.armAngle.getDegrees());
-        sb_angleRateCurrent.setDouble(getArmVelocity());
-        sb_angleRateSetPoint.setDouble(targetRate);
-        sb_angleVolt.setDouble(motor.getAppliedOutput() * motor.getBusVoltage());
-        sb_angleTargetVolt.setDouble(targetVolt);
-        sb_angleAtTopLim.setBoolean(topLimitReached());
-        sb_angleAtBotLim.setBoolean(botLimitReached());
-    }
-
     public void setVoltCommand(double voltage) {
         armVoltageCommand.setVoltage(voltage);
         if(getCurrentCommand() != armVoltageCommand) armVoltageCommand.schedule();
@@ -519,10 +495,26 @@ public class Arm extends SubsystemBase {
     @Override
     public void periodic() {
         updateUI(armRate, armVolt);
-        var currentCommand = getCurrentCommand();
-        String curCommandName = "null";
-        if (currentCommand != null) curCommandName = currentCommand.getName();
-        
+    }
+
+    /**
+     * Updates shuffleboard
+     */
+    private void updateUI(double targetRate, double targetVolt) {
+        Command currentCmd = getCurrentCommand();
+        String currentCmdName = "<null>";
+
+        if(currentCmd != null) currentCmdName = currentCmd.getName();
+
+        sb_armCommand.setString(currentCmdName);
+        sb_anglePosCurrent.setDouble(getArmAngle().getDegrees());
+        sb_anglePosSetPoint.setDouble(armAngleCommand.armAngle.getDegrees());
+        sb_angleRateCurrent.setDouble(getArmVelocity());
+        sb_angleRateSetPoint.setDouble(targetRate);
+        sb_angleVolt.setDouble(motor.getAppliedOutput() * motor.getBusVoltage());
+        sb_angleTargetVolt.setDouble(targetVolt);
+        sb_angleAtTopLim.setBoolean(topLimitReached());
+        sb_angleAtBotLim.setBoolean(botLimitReached());
     }
 
 
