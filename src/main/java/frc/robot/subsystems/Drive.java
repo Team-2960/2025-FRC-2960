@@ -7,8 +7,6 @@ import frc.robot.Constants;
 import frc.robot.Util.FieldLayout;
 import frc.robot.Util.FieldLayout.ReefFace;
 import frc.robot.subsystems.Drive.LinearDriveCommands.DriveRateCommand;
-import frc.robot.subsystems.Drive.LinearDriveCommands.GoToPointCommand;
-import frc.robot.subsystems.Drive.LinearDriveCommands.LinearGoToReefCommand;
 import frc.robot.subsystems.Drive.RotationDriveCommands.AngleAlignCommand;
 import frc.robot.subsystems.Drive.RotationDriveCommands.PointAlignCommand;
 import frc.robot.subsystems.Drive.RotationDriveCommands.ReefAlignCommand;
@@ -16,20 +14,15 @@ import frc.robot.subsystems.Drive.RotationDriveCommands.RotationRateCommand;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.estimator.PoseEstimator;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
-import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -42,6 +35,8 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
+import java.util.Dictionary;
 import java.util.Optional;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -85,9 +80,6 @@ public class Drive extends SubsystemBase {
     private ChassisSpeeds chassisSpeeds;
     private PIDController angleAlignPID;
     private PIDController driveAlignPID;
-    private TrapezoidProfile.State xProfileState;
-    private TrapezoidProfile.State yProfileState;
-    private TrapezoidProfile trapezoidProfile;
 
     private boolean isLinearManualDrive = true;
     private boolean isRotManualDrive = true;
@@ -114,9 +106,6 @@ public class Drive extends SubsystemBase {
     public AutoBuilder autoBuilder;
 
     // AdvantageScope
-    private SwerveModuleState[] swerveModuleStates;
-    private StructPublisher<Pose2d> odometryPose;
-    private StructArrayPublisher<Pose2d> arrayPose;
     private StructArrayPublisher<SwerveModuleState> swerveModules;
 
     PathConstraints pathConstraints;
@@ -172,38 +161,7 @@ public class Drive extends SubsystemBase {
 
         }
 
-        /**
-         * Command to send robot to a point on the field
-         */
-        public class GoToPointCommand extends Command {
-            Translation2d point;    /**< Target point */
-
-            /**
-             * Constructor
-             * @param point Target point
-             */
-            public GoToPointCommand(Translation2d point) {
-                this.point = point;
-                addRequirements(LinearDriveCommands.this);
-            }
-
-            /**
-             * Sets the target point
-             * @param point Target point
-             */
-            public void setPoint(Translation2d point) {
-                this.point = point;
-            }
-
-            /**
-             * Updates motion to a target point
-             */
-            @Override
-            public void execute() {
-                calcToPoint(point);
-            }
-        }
-
+        
         public class LinearGoToReefCommand extends Command{
             Translation2d offset;
 
@@ -223,25 +181,6 @@ public class Drive extends SubsystemBase {
             }
         }
 
-        public class TrapLinearGoToReefCommand extends Command{
-            Translation2d offset;
-
-            public TrapLinearGoToReefCommand(Translation2d offset){
-                this.offset = offset;
-                addRequirements(LinearDriveCommands.this);
-            }
-
-            public void setOffset(Translation2d offset){
-                this.offset = offset;
-            }
-
-
-            @Override
-            public void execute(){
-                linearGoToReefTrap(offset);
-            }
-        }
-
         public class LinearDoNothingCommand extends Command{
 
             public LinearDoNothingCommand(){
@@ -255,9 +194,7 @@ public class Drive extends SubsystemBase {
         }
 
         private final DriveRateCommand driveRateCommand;    /**< Internal instance of Drive Rate command */
-        private final GoToPointCommand goToPointCommand;    /**< Internal instance of Goto Point command */
         private final LinearGoToReefCommand linearGoToReefCommand;
-        private final TrapLinearGoToReefCommand trapLinearGoToReefCommand;
         private final LinearDoNothingCommand doNothingCommand;
 
 
@@ -266,9 +203,7 @@ public class Drive extends SubsystemBase {
          */
         public LinearDriveCommands() {
             driveRateCommand = new DriveRateCommand(0, 0);
-            goToPointCommand = new GoToPointCommand(new Translation2d(0, 0));
             linearGoToReefCommand = new LinearGoToReefCommand(new Translation2d());
-            trapLinearGoToReefCommand = new TrapLinearGoToReefCommand(new Translation2d());
             doNothingCommand = new LinearDoNothingCommand();
             setDefaultCommand(doNothingCommand);
         }
@@ -551,9 +486,6 @@ public class Drive extends SubsystemBase {
 
         driveAlignPID = new PIDController(3, 0, 0);
 
-        xProfileState = new State();
-        yProfileState = new State();
-        trapezoidProfile = new TrapezoidProfile(Constants.trapConstraints);
 
         // Initialize pose estimation
         swerveDrivePoseEstimator = new SwerveDrivePoseEstimator(
@@ -607,10 +539,6 @@ public class Drive extends SubsystemBase {
      * Initialize suffleboard
      */
     public void shuffleBoardInit() {
-        odometryPose = NetworkTableInstance.getDefault()
-                .getStructTopic("Odometry Pose", Pose2d.struct).publish();
-        arrayPose = NetworkTableInstance.getDefault()
-                .getStructArrayTopic("Pose Array", Pose2d.struct).publish();
         swerveModules = NetworkTableInstance.getDefault()
                 .getStructArrayTopic("Swerve States", SwerveModuleState.struct).publish();
 
@@ -804,52 +732,37 @@ public class Drive extends SubsystemBase {
                 });
     }
 
-    /**
-     * Calculates the lnear rate to move to a target point
-     * @param point target point
-     */
-    public void calcToPoint(Translation2d point) {
-        Pose2d currentPose = getEstimatedPos();
-        Transform2d distance = currentPose.minus(new Pose2d(point, Rotation2d.fromDegrees(0)));
-        double xSpeed = driveAlignPID.calculate(distance.getX());
-        double ySpeed = driveAlignPID.calculate(distance.getY());
 
-        updateKinematics(xSpeed, ySpeed);
-    }
-
-    public void calcToPointTrapezoidal(Translation2d point){
+    public void calcToPoint(Translation2d point){
         Pose2d currentPose = getEstimatedPos();
-        // double xSpeed = trapezoidProfile.calculate(
-        //     Constants.trapezoidTime,
-        //     new State(currentPose.getX(), getChassisSpeeds().vxMetersPerSecond),
-        //     new State(point.getX(), 0)
-        // ).velocity;
+
         // Calculate trapezoidal profile
         double maxDriveRate = Constants.maxSpeed;
-        double xError = point.getX() - currentPose.getX();
 
-        double xTargetSpeed = maxDriveRate * (xError > 0 ? 1 : -1);
-        double xRampDownSpeed = xError / 1 * maxDriveRate;
+        //Gets the 2D distance between the target point and current point
+        double linearError = point.getDistance(currentPose.getTranslation());
 
-        if (Math.abs(xRampDownSpeed) < Math.abs(xTargetSpeed)) xTargetSpeed = xRampDownSpeed;
+        //Variable that gets a new point from subtracting the targetpoint by the current point
+        Translation2d calcPoint = point.minus(currentPose.getTranslation());
 
-        double yError = point.getY() - currentPose.getY();
+        //Calculates the angle Error between the two points using Rotation2d (unit circle)
+        Rotation2d angleError = calcPoint.getAngle();
 
-        double yTargetSpeed = maxDriveRate * (yError > 0 ? 1 : -1);
-        double yRampDownSpeed = yError / 1 * maxDriveRate;
+        //Trapezoidal Profiling
+        double targetSpeed = maxDriveRate * (linearError > 0 ? 1 : -1);
+        double rampDownSpeed = linearError / Constants.alignRampDistance * maxDriveRate;
 
-        if (Math.abs(yRampDownSpeed) < Math.abs(yTargetSpeed)) yTargetSpeed = yRampDownSpeed;
-
-
+        if (Math.abs(rampDownSpeed) < Math.abs(targetSpeed)) targetSpeed = rampDownSpeed;
         
+        //Calculates the X and Y Speeds by multiplying the distance between the two points by the angle components
+        double xSpeed = angleError.getCos() * targetSpeed;
+        double ySpeed = angleError.getSin() * targetSpeed;
 
-        // double ySpeed = trapezoidProfile.calculate(
-        //     Constants.trapezoidTime,
-        //     new State(currentPose.getY(), getChassisSpeeds().vyMetersPerSecond),
-        //     new State(point.getY(), 0)
-        // ).velocity;
-        
-        updateKinematics(xTargetSpeed, yTargetSpeed);
+        updateKinematics(xSpeed, ySpeed);
+
+        SmartDashboard.putNumber("Align X Speed", xSpeed);
+        SmartDashboard.putNumber("Align Y Speed", ySpeed);
+        SmartDashboard.putNumber("Align Distance", linearError);
     }
 
     // 
@@ -878,24 +791,6 @@ public class Drive extends SubsystemBase {
         this.nearestReefFace = finalReefFace;
 
         calcToPoint(finalReefFace.getTranslation());
-    }
-
-    public void linearGoToReefTrap(Translation2d offset){
-        Rotation2d rotOffset = Rotation2d.fromDegrees(0);
-        if (isRedAlliance()) {
-            offset = new Translation2d(-offset.getX(), -offset.getY());
-            rotOffset = Rotation2d.fromDegrees(180);
-        }
-
-        Rotation2d reefFaceRotation = FieldLayout.getReefFaceZone(getEstimatedPos());
-        Pose2d zeroFace = FieldLayout.getReef(ReefFace.ZERO);
-        Translation2d poseOffset = new Translation2d(zeroFace.getX() + offset.getX(), zeroFace.getY() + offset.getY())
-                .rotateAround(FieldLayout.getReef(ReefFace.CENTER).getTranslation(),
-                        reefFaceRotation);
-        Pose2d finalReefFace = new Pose2d(poseOffset, reefFaceRotation.rotateBy(rotOffset));
-        this.nearestReefFace = finalReefFace;
-
-        calcToPointTrapezoidal(finalReefFace.getTranslation());
         
     }
 
@@ -911,29 +806,6 @@ public class Drive extends SubsystemBase {
                         reefFaceRotation);
         Pose2d finalReefFace = new Pose2d(poseOffset, reefFaceRotation.rotateBy(rotOffset));
         setAngleAlign(finalReefFace.getRotation().plus(offset));
-    }
-
-    /**
-     * Moves to the reef
-     * @param offset    offet position
-     */
-    public void goToReef(Pose2d offset) {
-        Rotation2d rotOffset = Rotation2d.fromDegrees(0);
-        if (isRedAlliance()) {
-            offset = new Pose2d(-offset.getX(), -offset.getY(), offset.getRotation());
-            rotOffset = Rotation2d.fromDegrees(180);
-        }
-
-        Rotation2d reefFaceRotation = FieldLayout.getReefFaceZone(getEstimatedPos());
-        Pose2d zeroFace = FieldLayout.getReef(ReefFace.ZERO);
-        Translation2d poseOffset = new Translation2d(zeroFace.getX() + offset.getX(), zeroFace.getY() + offset.getY())
-                .rotateAround(FieldLayout.getReef(ReefFace.CENTER).getTranslation(),
-                        reefFaceRotation);
-        Pose2d finalReefFace = new Pose2d(poseOffset, reefFaceRotation.rotateBy(rotOffset));
-        this.nearestReefFace = finalReefFace;
-
-        setGoToPoint(finalReefFace.getTranslation());
-        setAngleAlign(finalReefFace.getRotation().plus(offset.getRotation()));
     }
 
     /**
@@ -1090,16 +962,6 @@ public class Drive extends SubsystemBase {
             pointAlign.schedule();
     }
 
-    /**
-     * Sets the robot to move to a point
-     * @param targetPoint   target point
-     */
-    public void setGoToPoint(Translation2d targetPoint) {
-        GoToPointCommand goToPointCommand = linearDriveCommands.goToPointCommand;
-        goToPointCommand.setPoint(targetPoint);
-        if (linearDriveCommands.getCurrentCommand() != goToPointCommand)
-            goToPointCommand.schedule();
-    }
 
     /**
      * Sets the robot to follow a PathPlanner path command
@@ -1131,11 +993,6 @@ public class Drive extends SubsystemBase {
         if(rotGoToReefCommand != rotationDriveCommands.getCurrentCommand()) rotGoToReefCommand.schedule();
     }
 
-    public void setLinearGoToReef(Translation2d offset){
-        LinearGoToReefCommand linearGoToReefCommand = linearDriveCommands.linearGoToReefCommand;
-        linearGoToReefCommand.setOffset(offset);
-        if (linearDriveCommands.getCurrentCommand() != linearGoToReefCommand) linearGoToReefCommand.schedule();
-    }
 
     public void setPresetPose(Pose2d pose){
         PresetPoseCommand presetPoseCommand = new PresetPoseCommand(pose);
