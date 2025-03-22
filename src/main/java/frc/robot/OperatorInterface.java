@@ -82,7 +82,7 @@ public class OperatorInterface extends SubsystemBase {
         
         driverController.y()
             .onTrue(drive.linearDriveCommands
-                .new TrapLinearGoToReefCommand(
+                .new LinearGoToReefCommand(
                     new Translation2d(-Constants.robotLength/2, 0)))
             .onTrue(drive.rotationDriveCommands
                 .new RotGoToReefCommand(Rotation2d.fromDegrees(0))
@@ -91,7 +91,7 @@ public class OperatorInterface extends SubsystemBase {
         driverController.y().and(driverController.rightBumper())
             .whileTrue(
                 drive.linearDriveCommands
-                .new TrapLinearGoToReefCommand(
+                .new LinearGoToReefCommand(
                     new Translation2d(-Constants.robotLength/2, -0.41)))
             .whileTrue(drive.rotationDriveCommands
                 .new RotGoToReefCommand(Rotation2d.fromDegrees(0))
@@ -100,7 +100,7 @@ public class OperatorInterface extends SubsystemBase {
         driverController.y().and(driverController.leftBumper())
             .whileTrue(
                 drive.linearDriveCommands
-                .new TrapLinearGoToReefCommand(
+                .new LinearGoToReefCommand(
                     new Translation2d(-Constants.robotLength/2, -0.1)))
             .whileTrue(drive.rotationDriveCommands
                 .new RotGoToReefCommand(Rotation2d.fromDegrees(0))

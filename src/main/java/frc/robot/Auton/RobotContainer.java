@@ -25,7 +25,6 @@ public class RobotContainer {
     Arm arm = Arm.getInstance();
     EndEffector endEffector = EndEffector.getInstance();
 
-    NamedCommands.registerCommand("driveAlignCommand", drive.linearDriveCommands.new GoToPointCommand(new Translation2d()));
     NamedCommands.registerCommand("goToIntakeCommand", elevArmControl.getGoToIntakeCommand());
     NamedCommands.registerCommand("goToL1Command", elevArmControl.getGoToL1Command());
     NamedCommands.registerCommand("goToL2Command", elevArmControl.getGoToL2Command());
