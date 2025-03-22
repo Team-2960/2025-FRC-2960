@@ -7,6 +7,10 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.WidgetType;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Util.AprilTagPipelineSettings;
 
@@ -20,10 +24,11 @@ public class Cameras extends SubsystemBase{
     private AprilTagPipeline frontCamera;
     private AprilTagPipeline rightCamera;
     private AprilTagPipeline leftCamera;
+    private Field2d cameraField;
     private static Cameras cameras = null;
 
     public Cameras(){
-        singleStds = VecBuilder.fill(4, 4, 8);
+        singleStds = VecBuilder.fill(1, 1, 16);
         multiStds = VecBuilder.fill(0.5, 0.5, 1);
         frontPipeline = new AprilTagPipelineSettings(AprilTagFields.k2025ReefscapeWelded,
             new Transform3d(
@@ -76,6 +81,19 @@ public class Cameras extends SubsystemBase{
         frontCamera = new AprilTagPipeline(frontPipeline, "Camera01", "AprilTagPipeline");
         rightCamera = new AprilTagPipeline(rightPipeline, "Camera02", "AprilTagPipeline");
         leftCamera = new AprilTagPipeline(leftPipeline, "Camera03", "AprilTagPipeline");
+
+        var layout = Shuffleboard.getTab("AprilTags")
+                .getLayout("Camera Update", BuiltInLayouts.kList)
+                .withSize(1, 4);
+
+        cameraField = new Field2d();
+        layout.add(cameraField).withWidget("Field");
+    }
+
+    public void updateUI(){
+        cameraField.getObject("left Camera Est").setPose(leftCamera.getEstCameraPos());
+        cameraField.getObject("right Camera Est").setPose(rightCamera.getEstCameraPos());
+        cameraField.getObject("front Camera Est").setPose(frontCamera.getEstCameraPos());
     }
 
     @Override

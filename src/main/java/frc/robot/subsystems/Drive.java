@@ -39,6 +39,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.util.Dictionary;
 import java.util.Optional;
 
+import org.photonvision.PhotonUtils;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
@@ -94,6 +96,8 @@ public class Drive extends SubsystemBase {
     private GenericEntry sb_speedR;
     private GenericEntry sb_robotTargetAngle;
     private GenericEntry sb_speedTargetR;
+    private GenericEntry sb_linearCommand;
+    private GenericEntry sb_rotationCommand;
 
     private ComplexWidget sb_field2d;
     private Pose2d nearestReefFace;
@@ -179,6 +183,11 @@ public class Drive extends SubsystemBase {
             public void execute(){
                 linearGoToReef(offset);
             }
+
+            @Override
+            public boolean isFinished(){
+                return PhotonUtils.getDistanceToPose(getEstimatedPos(), getReefFace(offset)) <= Constants.alignLinearTolerance;
+            }   
         }
 
         public class LinearDoNothingCommand extends Command{
@@ -357,6 +366,11 @@ public class Drive extends SubsystemBase {
             @Override
             public void execute() {
                 reefAngleCalc(offset);
+            }
+
+            @Override
+            public boolean isFinished(){
+                return getReefFace(new Translation2d()).getRotation().minus(getEstimatedPos().getRotation()).getDegrees() <= 2;
             }
 
             
@@ -556,6 +570,9 @@ public class Drive extends SubsystemBase {
         sb_speedR = pose_layout.add("Speed R", 0).getEntry();
         sb_robotTargetAngle = pose_layout.add("Robot Target Angle", 0).getEntry();
 
+        sb_linearCommand = pose_layout.add("Linear Current Command", "---").getEntry();
+        sb_rotationCommand = pose_layout.add("Rotation Current Command", "---").getEntry();
+
         sb_speedTargetR = pose_layout.add("Target Speed R", 0).getEntry();
 
         sb_field2d = Shuffleboard.getTab("Drive").add(field2d).withWidget("Field");
@@ -737,7 +754,7 @@ public class Drive extends SubsystemBase {
         Pose2d currentPose = getEstimatedPos();
 
         // Calculate trapezoidal profile
-        double maxDriveRate = Constants.maxSpeed;
+        double maxDriveRate = Constants.maxAutoSpeed;
 
         //Gets the 2D distance between the target point and current point
         double linearError = point.getDistance(currentPose.getTranslation());
@@ -791,7 +808,24 @@ public class Drive extends SubsystemBase {
         this.nearestReefFace = finalReefFace;
 
         calcToPoint(finalReefFace.getTranslation());
-        
+
+    }
+
+    public Pose2d getReefFace(Translation2d offset){
+        Rotation2d rotOffset = Rotation2d.fromDegrees(0);
+        if (isRedAlliance()) {
+            offset = new Translation2d(-offset.getX(), -offset.getY());
+            rotOffset = Rotation2d.fromDegrees(180);
+        }
+
+        Rotation2d reefFaceRotation = FieldLayout.getReefFaceZone(getEstimatedPos());
+        Pose2d zeroFace = FieldLayout.getReef(ReefFace.ZERO);
+        Translation2d poseOffset = new Translation2d(zeroFace.getX() + offset.getX(), zeroFace.getY() + offset.getY())
+                .rotateAround(FieldLayout.getReef(ReefFace.CENTER).getTranslation(),
+                        reefFaceRotation);
+        Pose2d finalReefFace = new Pose2d(poseOffset, reefFaceRotation.rotateBy(rotOffset));
+
+        return finalReefFace;
     }
 
     public void rotGoToReef(Rotation2d offset){
@@ -845,11 +879,21 @@ public class Drive extends SubsystemBase {
         field2d.getObject("fieldTargetPoint").setPose(targetPoint.getX(), targetPoint.getY(),
                 Rotation2d.fromDegrees(0));
         field2d.getObject("nearestReefFace").setPose(nearestReefFace);
+
         var currentCommand = Drive.getInstance().rotationDriveCommands.getCurrentCommand();
         String curCommandName = "null";
+
         if (currentCommand != null)
             curCommandName = currentCommand.getName();
-        SmartDashboard.putString("Current Drive Command", curCommandName);
+        sb_rotationCommand.setString(curCommandName);
+
+        currentCommand = Drive.getInstance().linearDriveCommands.getCurrentCommand();
+        curCommandName = "null";
+
+        if (currentCommand != null)
+            curCommandName = currentCommand.getName();
+        sb_linearCommand.setString(curCommandName);
+
     }
 
     /**

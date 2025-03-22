@@ -83,7 +83,7 @@ public class OperatorInterface extends SubsystemBase {
         driverController.y()
             .onTrue(drive.linearDriveCommands
                 .new LinearGoToReefCommand(
-                    new Translation2d(-Constants.robotLength/2, 0)))
+                    Constants.centerOffset))
             .onTrue(drive.rotationDriveCommands
                 .new RotGoToReefCommand(Rotation2d.fromDegrees(0))
         );
@@ -92,7 +92,7 @@ public class OperatorInterface extends SubsystemBase {
             .whileTrue(
                 drive.linearDriveCommands
                 .new LinearGoToReefCommand(
-                    new Translation2d(-Constants.robotLength/2, -0.41)))
+                    Constants.leftBranchOffset))
             .whileTrue(drive.rotationDriveCommands
                 .new RotGoToReefCommand(Rotation2d.fromDegrees(0))
         );
@@ -101,7 +101,7 @@ public class OperatorInterface extends SubsystemBase {
             .whileTrue(
                 drive.linearDriveCommands
                 .new LinearGoToReefCommand(
-                    new Translation2d(-Constants.robotLength/2, -0.1)))
+                    Constants.rightBranchOffset))
             .whileTrue(drive.rotationDriveCommands
                 .new RotGoToReefCommand(Rotation2d.fromDegrees(0))
         );
@@ -177,8 +177,11 @@ public class OperatorInterface extends SubsystemBase {
         Climber climber = Climber.getInstance();
         driverController.pov(90).whileTrue(climber.new ExtendCmd());
         driverController.pov(270).whileTrue(climber.new RetractCmd());
-    }
 
+        operatorController.start().onTrue(climber.new SetExtPosCommand());
+
+        driverController.start().onTrue(climber.new SetExtPosCommand());
+    }
     /**
      * Updates the controls for the drivetrain
      */

@@ -156,6 +156,10 @@ public class AprilTagPipeline extends SubsystemBase {
         }
     }
 
+    public Pose2d getEstCameraPos(){
+        return last_pose;
+    }
+
     /**
      * Updates Shuffleboard
      */
