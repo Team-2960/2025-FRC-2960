@@ -4,6 +4,7 @@ import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -21,6 +22,9 @@ public class Constants {
     public static final double robotLength = 29.5 * .0254;  // Meters 
     public static final double wheelInset = 1.75 * .0254;   // Meters
     public static final double robotDiag = Math.sqrt(Math.pow(robotWidth, 2) + Math.pow(robotLength, 2)); // Meters
+    public static final double bumperThick = 3.25 * .0254;
+    public static final double fullWidth = robotWidth + (bumperThick * 2.0);
+    public static final double fullLength = robotLength + (bumperThick * 2.0);
 
     public static final int revTBEncCountPerRev = 4096;
 
@@ -66,6 +70,10 @@ public class Constants {
     public static final Pose2d blueCenter = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
     public static final Pose2d blueAmpSide = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
 
+    public static final Translation2d rightBranchOffset = new Translation2d(-fullLength/2.0 + .1, -.1109);
+    public static final Translation2d leftBranchOffset = new Translation2d(-fullLength/2.0 + 0.1, -0.441);
+    public static final Translation2d centerOffset = new Translation2d(-fullLength/2.0 + 0.1, 0);
+
 
 
     // Drive
@@ -75,7 +83,7 @@ public class Constants {
 
     public static PIDParam drivePID = new PIDParam(.5, 0.0, 0.0);
     public static PIDConstants drivePIDConstants = new PIDConstants(.5, 0.0, 0.0);
-    public static FFParam driveFF = FFParam.simpleMotor(0.0, 2.25, 0.0);
+    public static FFParam driveFF = FFParam.simpleMotor(0.1, 2.25, 0.0);
 
     public static PIDParam driveAngPID = new PIDParam(0.05, 0.0, 0.001);
     public static PIDConstants driveAngPIDConstants = new PIDConstants(0.05, 0.0, 0.001);
@@ -83,6 +91,7 @@ public class Constants {
 
 
     public static final double maxSpeed = 4.5;
+    public static final double maxAutoSpeed = 3.0;
     public static final double maxAngularSpeed = 1.5 * 2 * Math.PI;
     public static final double maxAutoAngularSpeed = 0.5 * 2 * Math.PI;
 
@@ -96,7 +105,10 @@ public class Constants {
     public static final PIDParam angleAlignPID = new PIDParam(4, 0, 0.3);
     public static final TrapezoidProfile.Constraints trapConstraints = new Constraints(4.5, 11);
     public static final double trapezoidTime = 0.15;
-    public static final double alignRampDistance = 1.5;    //Meters
+    public static final double alignRampDistance = 1.0;    //Meters
+
+    public static final double alignLinearTolerance = 0.005;  //Meters
+    public static final Rotation2d alignRotTolerance = Rotation2d.fromDegrees(2); //Degrees
 
 
     // Arm
@@ -171,8 +183,8 @@ public class Constants {
     public static final double winchMinLimit = 1.5; //in
     public static final double winchRatchedDelay = .25;  // seconds
 
-    public static final double climberExtDist = 0; // in.
-    public static final double climberRetDist = 0; // in.
+    public static final double climberExtDist = 0.325; //rotations
+    public static final double climberRetDist = 0.127; //rotations
 
     public static final double climberExtVolt = -6;      // voltage
     public static final double climberRetVolt = 12;     // voltage
