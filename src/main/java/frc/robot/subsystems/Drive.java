@@ -25,6 +25,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.networktables.StructPublisher;
@@ -98,6 +99,7 @@ public class Drive extends SubsystemBase {
     private GenericEntry sb_speedTargetR;
     private GenericEntry sb_linearCommand;
     private GenericEntry sb_rotationCommand;
+    private GenericEntry sb_swerveModules;
 
     private ComplexWidget sb_field2d;
     private Pose2d nearestReefFace;
@@ -110,7 +112,8 @@ public class Drive extends SubsystemBase {
     public AutoBuilder autoBuilder;
 
     // AdvantageScope
-    private StructArrayPublisher<SwerveModuleState> swerveModules;
+    private StructArrayPublisher<SwerveModuleState> as_swerveModules;
+    private StructPublisher<Pose2d> as_currentPose;
 
     PathConstraints pathConstraints;
 
@@ -553,7 +556,8 @@ public class Drive extends SubsystemBase {
      * Initialize suffleboard
      */
     public void shuffleBoardInit() {
-        swerveModules = NetworkTableInstance.getDefault()
+        //Advantage Scope
+        as_swerveModules = NetworkTableInstance.getDefault()
                 .getStructArrayTopic("Swerve States", SwerveModuleState.struct).publish();
 
         // Setup Shuffleboard
@@ -576,6 +580,8 @@ public class Drive extends SubsystemBase {
         sb_speedTargetR = pose_layout.add("Target Speed R", 0).getEntry();
 
         sb_field2d = Shuffleboard.getTab("Drive").add(field2d).withWidget("Field");
+
+        sb_swerveModules = pose_layout.add("Current Pose2d", new Pose2d()).getEntry();
     }
 
     /*
@@ -894,19 +900,13 @@ public class Drive extends SubsystemBase {
             curCommandName = currentCommand.getName();
         sb_linearCommand.setString(curCommandName);
 
-    }
-
-    /**
-     * Updates advantage scope
-     */
-    private void updateScope() {
-        // TODO Move to UpdateUI
-        swerveModules.set(new SwerveModuleState[] {
-                frontLeft.getState(),
-                frontRight.getState(),
-                backLeft.getState(),
-                backRight.getState()
+        as_swerveModules.set(new SwerveModuleState[] {
+            frontLeft.getState(),
+            frontRight.getState(),
+            backLeft.getState(),
+            backRight.getState()
         });
+
     }
 
     /**
@@ -1066,7 +1066,6 @@ public class Drive extends SubsystemBase {
         }
         update_odometry();
         updateUI();
-        updateScope();
     }
 
     /**
