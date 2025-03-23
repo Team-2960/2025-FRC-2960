@@ -1,8 +1,10 @@
 package frc.robot.subsystems;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.*;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.numbers.*;
@@ -16,6 +18,11 @@ import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonUtils;
+import org.photonvision.estimation.TargetModel;
+import org.photonvision.simulation.PhotonCameraSim;
+import org.photonvision.simulation.SimCameraProperties;
+import org.photonvision.simulation.VisionSystemSim;
+import org.photonvision.simulation.VisionTargetSim;
 
 /**
  * Manages connection to a single PhotonVision AprilTag Pipeline
@@ -43,8 +50,13 @@ public class AprilTagPipeline extends SubsystemBase {
     private GenericEntry sb_lastTimestamp;
     private GenericEntry sb_lastUpdatePeriod;
 
+    //Advantage Scope
+    private StructArrayPublisher<Pose3d> as_aprilTags;
+    private StructPublisher<Pose3d> as_cameraPose; //Camera Pose Relative to Robot on the Field
+    private Pose3d[] aprilTagList;
+    private AprilTagFields field;
+
     // Camera Simulation
-    // VisionSystemSim visionSim;
     // TargetModel targetModel;
     // SimCameraProperties cameraProp;
     // PhotonCameraSim cameraSim;
@@ -73,10 +85,11 @@ public class AprilTagPipeline extends SubsystemBase {
         last_timestamp = 0;
         maxDistance = settings.max_dist;
         ambiguity_threshold = settings.ambiguity_threshold;
+        field = settings.field_layout;
 
         // Setup Shuffleboard
         var layout = Shuffleboard.getTab("AprilTags")
-                .getLayout(name, BuiltInLayouts.kList)
+                .getLayout(cameraName, BuiltInLayouts.kList)
                 .withSize(1, 4);
         sb_PoseX = layout.add("Pose X" + cameraName, 0).getEntry();
         sb_PoseY = layout.add("Pose Y" + cameraName, 0).getEntry();
@@ -84,18 +97,19 @@ public class AprilTagPipeline extends SubsystemBase {
         sb_lastTimestamp = layout.add("Last Timestamp" + cameraName, last_timestamp).getEntry();
         sb_lastUpdatePeriod = layout.add("Time Since Last Update" + cameraName, 0).getEntry();
 
+        //Advantage Scope
+        as_aprilTags = NetworkTableInstance.getDefault()
+            .getStructArrayTopic(cameraName, Pose3d.struct).publish();
+
+        as_cameraPose = NetworkTableInstance.getDefault()
+            .getStructTopic(cameraName + " pose", Pose3d.struct).publish();
+
         // Vision Simulation
-        // visionSim = new VisionSystemSim("main");
-        // visionSim.addAprilTags(AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape));
         // targetModel = TargetModel.kAprilTag16h5;
         // cameraProp = new SimCameraProperties();
         // cameraProp.setFPS(60);
         // cameraProp.setCalibration(640, 480, Rotation2d.fromDegrees(70));
         // cameraSim = new PhotonCameraSim(camera, cameraProp);
-        // //visionTargetSim = new
-        // VisionTargetSim(AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape).getTagPose(17).get(),
-        // targetModel);
-        // visionSim.addCamera(cameraSim, settings.robot_to_camera);
         // cameraSim.enableDrawWireframe(true);
 
         // Test Values
@@ -121,15 +135,15 @@ public class AprilTagPipeline extends SubsystemBase {
         Optional<EstimatedRobotPose> visionEst = Optional.empty();
         Drive drive = Drive.getInstance();
         var unreadResults = camera.getAllUnreadResults();
-        // visionSim.update(new Pose2d(17.526/2, 8.05/2, new Rotation2d()));
-
+        
         for (var change : unreadResults) {
             visionEst = pose_est.update(change);
 
             // Check if a pose was estimated
             if (visionEst.isPresent()) {
                 double est_timestamp = change.getTimestampSeconds();
-
+                aprilTagList = new Pose3d[change.getTargets().size()];
+                int iteration = 0;
                 // Get found tag count and average distance
                 for (var tag : change.getTargets()) {
                     var tag_pose3d = pose_est.getFieldTags().getTagPose(tag.getFiducialId());
@@ -145,8 +159,12 @@ public class AprilTagPipeline extends SubsystemBase {
 
                                 drive.addVisionPose(estPose.toPose2d(), est_timestamp, est_std);
                                 last_pose = estPose.toPose2d();
+
+                                aprilTagList[iteration] = AprilTagFieldLayout.loadField(field).getTagPose(tag.getFiducialId()).get();
+                                iteration++;
                             }
                         }
+
                     }
 
                 }
@@ -160,6 +178,10 @@ public class AprilTagPipeline extends SubsystemBase {
         return last_pose;
     }
 
+    public Pose3d getRobotRelativeCamPos(){
+        return new Pose3d(Drive.getInstance().getEstimatedPos()).transformBy(settings.robot_to_camera);
+    }
+
     /**
      * Updates Shuffleboard
      */
@@ -169,5 +191,9 @@ public class AprilTagPipeline extends SubsystemBase {
         sb_PoseR.setDouble(last_pose.getRotation().getDegrees());
         sb_lastTimestamp.setDouble(last_timestamp);
         sb_lastUpdatePeriod.setDouble(Timer.getFPGATimestamp() - last_timestamp);
+
+        //Advantage Scope
+        as_aprilTags.set(aprilTagList);
+        as_cameraPose.set(getRobotRelativeCamPos());
     }
 }

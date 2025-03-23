@@ -16,8 +16,10 @@ import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.struct.Pose2dStruct;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -37,17 +39,21 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
+import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.Optional;
 
 import org.photonvision.PhotonUtils;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.trajectory.PathPlannerTrajectory;
+import com.pathplanner.lib.trajectory.PathPlannerTrajectoryState;
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 
@@ -99,7 +105,6 @@ public class Drive extends SubsystemBase {
     private GenericEntry sb_speedTargetR;
     private GenericEntry sb_linearCommand;
     private GenericEntry sb_rotationCommand;
-    private GenericEntry sb_swerveModules;
 
     private ComplexWidget sb_field2d;
     private Pose2d nearestReefFace;
@@ -560,6 +565,9 @@ public class Drive extends SubsystemBase {
         as_swerveModules = NetworkTableInstance.getDefault()
                 .getStructArrayTopic("Swerve States", SwerveModuleState.struct).publish();
 
+        as_currentPose = NetworkTableInstance.getDefault()
+            .getStructTopic("Current Pose2d", Pose2d.struct).publish();
+
         // Setup Shuffleboard
         var pose_layout = Shuffleboard.getTab("Drive")
                 .getLayout("Drive Pose", BuiltInLayouts.kList)
@@ -581,7 +589,6 @@ public class Drive extends SubsystemBase {
 
         sb_field2d = Shuffleboard.getTab("Drive").add(field2d).withWidget("Field");
 
-        sb_swerveModules = pose_layout.add("Current Pose2d", new Pose2d()).getEntry();
     }
 
     /*
@@ -907,6 +914,7 @@ public class Drive extends SubsystemBase {
             backRight.getState()
         });
 
+        as_currentPose.set(getEstimatedPos());
     }
 
     /**
@@ -1053,6 +1061,8 @@ public class Drive extends SubsystemBase {
         Command pathCommand = AutoBuilder.pathfindToPose(new Pose2d(), pathConstraints);
         followPath(pathCommand);
     }
+
+    
 
     /**
      * Periodic update method

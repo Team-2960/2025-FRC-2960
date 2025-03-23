@@ -21,6 +21,11 @@
           "visible": true
         }
       },
+      "/SmartDashboard/Choose Auto": {
+        "window": {
+          "visible": true
+        }
+      },
       "/SmartDashboard/VisionSystemSim-main/Sim Field": {
         "bottom": 1638,
         "height": 8.051901817321777,
@@ -72,5 +77,8 @@
   },
   "NetworkTables Info": {
     "visible": true
+  },
+  "NetworkTables View": {
+    "visible": false
   }
 }

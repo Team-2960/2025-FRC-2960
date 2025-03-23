@@ -1,7 +1,9 @@
 package frc.robot.subsystems;
 
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
+import org.photonvision.simulation.VisionSystemSim;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -21,13 +23,18 @@ public class Cameras extends SubsystemBase{
     private edu.wpi.first.math.Vector<N3> singleStds;
     private edu.wpi.first.math.Vector<N3> multiStds;
 
-    private AprilTagPipeline frontCamera;
-    private AprilTagPipeline rightCamera;
-    private AprilTagPipeline leftCamera;
+    public AprilTagPipeline frontCamera;
+    public AprilTagPipeline rightCamera;
+    public AprilTagPipeline leftCamera;
     private Field2d cameraField;
+
+    //Simulation
+    // private VisionSystemSim visionSim;
+    
     private static Cameras cameras = null;
 
     public Cameras(){
+
         singleStds = VecBuilder.fill(1, 1, 16);
         multiStds = VecBuilder.fill(0.5, 0.5, 1);
         frontPipeline = new AprilTagPipelineSettings(AprilTagFields.k2025ReefscapeWelded,
@@ -52,8 +59,8 @@ public class Cameras extends SubsystemBase{
                 13.944 * 0.0254, 
                 8.791 * .0254, 
                 new Rotation3d(
-                    Math.toRadians(14.6),
-                    Math.toRadians(14.6), 
+                    Math.toRadians(0),
+                    Math.toRadians(-20), 
                     Math.toRadians(135))),
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, 
             3, 
@@ -68,8 +75,8 @@ public class Cameras extends SubsystemBase{
                 -13.944 * 0.0254, 
                 8.791 * .0254, 
                 new Rotation3d(
-                    Math.toRadians(-14.6),
-                    Math.toRadians(14.6), 
+                    Math.toRadians(0),
+                    Math.toRadians(-20), 
                     Math.toRadians(-135))),
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, 
             3, 
@@ -88,6 +95,15 @@ public class Cameras extends SubsystemBase{
 
         cameraField = new Field2d();
         layout.add(cameraField).withWidget("Field");
+
+        //Simulation
+        // visionSim = new VisionSystemSim("main");
+        // visionSim.addAprilTags(AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded));
+
+        // visionSim.addCamera(frontCamera.cameraSim, frontPipeline.robot_to_camera);
+        // visionSim.addCamera(leftCamera.cameraSim, leftPipeline.robot_to_camera);
+        // visionSim.addCamera(rightCamera.cameraSim, rightPipeline.robot_to_camera);
+        
     }
 
     public void updateUI(){
@@ -98,6 +114,7 @@ public class Cameras extends SubsystemBase{
 
     @Override
     public void periodic(){
+        // visionSim.update(Drive.getInstance().getEstimatedPos());
     }
 
     public static Cameras getInstance(){
