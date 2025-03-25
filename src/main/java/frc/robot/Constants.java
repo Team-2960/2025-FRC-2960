@@ -70,20 +70,19 @@ public class Constants {
     public static final Pose2d blueCenter = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
     public static final Pose2d blueAmpSide = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
 
-    public static final Translation2d rightBranchOffset = new Translation2d(-fullLength/2.0 + .1, -.1109);
-    public static final Translation2d leftBranchOffset = new Translation2d(-fullLength/2.0 + 0.1, -0.441);
-    public static final Translation2d centerOffset = new Translation2d(-fullLength/2.0 + 0.1, 0);
+    public static final Translation2d rightBranchOffset = new Translation2d(-fullLength/2.0 + .214, -.1109);
+    public static final Translation2d leftBranchOffset = new Translation2d(-fullLength/2.0 + 0.214, -0.441);
+    public static final Translation2d centerOffset = new Translation2d(-fullLength/2.0 + 0.214, 0);
 
 
 
     // Drive
     public static final double driveGearRatio = 5.08;
-    public static final double wheelCirc = 2.95 * .0254 * Math.PI; // Meters
+    public static final double wheelCirc = 3 * .0254 * Math.PI; // Meters
     public static final double driveRatio =  Constants.wheelCirc / Constants.driveGearRatio;   // Meters
 
-    public static PIDParam drivePID = new PIDParam(.5, 0.0, 0.0);
-    public static PIDConstants drivePIDConstants = new PIDConstants(.5, 0.0, 0.0);
-    public static FFParam driveFF = FFParam.simpleMotor(0.1, 2.25, 0.0);
+    public static PIDParam drivePID = new PIDParam(1, 0.0, 0.0);  //.5
+    public static FFParam driveFF = FFParam.simpleMotor(0.08, 2.5, 0.0);
 
     public static PIDParam driveAngPID = new PIDParam(0.05, 0.0, 0.001);
     public static PIDConstants driveAngPIDConstants = new PIDConstants(0.05, 0.0, 0.001);
