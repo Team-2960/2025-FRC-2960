@@ -56,7 +56,7 @@
           }
         },
         "Drive": {
-          "Field": {
+          "Drive Pose": {
             "open": true
           },
           "open": true
@@ -76,9 +76,18 @@
     }
   },
   "NetworkTables Info": {
+    "Clients": {
+      "open": true
+    },
+    "Connections": {
+      "open": true
+    },
+    "Server": {
+      "open": true
+    },
+    "shuffleboard@1": {
+      "open": true
+    },
     "visible": true
-  },
-  "NetworkTables View": {
-    "visible": false
   }
 }

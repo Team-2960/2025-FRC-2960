@@ -24,6 +24,25 @@
           }
         },
         {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "leftBranchAlign"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "goToL4Command"
+                }
+              }
+            ]
+          }
+        },
+        {
           "type": "deadline",
           "data": {
             "commands": [
@@ -49,7 +68,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "RA HP Station 1"
+                  "pathName": "Copy of RA HP Station 1"
                 }
               },
               {
@@ -59,6 +78,12 @@
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intakeCommand"
           }
         },
         {
@@ -88,9 +113,22 @@
           }
         },
         {
-          "type": "named",
+          "type": "parallel",
           "data": {
-            "name": "goToL4Command"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "leftBranchAlign"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "goToL4Command"
+                }
+              }
+            ]
           }
         },
         {
@@ -170,9 +208,22 @@
           }
         },
         {
-          "type": "named",
+          "type": "parallel",
           "data": {
-            "name": "goToL4Command"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "leftBranchAlign"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "goToL4Command"
+                }
+              }
+            ]
           }
         },
         {
