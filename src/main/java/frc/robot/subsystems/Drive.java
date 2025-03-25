@@ -24,6 +24,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.GenericEntry;
@@ -32,6 +33,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.ComplexWidget;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -41,6 +43,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import java.util.ArrayList;
 import java.util.Dictionary;
+import java.util.List;
 import java.util.Optional;
 
 import org.photonvision.PhotonUtils;
@@ -50,8 +53,11 @@ import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.path.GoalEndState;
+import com.pathplanner.lib.path.IdealStartingState;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.path.Waypoint;
 import com.pathplanner.lib.trajectory.PathPlannerTrajectory;
 import com.pathplanner.lib.trajectory.PathPlannerTrajectoryState;
 import com.studica.frc.AHRS;
@@ -105,6 +111,7 @@ public class Drive extends SubsystemBase {
     private GenericEntry sb_speedTargetR;
     private GenericEntry sb_linearCommand;
     private GenericEntry sb_rotationCommand;
+    private GenericEntry sb_batteryVoltage;
 
     private ComplexWidget sb_field2d;
     private Pose2d nearestReefFace;
@@ -198,6 +205,45 @@ public class Drive extends SubsystemBase {
             }   
         }
 
+        public class AutonLinearGoToReefCommand extends Command{
+            Translation2d offset;
+
+            public AutonLinearGoToReefCommand(Translation2d offset){
+                this.offset = offset;
+                addRequirements(LinearDriveCommands.this);
+            }
+
+            public void setOffset(Translation2d offset){
+                this.offset = offset;
+            }
+
+
+            @Override
+            public void execute(){
+                PPHolonomicDriveController.overrideXFeedback(() -> 
+                    drive.getCalcToPoint(
+                        drive.calcGoToReef(
+                            new Pose2d(Constants.rightBranchOffset, 
+                            Rotation2d.fromDegrees(0))).getTranslation()).get(1));
+                
+                PPHolonomicDriveController.overrideYFeedback(() -> 
+                    drive.getCalcToPoint(
+                        drive.calcGoToReef(
+                            new Pose2d(Constants.rightBranchOffset, 
+                            Rotation2d.fromDegrees(0))).getTranslation()).get(2));
+            }
+
+            @Override
+            public boolean isFinished(){
+                return PhotonUtils.getDistanceToPose(getEstimatedPos(), getReefFace(offset)) <= Constants.alignLinearTolerance;
+            }   
+
+            @Override
+            public void end(boolean interrupt){
+                PPHolonomicDriveController.clearXYFeedbackOverride();
+            }
+        }
+
         public class LinearDoNothingCommand extends Command{
 
             public LinearDoNothingCommand(){
@@ -206,7 +252,7 @@ public class Drive extends SubsystemBase {
 
             @Override
             public void execute(){
-                setDriveRate(0, 0);
+                updateKinematics(0, 0);
             }
         }
 
@@ -400,6 +446,42 @@ public class Drive extends SubsystemBase {
             public void execute(){
                 rotGoToReef(offset);
             }
+
+            @Override
+            public boolean isFinished(){
+                return getReefFace(new Translation2d()).getRotation().minus(getEstimatedPos().getRotation()).getDegrees() <= 2;
+            }
+        }
+
+        public class AutonRotGoToReefCommand extends Command{
+            Rotation2d offset;
+
+            public AutonRotGoToReefCommand(Rotation2d offset){
+                this.offset = offset;
+                addRequirements(RotationDriveCommands.this);
+            }
+
+            public void setOffset(Rotation2d offset){
+                this.offset = offset;
+            }
+
+            @Override
+            public void execute(){
+                PPHolonomicDriveController.overrideRotationFeedback(() -> 
+                    getCalcRateToAngle(
+                        calcGoToReef(new Pose2d(new Translation2d(), offset)).getRotation())
+                );
+            }
+
+            @Override
+            public boolean isFinished(){
+                return getReefFace(new Translation2d()).getRotation().minus(getEstimatedPos().getRotation()).getDegrees() <= 2;
+            }
+
+            @Override
+            public void end(boolean interrupt){
+                PPHolonomicDriveController.clearRotationFeedbackOverride();
+            }
         }
 
         public class RotDoNothingCommand extends Command{
@@ -588,6 +670,7 @@ public class Drive extends SubsystemBase {
         sb_speedTargetR = pose_layout.add("Target Speed R", 0).getEntry();
 
         sb_field2d = Shuffleboard.getTab("Drive").add(field2d).withWidget("Field");
+        sb_batteryVoltage = Shuffleboard.getTab("Drive").add("Battery voltage", 0).getEntry();
 
     }
 
@@ -645,6 +728,10 @@ public class Drive extends SubsystemBase {
         return swerveDrivePoseEstimator.getEstimatedPosition();
     }
 
+    public double getDriveRate(){
+        return Math.hypot(getChassisSpeeds().vxMetersPerSecond, getChassisSpeeds().vyMetersPerSecond);
+    }
+
     /**
      * Gets the measured chassis speeds
      * @return  measured chassis speeds
@@ -670,7 +757,6 @@ public class Drive extends SubsystemBase {
             speeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rSpeed, fieldAngle);
         } else {
             // TODO Replace deprecated method
-            PPHolonomicDriveController.setRotationTargetOverride(this::getRotationTargetOverride);
             speeds = chassisSpeeds;
         }
 
@@ -686,22 +772,6 @@ public class Drive extends SubsystemBase {
         frontRight.setDesiredState(swerveModuleStates[1]);
         backLeft.setDesiredState(swerveModuleStates[2]);
         backRight.setDesiredState(swerveModuleStates[3]);
-    }
-
-    /**
-     * Gets the rotation override value
-     * @return  chassis speeds override value
-     */
-    private Optional<Rotation2d> getRotationTargetOverride() {
-        // Some condition that should decide if we want to override rotation
-        if (angleMode == AngleControlMode.Angle || angleMode == AngleControlMode.LookAtPoint) {
-            // Return an optional containing the rotation override (this should be a field
-            // relative rotation)
-            return Optional.of(new Rotation2d(rSpeed));
-        } else {
-            // return an empty optional when we don't want to override the path's rotation
-            return Optional.empty();
-        }
     }
 
     /**
@@ -722,6 +792,15 @@ public class Drive extends SubsystemBase {
         Rotation2d currentAngle = pose.getRotation();
 
         calcRateToAngle(targetAngle, currentAngle);
+    }
+
+    private double getCalcRateToAngle(Rotation2d targetAngle){
+        // Get current angle position
+        Rotation2d currentAngle = getEstimatedPos().getRotation();
+
+        double speed = angleAlignPID.calculate(currentAngle.getRadians(), targetAngle.getRadians());
+
+        return speed;
     }
 
     /**
@@ -795,6 +874,33 @@ public class Drive extends SubsystemBase {
         SmartDashboard.putNumber("Align Distance", linearError);
     }
 
+    public Vector<N2> getCalcToPoint(Translation2d point){
+        Pose2d currentPose = getEstimatedPos();
+
+        double maxDriveRate = Constants.maxAutoSpeed;
+
+        //Gets the 2D distance between the target point and current point
+        double linearError = point.getDistance(currentPose.getTranslation());
+
+        //Variable that gets a new point from subtracting the targetpoint by the current point
+        Translation2d calcPoint = point.minus(currentPose.getTranslation());
+
+        //Calculates the angle Error between the two points using Rotation2d (unit circle)
+        Rotation2d angleError = calcPoint.getAngle();
+
+        //Trapezoidal Profiling
+        double targetSpeed = maxDriveRate * (linearError > 0 ? 1 : -1);
+        double rampDownSpeed = linearError / Constants.alignRampDistance * maxDriveRate;
+
+        if (Math.abs(rampDownSpeed) < Math.abs(targetSpeed)) targetSpeed = rampDownSpeed;
+        
+        //Calculates the X and Y Speeds by multiplying the distance between the two points by the angle components
+        double xSpeed = angleError.getCos() * targetSpeed;
+        double ySpeed = angleError.getSin() * targetSpeed;
+
+        return VecBuilder.fill(xSpeed, ySpeed);
+    }
+
     // 
     /**
      * Calculates the angle the robot should go at to align with the reef.
@@ -852,7 +958,24 @@ public class Drive extends SubsystemBase {
                 .rotateAround(FieldLayout.getReef(ReefFace.CENTER).getTranslation(),
                         reefFaceRotation);
         Pose2d finalReefFace = new Pose2d(poseOffset, reefFaceRotation.rotateBy(rotOffset));
-        setAngleAlign(finalReefFace.getRotation().plus(offset));
+        calcRateToAngle(finalReefFace.getRotation().plus(offset));
+    }
+
+    public Pose2d calcGoToReef(Pose2d offset){
+        Rotation2d rotOffset = Rotation2d.fromDegrees(0);
+        if (isRedAlliance()) {
+            offset = new Pose2d(-offset.getX(), -offset.getY(), offset.getRotation());
+            rotOffset = Rotation2d.fromDegrees(180);
+        }
+
+        Rotation2d reefFaceRotation = FieldLayout.getReefFaceZone(getEstimatedPos());
+        Pose2d zeroFace = FieldLayout.getReef(ReefFace.ZERO);
+        Translation2d poseOffset = new Translation2d(zeroFace.getX() + offset.getX(), zeroFace.getY() + offset.getY())
+                .rotateAround(FieldLayout.getReef(ReefFace.CENTER).getTranslation(),
+                        reefFaceRotation);
+        Pose2d finalReefFace = new Pose2d(poseOffset, reefFaceRotation.rotateBy(rotOffset));
+        
+        return finalReefFace;
     }
 
     /**
@@ -892,6 +1015,8 @@ public class Drive extends SubsystemBase {
         field2d.getObject("fieldTargetPoint").setPose(targetPoint.getX(), targetPoint.getY(),
                 Rotation2d.fromDegrees(0));
         field2d.getObject("nearestReefFace").setPose(nearestReefFace);
+
+        sb_batteryVoltage.setDouble(RobotController.getBatteryVoltage());
 
         var currentCommand = Drive.getInstance().rotationDriveCommands.getCurrentCommand();
         String curCommandName = "null";
@@ -1054,12 +1179,11 @@ public class Drive extends SubsystemBase {
     /**
      * Generate a PathPlanner path on the floy
      */
-    public void pathOnTheFly() {
-        // this.wayPoints = poseList;
-        // this.storeWaypoints = PathPlannerPath.waypointsFromPoses(getEstimatedPos(),
-        // new Pose2d(0, 0, Rotation2d.fromDegrees(0)));
-        Command pathCommand = AutoBuilder.pathfindToPose(new Pose2d(), pathConstraints);
-        followPath(pathCommand);
+    public void pathOnTheFly(Pose2d targetPose, IdealStartingState idealStartingState, GoalEndState goalEndState) {
+        List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(getEstimatedPos(), targetPose);
+        
+        PathPlannerPath path = new PathPlannerPath(waypoints, pathConstraints, idealStartingState, goalEndState);
+        followPath(AutoBuilder.followPath(path));
     }
 
     
