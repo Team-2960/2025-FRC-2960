@@ -71,13 +71,13 @@ public class Cameras extends SubsystemBase{
 
         leftPipeline = new AprilTagPipelineSettings(AprilTagFields.k2025ReefscapeWelded,
             new Transform3d(
-                -13.944 /*in  */ * .0254, 
-                -13.944 * 0.0254, 
-                8.791 * .0254, 
+                0.876 /*in  */ * .0254, 
+                12.357 * 0.0254, 
+                11.068 * .0254, 
                 new Rotation3d(
                     Math.toRadians(0),
-                    Math.toRadians(-20), 
-                    Math.toRadians(-135))),
+                    Math.toRadians(0), 
+                    Math.toRadians(0))),
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, 
             3, 
             singleStds , 
@@ -107,9 +107,6 @@ public class Cameras extends SubsystemBase{
     }
 
     public void updateUI(){
-        cameraField.getObject("left Camera Est").setPose(leftCamera.getEstCameraPos());
-        cameraField.getObject("right Camera Est").setPose(rightCamera.getEstCameraPos());
-        cameraField.getObject("front Camera Est").setPose(frontCamera.getEstCameraPos());
     }
 
     @Override
