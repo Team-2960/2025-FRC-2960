@@ -36,7 +36,6 @@ public class AprilTagPipeline extends SubsystemBase {
     private final PhotonPoseEstimator pose_est;
     /** < Pose Estimator */
 
-    private Pose2d last_pose;
     /** < Most recent estimated pose */
     private double last_timestamp;
     /** < Timestamp of the most recent pose estimation */
@@ -53,8 +52,11 @@ public class AprilTagPipeline extends SubsystemBase {
     //Advantage Scope
     private StructArrayPublisher<Pose3d> as_aprilTags;
     private StructPublisher<Pose3d> as_cameraPose; //Camera Pose Relative to Robot on the Field
+    private StructPublisher<Pose2d> as_estimatedCameraPose;
     private Pose3d[] aprilTagList;
     private AprilTagFields field;
+    private Pose2d last_pose;  //Do NOT Use for any estimates
+
 
     // Camera Simulation
     // TargetModel targetModel;
@@ -104,6 +106,9 @@ public class AprilTagPipeline extends SubsystemBase {
         as_cameraPose = NetworkTableInstance.getDefault()
             .getStructTopic(cameraName + " pose", Pose3d.struct).publish();
 
+        as_estimatedCameraPose = NetworkTableInstance.getDefault()
+            .getStructTopic(cameraName + " Estimated Pose", Pose2d.struct).publish();
+
         // Vision Simulation
         // targetModel = TargetModel.kAprilTag16h5;
         // cameraProp = new SimCameraProperties();
@@ -117,6 +122,8 @@ public class AprilTagPipeline extends SubsystemBase {
         displayNum = -1;
         resultsList = "";
         tagPresent = false;
+
+        aprilTagList = new Pose3d[] {};
     }
 
     /**
@@ -138,12 +145,12 @@ public class AprilTagPipeline extends SubsystemBase {
         
         for (var change : unreadResults) {
             visionEst = pose_est.update(change);
-
+            int iteration = 0;
+            last_pose = new Pose2d();
             // Check if a pose was estimated
             if (visionEst.isPresent()) {
                 double est_timestamp = change.getTimestampSeconds();
                 aprilTagList = new Pose3d[change.getTargets().size()];
-                int iteration = 0;
                 // Get found tag count and average distance
                 for (var tag : change.getTargets()) {
                     var tag_pose3d = pose_est.getFieldTags().getTagPose(tag.getFiducialId());
@@ -169,13 +176,11 @@ public class AprilTagPipeline extends SubsystemBase {
 
                 }
 
+                if (iteration == 0) aprilTagList = new Pose3d[] {};
+
             }
 
         }
-    }
-
-    public Pose2d getEstCameraPos(){
-        return last_pose;
     }
 
     public Pose3d getRobotRelativeCamPos(){
@@ -195,5 +200,6 @@ public class AprilTagPipeline extends SubsystemBase {
         //Advantage Scope
         as_aprilTags.set(aprilTagList);
         as_cameraPose.set(getRobotRelativeCamPos());
+        as_estimatedCameraPose.set(last_pose);
     }
 }
