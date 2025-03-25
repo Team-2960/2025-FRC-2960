@@ -109,6 +109,11 @@ public class Climber extends SubsystemBase {
         public boolean isFinished(){
             return getPosition().getRotations() >= Constants.climberExtDist;
         }
+
+        @Override
+        public void end(boolean interrupt){
+            setMotorVolt(0);
+        }
         
     }
 
@@ -127,6 +132,11 @@ public class Climber extends SubsystemBase {
             return getPosition().getRotations() <= Constants.climberRetDist;
     
         }   
+
+        @Override
+        public void end(boolean interrupt){
+            setMotorVolt(0);
+        }
     }
 
     public class HoldPositionCommand extends Command{
@@ -282,7 +292,7 @@ public class Climber extends SubsystemBase {
 
         sb_command.setString(currentCmdName);
         sb_voltage.setDouble(motor.getBusVoltage() * motor.getAppliedOutput());
-        sb_winchExt.setDouble(getExtension());
+        sb_winchExt.setDouble(getPosition().getRotations());
     }
 
     /**

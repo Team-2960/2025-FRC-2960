@@ -123,8 +123,8 @@ public class Constants {
     public static final Rotation2d armTopLim = Rotation2d.fromDegrees(95);
     public static final Rotation2d armBotLim = Rotation2d.fromDegrees(0);
 
-    public static final Rotation2d armIntakeAngle = Rotation2d.fromDegrees(95);
-    public static final Rotation2d armTravelAngle = Rotation2d.fromDegrees(85);
+    public static final Rotation2d armIntakeAngle = Rotation2d.fromDegrees(87);
+    public static final Rotation2d armTravelAngle = Rotation2d.fromDegrees(75);
     public static final Rotation2d armL1CoralScoreAngle = Rotation2d.fromDegrees(73);
     public static final Rotation2d armCoralScoreAngle = Rotation2d.fromDegrees(60);
     public static final Rotation2d armCoralL4Angle = Rotation2d.fromDegrees(60);
@@ -148,17 +148,17 @@ public class Constants {
 
     public static final double elevIntakePos = 0;       // in.
     public static final double elevL1Pos = 0;           // in.
-    public static final double elevL2Pos = 16;           // in.
-    public static final double elevL3Pos = 31.5;           // in.
+    public static final double elevL2Pos = 14;           // in.
+    public static final double elevL3Pos = 29.5;           // in.
     public static final double elevL4Pos = 55.5;           // in.
     public static final double elevLowAlgaePos = 17.7;     // in.
     public static final double elevHighAlgaePos = 36;    // in.
 
     //End Effector
-    public static final double coralEjectVolt = 4;
-    public static final double coralIntakeVolt = 1.5;
-    public static final double algaeRemovalVolt = 12;
-    public static final double coralEjectTime = 1;
+    public static final double coralEjectVolt = -12;
+    public static final double coralIntakeVolt = -3;
+    public static final double algaeRemovalVolt = 6;
+    public static final double coralEjectTime = -1;
 
     //Algae Roller
     public static final PIDParam algaeAnglePID = new PIDParam(0.0, 0.0, 0.0);

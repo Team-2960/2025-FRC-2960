@@ -178,9 +178,9 @@ public class OperatorInterface extends SubsystemBase {
         driverController.pov(90).whileTrue(climber.new ExtendCmd());
         driverController.pov(270).whileTrue(climber.new RetractCmd());
 
-        operatorController.start().onTrue(climber.new SetExtPosCommand());
+        operatorController.start().whileTrue(climber.new SetExtPosCommand());
 
-        driverController.start().onTrue(climber.new SetExtPosCommand());
+        operatorController.back().whileTrue(climber.new SetRetPosCommand());
     }
     /**
      * Updates the controls for the drivetrain

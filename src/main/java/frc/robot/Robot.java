@@ -58,7 +58,7 @@ public class Robot extends TimedRobot {
         elevArmControl = ElevArmControl.getInstance();
         elevator = Elevator.getInstance();
         endEffector = EndEffector.getInstance();
-        ledControl = LEDControl.getInstance();
+        //ledControl = LEDControl.getInstance();
         cameras = Cameras.getInstance();
 
         CameraServer.startAutomaticCapture();

@@ -219,7 +219,7 @@ public class Drive extends SubsystemBase {
 
 
             @Override
-            public void execute(){
+            public void initialize(){
                 PPHolonomicDriveController.overrideXFeedback(() -> 
                     drive.getCalcToPoint(
                         drive.calcGoToReef(
@@ -466,7 +466,7 @@ public class Drive extends SubsystemBase {
             }
 
             @Override
-            public void execute(){
+            public void initialize(){
                 PPHolonomicDriveController.overrideRotationFeedback(() -> 
                     getCalcRateToAngle(
                         calcGoToReef(new Pose2d(new Translation2d(), offset)).getRotation())
@@ -868,10 +868,6 @@ public class Drive extends SubsystemBase {
         double ySpeed = angleError.getSin() * targetSpeed;
 
         updateKinematics(xSpeed, ySpeed);
-
-        SmartDashboard.putNumber("Align X Speed", xSpeed);
-        SmartDashboard.putNumber("Align Y Speed", ySpeed);
-        SmartDashboard.putNumber("Align Distance", linearError);
     }
 
     public Vector<N2> getCalcToPoint(Translation2d point){
