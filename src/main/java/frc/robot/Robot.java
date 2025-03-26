@@ -4,13 +4,10 @@
 
 package frc.robot;
 
-import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Auton.RobotContainer;
-//import frc.robot.Auton.AutonList;
-import frc.robot.subsystems.*;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -32,27 +29,12 @@ public class Robot extends TimedRobot {
 
     @Override
     public void robotInit() {
-        Drive.getInstance();
-        OperatorInterface.getInstance();
-        Climber.getInstance();
-        Arm.getInstance();
-        AlgaeAngle.getInstance();
-        AlgaeRoller.getInstance();
-        ElevArmControl.getInstance();
-        Elevator.getInstance();
-        EndEffector.getInstance();
-        LEDControl.getInstance();
-        Cameras.getInstance();
-
-        CameraServer.startAutomaticCapture();
-        
-        autonomousCommand = RobotContainer.getAutonomousCommand();
+        autonomousCommand = RobotContainer.getAutonomousCommand();        
     }
 
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
-
     }
 
     @Override

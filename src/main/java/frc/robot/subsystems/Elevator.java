@@ -36,8 +36,6 @@ import static edu.wpi.first.units.Units.*;
 
 
 public class Elevator extends SubsystemBase {
-    private static Elevator elevator = null;
-
     private SparkFlex elevatorMotor;
 
     private RelativeEncoder elevatorEncoder;
@@ -250,7 +248,7 @@ public class Elevator extends SubsystemBase {
     /**
      * Constructor
      */
-    private Elevator() {        
+    public Elevator() {        
 
         elevatorMotor = new SparkFlex(CAN_IDS.elevatorMotor, MotorType.kBrushless);
 
@@ -570,16 +568,4 @@ public class Elevator extends SubsystemBase {
         
         SmartDashboard.putString("Current Command", curCommandName);
     }
-
-
-    /**
-     * Static initializer for the elevator class
-     */
-    public static Elevator getInstance() {
-        if (elevator == null) {
-            elevator = new Elevator();
-        }
-        return elevator;
-    }
-
 }

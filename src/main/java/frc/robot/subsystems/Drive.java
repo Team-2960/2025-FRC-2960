@@ -46,8 +46,6 @@ import static frc.robot.Constants.RobotConst;
 import static frc.robot.Constants.DriveConst;
 
 public class Drive extends SubsystemBase {
-    private static Drive drive = null; // Statically initialized instance
-
     private final Swerve frontLeft;
     private final Swerve frontRight;
     private final Swerve backLeft;
@@ -511,8 +509,7 @@ public class Drive extends SubsystemBase {
     /**
      * Constructor
      */
-    private Drive() {
-
+    public Drive() {
         // Initialize Swerve Kinematics
         kinematics = new SwerveDriveKinematics(
             DriveConst.frontLeftLocation, 
@@ -808,7 +805,7 @@ public class Drive extends SubsystemBase {
     private void updateUI() {
         // Update Current Command
         String curCommandName = "null";
-        var currentCommand = Drive.getInstance().getCurrentCommand();
+        var currentCommand = getCurrentCommand();
 
         if (currentCommand != null)
             curCommandName = currentCommand.getName();
@@ -918,18 +915,4 @@ public class Drive extends SubsystemBase {
         updateOdometry();
         updateUI();
     }
-
-    /**
-     * Static Initializer
-     * 
-     * @return Common object of Drive
-     */
-    public static Drive getInstance() {
-        if (drive == null) {
-            drive = new Drive();
-        }
-
-        return drive;
-    }
-
 }

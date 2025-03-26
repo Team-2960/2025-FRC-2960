@@ -35,7 +35,14 @@ public class OperatorInterface {
     /**
      * Constructor
      */
-    private OperatorInterface() {
+    public OperatorInterface(
+        Drive drive, 
+        ElevArmControl elevArmControl, 
+        EndEffector endEffector, 
+        AlgaeAngle algaeAngle, 
+        AlgaeRoller algaeRoller, 
+        Climber climber
+    ) {
         // Create Joysticks
         driverController = new CommandXboxController(0);
         operatorController = new CommandXboxController(1);
@@ -44,18 +51,16 @@ public class OperatorInterface {
         ySpeed = MetersPerSecond.mutable(0);
         rSpeed = RadiansPerSecond.mutable(0);
 
-        driveTriggers();
-        coralPlacementTriggers();
-        algaeGrabberTriggers();
-        climberTriggers();
+        driveTriggers(drive);
+        coralPlacementTriggers(elevArmControl, endEffector);
+        algaeGrabberTriggers(algaeAngle, algaeRoller);
+        climberTriggers(climber);
     }
     
     /**
      * Setup drivetrain triggers
      */
-    private void driveTriggers(){
-        Drive drive = Drive.getInstance();
-
+    private void driveTriggers(Drive drive){
         // Set drive default command
         drive.setDefaultCommand(drive.new RateControlCommand(this::getXSpeed, this::getYSpeed, this::getAngleRate));
 
@@ -98,10 +103,7 @@ public class OperatorInterface {
     /**
      * Setup coral placement triggers
      */
-    private void coralPlacementTriggers(){
-        EndEffector endEffector = EndEffector.getInstance();
-        ElevArmControl elevArmControl = ElevArmControl.getInstance();
-
+    private void coralPlacementTriggers(ElevArmControl elevArmControl, EndEffector endEffector){
         //Elevator Arm Triggers
         operatorController.y().onTrue(elevArmControl.getGoToL4Command());
         operatorController.x().onTrue(elevArmControl.getGoToL3Command());
@@ -126,10 +128,7 @@ public class OperatorInterface {
     /**
      * Setup Algea Grabber Triggers
      */
-    private void algaeGrabberTriggers(){
-        AlgaeAngle algaeAngle = AlgaeAngle.getInstance();
-        AlgaeRoller algaeRoller = AlgaeRoller.getInstance();
-
+    private void algaeGrabberTriggers(AlgaeAngle algaeAngle, AlgaeRoller algaeRoller){
         // TODO move algea presets to constants
         operatorController.pov(0)
             .onTrue(algaeAngle.new AngleCommand(Rotation2d.fromDegrees(20)));
@@ -144,8 +143,7 @@ public class OperatorInterface {
     /**
      * Setup Climber Triggers
      */
-    private void climberTriggers(){
-        Climber climber = Climber.getInstance();
+    private void climberTriggers(Climber climber){
         driverController.pov(90).whileTrue(climber.new ExtendCmd());
         driverController.pov(270).whileTrue(climber.new RetractCmd());
 
@@ -202,18 +200,5 @@ public class OperatorInterface {
 
     public double getAllianceDir() {
         return FieldLayout.isRedAlliance() ? 1 : -1;
-    }
-
-    /**
-     * Static Initializer
-     * 
-     * @return common instance of the OperatorInterface class
-     */
-    public static OperatorInterface getInstance() {
-        if (oi == null) {
-            oi = new OperatorInterface();
-        }
-
-        return oi;
     }
 }

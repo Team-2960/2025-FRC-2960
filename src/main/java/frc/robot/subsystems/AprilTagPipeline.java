@@ -27,6 +27,7 @@ import org.photonvision.PhotonUtils;
  * Manages connection to a single PhotonVision AprilTag Pipeline
  */
 public class AprilTagPipeline extends SubsystemBase {
+    private final Drive drive;
 
     private final AprilTagPipelineSettings settings;    //< Pipeline Settings
     private final PhotonCamera camera;                  //< Camera object
@@ -65,7 +66,7 @@ public class AprilTagPipeline extends SubsystemBase {
      * 
      * @param settings Pipeline settings
      */
-    public AprilTagPipeline(AprilTagPipelineSettings settings, String cameraName, String name) {
+    public AprilTagPipeline(AprilTagPipelineSettings settings, String cameraName, String name, Drive drive) {
         this.settings = settings;
         // TODO: Find non-depricated method to get April Tag Field Locations
         camera = new PhotonCamera(cameraName);
@@ -73,6 +74,8 @@ public class AprilTagPipeline extends SubsystemBase {
                 AprilTagFieldLayout.loadField(settings.field_layout),
                 settings.pose_strategy,
                 settings.robot_to_camera);
+
+        this.drive = drive;
 
         last_pose = new Pose2d();
         lastTimestamp = Seconds.mutable(0);
@@ -126,7 +129,6 @@ public class AprilTagPipeline extends SubsystemBase {
      */
     private void updatePose() {
         Optional<EstimatedRobotPose> visionEst = Optional.empty();
-        Drive drive = Drive.getInstance();
         var unreadResults = camera.getAllUnreadResults();
         
         for (var change : unreadResults) {
@@ -171,7 +173,7 @@ public class AprilTagPipeline extends SubsystemBase {
     }
 
     public Pose3d getRobotRelativeCamPos(){
-        return new Pose3d(Drive.getInstance().getPose()).transformBy(settings.robot_to_camera);
+        return new Pose3d(drive.getPose()).transformBy(settings.robot_to_camera);
     }
 
     /**

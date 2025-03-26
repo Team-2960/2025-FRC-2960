@@ -12,8 +12,6 @@ import frc.robot.Constants.ArmConst;
 import frc.robot.Constants.ElevConst;
 
 public class ElevArmControl extends SubsystemBase{
-    private static ElevArmControl instance = null;
-
     public final Command gotoIntake;    /**< Command sequence to move to intake position */
     public final Command gotoL1;        /**< Command sequence to move to the L1 scoring position */
     public final Command gotoL2;        /**< Command sequence to move to the L2 scoring position */
@@ -22,25 +20,22 @@ public class ElevArmControl extends SubsystemBase{
     public final Command gotoLowAlgae;  /**< Command sequence to move to the low algae removal position */
     public final Command gotoHighAlgae; /**< Command sequence to move to the high algae removal position   */  
      
-    private Arm arm = Arm.getInstance();
-    private Elevator elev = Elevator.getInstance();
+    private Arm arm;
+    private Elevator elev;
 
     /**
      * Constructor
      */
-    private ElevArmControl(){
+    public ElevArmControl(Arm arm, Elevator elevator){
+        this.arm = arm;
+        this.elev = elevator;
+
         gotoIntake = getGoToIntakeCommand();
-
         gotoL1 = getGoToL1Command();
-
         gotoL2 = getGoToL2Command();
-
         gotoL3 = getGoToL3Command();
-
         gotoL4 = getGoToL4Command();
-
         gotoLowAlgae = getGoToLowAlgaeCommand();
-
         gotoHighAlgae = getGoToHighAlgaeCommand();
     }
 
@@ -71,6 +66,7 @@ public class ElevArmControl extends SubsystemBase{
     public void gotoHighAlgaePos() {
         gotoHighAlgae.schedule();
     }
+
     public Command getGoToIntakeCommand(){
         return new SequentialCommandGroup(
             new ParallelRaceGroup(arm.new ArmAngleCommand(new Rotation2d(ArmConst.travelAngle)), elev.new ElevatorHoldCommand()),
@@ -122,15 +118,4 @@ public class ElevArmControl extends SubsystemBase{
             new ParallelRaceGroup(arm.new ArmAngleCommand(new Rotation2d(ArmConst.algaeRemoveAngle)), elev.new ElevatorHoldCommand())
         );
     }
-
-    /**
-     * Singleton Instance access
-     * @return  the instance of the ElevArmControl class
-     */
-    public static ElevArmControl getInstance() {
-        if(instance == null) instance = new ElevArmControl();
-
-        return instance;
-    } 
-    
 }

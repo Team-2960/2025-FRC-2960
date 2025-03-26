@@ -25,10 +25,8 @@ public class Cameras extends SubsystemBase{
 
     //Simulation
     // private VisionSystemSim visionSim;
-    
-    private static Cameras cameras = null;
 
-    public Cameras(){
+    public Cameras(Drive drive) {
 
         singleStds = VecBuilder.fill(1, 1, 16);
         multiStds = VecBuilder.fill(0.5, 0.5, 1);
@@ -63,9 +61,9 @@ public class Cameras extends SubsystemBase{
             .2
         );
         
-        frontCamera = new AprilTagPipeline(frontPipeline, "Camera01", "AprilTagPipeline");
-        rightCamera = new AprilTagPipeline(rightPipeline, "Camera02", "AprilTagPipeline");
-        leftCamera = new AprilTagPipeline(leftPipeline, "Camera03", "AprilTagPipeline");
+        frontCamera = new AprilTagPipeline(frontPipeline, "Camera01", "AprilTagPipeline", drive);
+        rightCamera = new AprilTagPipeline(rightPipeline, "Camera02", "AprilTagPipeline", drive);
+        leftCamera = new AprilTagPipeline(leftPipeline, "Camera03", "AprilTagPipeline", drive);
 
         var layout = Shuffleboard.getTab("AprilTags")
                 .getLayout("Camera Update", BuiltInLayouts.kList)
@@ -84,18 +82,8 @@ public class Cameras extends SubsystemBase{
         
     }
 
-    public void updateUI(){
-    }
-
     @Override
-    public void periodic(){
+    public void simulationPeriodic(){
         // visionSim.update(Drive.getInstance().getEstimatedPos());
-    }
-
-    public static Cameras getInstance(){
-        if (cameras == null){
-            cameras = new Cameras();
-        }
-        return cameras;
-    }   
+    }  
 }

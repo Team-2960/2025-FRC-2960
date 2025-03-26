@@ -26,14 +26,7 @@ import frc.robot.Constants.EndEffectorConst;
 /**
  * Manages coral end effector
  */
-public class EndEffector extends SubsystemBase{
-    /*Coral intake/eject
-    motor: Neo vortex (spark flex) used to control intake and eject
-    photoeye: ?? Used to detect fully loaded coral
-    photoeye: model#  class library:
-    */
-    private static EndEffector instance = null;
-    
+public class EndEffector extends SubsystemBase{    
     private DigitalInput coralPresentPE;//Photoeye coral detector
     private SparkFlex coralDrive;
     private RelativeEncoder coralEncoder;
@@ -178,7 +171,7 @@ public class EndEffector extends SubsystemBase{
     /**
      * Constructor
      */
-    private EndEffector(){
+    public EndEffector(){
         coralDrive = new SparkFlex(Constants.CAN_IDS.coralMotor, MotorType.kBrushless);
         coralEncoder = coralDrive.getEncoder();
         coralPresentPE = new DigitalInput(Constants.DIO_PORTS.coralPresentPE);
@@ -309,16 +302,6 @@ public class EndEffector extends SubsystemBase{
         sb_motorVoltage.setDouble(coralDrive.getBusVoltage() * coralDrive.getAppliedOutput());
         sb_photoeyeState.setBoolean(coralPresentPE.get());
         sb_coralPosition.setDouble(getPos());
-    }
-
-     /**
-     * Static Initializer
-     */
-    public static EndEffector getInstance() {
-        if (instance == null) {
-            instance = new EndEffector();
-        }
-        return instance;
     }
 }
 

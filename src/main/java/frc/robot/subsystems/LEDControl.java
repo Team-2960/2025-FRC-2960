@@ -16,8 +16,6 @@ import frc.robot.Constants.LEDConst;
  * Manages the robot LEDs
  */
 public class LEDControl extends SubsystemBase{
-    private static LEDControl instance = null;
-
     /**
      * Sets the LEDs to the team colors
      */
@@ -112,7 +110,7 @@ public class LEDControl extends SubsystemBase{
     /**
      * Constructor
      */
-    private LEDControl() {
+    public LEDControl(EndEffector endEffector) {
         // Initialize LEDS
         leds = new AddressableLED(ledPort);
         
@@ -146,19 +144,10 @@ public class LEDControl extends SubsystemBase{
         leds.start();
 
         // Setup Coral LED blinking 
-        coralTrigger = new Trigger(EndEffector.getInstance()::isCoralPresent);
+        coralTrigger = new Trigger(endEffector::isCoralPresent);
         coralTrigger.whileTrue(new CycleColors(1, .1, Color.kWhite, Color.kBlue));
 
         // Set default command to set the LEDs to alternating blue and white
         setDefaultCommand(new TeamColorCommand());
-    }
-
-
-    /**
-     * Singleton Initializer
-     */
-    public static LEDControl getInstance() {
-        if(instance != null) instance = new LEDControl();
-        return instance;
     }
 }

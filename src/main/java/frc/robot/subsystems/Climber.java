@@ -23,8 +23,6 @@ import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 public class Climber extends SubsystemBase {
-
-
     public class ExtendCmd extends Command {
         public ExtendCmd() {
             addRequirements(Climber.this);
@@ -166,9 +164,6 @@ public class Climber extends SubsystemBase {
 
     }
 
-
-    private static Climber climber = null;
-
     private final SparkFlex motor;
 
     private final RelativeEncoder encoder;
@@ -191,7 +186,7 @@ public class Climber extends SubsystemBase {
     /**
      * Constructor
      */
-    private Climber() {
+    public Climber() {
         // Initialize Motors
         motor = new SparkFlex(Constants.CAN_IDS.climberMotor, MotorType.kBrushless);
 
@@ -299,16 +294,5 @@ public class Climber extends SubsystemBase {
         sb_command.setString(currentCmdName);
         sb_voltage.setDouble(motor.getBusVoltage() * motor.getAppliedOutput());
         sb_winchExt.setDouble(getPosition().getRotations());
-    }
-
-    /**
-     * Static initializer
-     */
-    public static Climber getInstance() {
-        if (climber == null) {
-            climber = new Climber();
-        }
-
-        return climber;
     }
 }

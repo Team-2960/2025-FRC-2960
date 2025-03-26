@@ -15,17 +15,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.AlgaeConst;
 
-public class AlgaeRoller extends SubsystemBase{
-    /*Algae intake/eject
-    motor: Neo vortex (spark flex) used to control intake and eject
-    photoeye: ?? Used to detect fully loaded algae
-    photoeye: model#  class library:
-    */
-
-    //TODO run intake method, stop method
-
-    private static AlgaeRoller instance = null;
-    
+public class AlgaeRoller extends SubsystemBase{    
     private SparkFlex algaeDrive;
 
     private EjectCmd ejectCmd;
@@ -75,7 +65,7 @@ public class AlgaeRoller extends SubsystemBase{
     /**
      * Constructor
      */
-    private AlgaeRoller(){
+    public AlgaeRoller(){
         algaeDrive = new SparkFlex(Constants.CAN_IDS.algaeRollerMotor, MotorType.kBrushless);
 
         ejectCmd = new EjectCmd();
@@ -160,16 +150,6 @@ public class AlgaeRoller extends SubsystemBase{
 
         sb_currentCmd.setString(commandName);
         sb_motorVoltage.setDouble(algaeDrive.getBusVoltage() * algaeDrive.getAppliedOutput());
-    }
-
-     /**
-     * Static Initializer
-     */
-    public static AlgaeRoller getInstance() {
-        if (instance == null) {
-            instance = new AlgaeRoller();
-        }
-        return instance;
     }
 }
 

@@ -11,15 +11,42 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
+import frc.robot.OperatorInterface;
 import frc.robot.Util.FieldLayout;
+import frc.robot.subsystems.AlgaeAngle;
+import frc.robot.subsystems.AlgaeRoller;
 import frc.robot.subsystems.Arm;
+import frc.robot.subsystems.Cameras;
+import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Drive;
+import frc.robot.subsystems.DriverCamera;
 import frc.robot.subsystems.ElevArmControl;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.EndEffector;
+import frc.robot.subsystems.LEDControl;
 
 public class RobotContainer {
     private static SendableChooser<Command> autoChooser;
+
+    // Subsystems
+    public static Drive drive = new Drive();
+    
+    public static Arm arm = new Arm();
+    public static Elevator elevator = new Elevator();
+    public static ElevArmControl elevArmControl = new ElevArmControl(arm, elevator);
+    public static EndEffector endEffector = new EndEffector();
+
+    public static AlgaeAngle algaeAngle = new AlgaeAngle();
+    public static AlgaeRoller algaeRoller = new AlgaeRoller();
+
+    public static Climber climber = new Climber();
+
+    public static Cameras cameras = new Cameras(drive);
+    public static DriverCamera driverCamera = new DriverCamera();
+
+    public static LEDControl ledControl = new LEDControl(endEffector);
+
+    public static OperatorInterface oi = new OperatorInterface(drive, elevArmControl, endEffector, algaeAngle, algaeRoller, climber);
 
     // PathPlanner
     public static RobotConfig config;
@@ -45,8 +72,6 @@ public class RobotContainer {
      * Initializes PathPlanner
      */
     private static void initPathPlanner() {
-        Drive drive = Drive.getInstance();
-
         // Get Path Planner RobotConfig
         try {
             config = RobotConfig.fromGUISettings();
@@ -76,12 +101,6 @@ public class RobotContainer {
      * Adds Named Commands to PathPlanner
      */
     private static void initNamedCommands() {
-        Drive drive = Drive.getInstance();
-        ElevArmControl elevArmControl = ElevArmControl.getInstance();
-        Elevator elevator = Elevator.getInstance();
-        Arm arm = Arm.getInstance();
-        EndEffector endEffector = EndEffector.getInstance();
-
         NamedCommands.registerCommand("gotoNearestBranch", drive.new GotoNearestBranchCommand(Constants.RobotConst.coralOffset));
         NamedCommands.registerCommand("goToIntakeCommand", elevArmControl.getGoToIntakeCommand());
         // TODO Implement left & right branch align

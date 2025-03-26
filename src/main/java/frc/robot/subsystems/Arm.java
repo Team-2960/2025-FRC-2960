@@ -33,8 +33,6 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 import static edu.wpi.first.units.Units.*;
 
 public class Arm extends SubsystemBase {
-    private static Arm arm = null;
-
     private SparkFlex motor;
 
     private RelativeEncoder relEncoder;
@@ -228,7 +226,7 @@ public class Arm extends SubsystemBase {
     /**
      * Constructor
      */
-    private Arm() {        
+    public Arm() {        
         motor = new SparkFlex(Constants.CAN_IDS.armMotor, MotorType.kBrushless);
         motor.configure(new SparkFlexConfig().inverted(true).apply(new AbsoluteEncoderConfig().zeroCentered(true)), com.revrobotics.spark.SparkBase.ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         absEncoder = motor.getAbsoluteEncoder();
@@ -517,16 +515,4 @@ public class Arm extends SubsystemBase {
         sb_angleAtTopLim.setBoolean(topLimitReached());
         sb_angleAtBotLim.setBoolean(botLimitReached());
     }
-
-
-    /**
-     * Static initializer for the arm class
-     */
-    public static Arm getInstance() {
-        if (arm == null) {
-            arm = new Arm();
-        }
-        return arm;
-    }
-
 }

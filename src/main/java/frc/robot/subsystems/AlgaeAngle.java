@@ -34,8 +34,6 @@ import static edu.wpi.first.units.Units.*;
 
 
 public class AlgaeAngle extends SubsystemBase {
-    private static AlgaeAngle instance = null;
-
     private SparkMax motor;
 
     private RelativeEncoder relEncoder;
@@ -228,7 +226,7 @@ public class AlgaeAngle extends SubsystemBase {
     /**
      * Constructor
      */
-    private AlgaeAngle() {        
+    public AlgaeAngle() {        
         motor = new SparkMax(CAN_IDS.algaeAngleMotor, MotorType.kBrushless);
         absEncoder = motor.getAbsoluteEncoder();
         relEncoder = motor.getEncoder();
@@ -521,16 +519,4 @@ public class AlgaeAngle extends SubsystemBase {
     public void periodic() {
         updateUI(rate, voltage);
     }
-
-
-    /**
-     * Static initializer for the  class
-     */
-    public static AlgaeAngle getInstance() {
-        if (instance == null) {
-            instance = new AlgaeAngle();
-        }
-        return instance;
-    }
-
 }
