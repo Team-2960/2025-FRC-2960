@@ -8,10 +8,15 @@ import edu.wpi.first.math.*;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.numbers.*;
 import edu.wpi.first.networktables.*;
+import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.shuffleboard.*;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Util.AprilTagPipelineSettings;
 import edu.wpi.first.wpilibj.Timer;
+
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Seconds;
+import static edu.wpi.first.units.Units.Value;
 
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
@@ -23,18 +28,15 @@ import org.photonvision.PhotonUtils;
  */
 public class AprilTagPipeline extends SubsystemBase {
 
-    private final AprilTagPipelineSettings settings;
-    /** < Pipeline Settings */
-    private final PhotonCamera camera;
-    /** < Camera object */
-    private final PhotonPoseEstimator pose_est;
-    /** < Pose Estimator */
+    private final AprilTagPipelineSettings settings;    //< Pipeline Settings
+    private final PhotonCamera camera;                  //< Camera object
+    private final PhotonPoseEstimator pose_est;         //< Most recent estimated pse
 
-    /** < Most recent estimated pose */
-    private double last_timestamp;
-    /** < Timestamp of the most recent pose estimation */
-    private double maxDistance;
-    private final double ambiguity_threshold;
+    private final Distance maxDistance;                 //< Maximum accepted target distance 
+    private final Dimensionless maxAmbiguityThreshold;     //< Maximum accepted target ambiguity threshold
+
+    private MutTime lastTimestamp;  //< Timestamp of the most recent pose estimation */
+    private MutTime timestamp;
 
     // Shuffleboard
     private GenericEntry sb_PoseX;
@@ -73,9 +75,10 @@ public class AprilTagPipeline extends SubsystemBase {
                 settings.robot_to_camera);
 
         last_pose = new Pose2d();
-        last_timestamp = 0;
-        maxDistance = settings.max_dist;
-        ambiguity_threshold = settings.ambiguity_threshold;
+        lastTimestamp = Seconds.mutable(0);
+        timestamp = Seconds.mutable(0);
+        maxDistance = Meters.mutable(settings.max_dist);
+        maxAmbiguityThreshold = Value.mutable(settings.ambiguity_threshold);
         field = settings.field_layout;
 
         // Setup Shuffleboard
@@ -85,7 +88,7 @@ public class AprilTagPipeline extends SubsystemBase {
         sb_PoseX = layout.add("Pose X" + cameraName, 0).getEntry();
         sb_PoseY = layout.add("Pose Y" + cameraName, 0).getEntry();
         sb_PoseR = layout.add("Pose R" + cameraName, 0).getEntry();
-        sb_lastTimestamp = layout.add("Last Timestamp" + cameraName, last_timestamp).getEntry();
+        sb_lastTimestamp = layout.add("Last Timestamp" + cameraName, lastTimestamp.toShortString()).getEntry();
         sb_lastUpdatePeriod = layout.add("Time Since Last Update" + cameraName, 0).getEntry();
 
         //Advantage Scope
@@ -132,8 +135,9 @@ public class AprilTagPipeline extends SubsystemBase {
             last_pose = new Pose2d();
             // Check if a pose was estimated
             if (visionEst.isPresent()) {
-                double est_timestamp = change.getTimestampSeconds();
+                timestamp.mut_replace(change.getTimestampSeconds(), Seconds);
                 aprilTagList = new Pose3d[change.getTargets().size()];
+
                 // Get found tag count and average distance
                 for (var tag : change.getTargets()) {
                     var tag_pose3d = pose_est.getFieldTags().getTagPose(tag.getFiducialId());
@@ -141,13 +145,13 @@ public class AprilTagPipeline extends SubsystemBase {
                     if (!tag_pose3d.isEmpty()) {
                         Pose3d estPose = PhotonUtils.estimateFieldToRobotAprilTag(tag.getBestCameraToTarget(),
                                 tag_pose3d.get(), settings.robot_to_camera.inverse());
-                        if (tag.getPoseAmbiguity() <= ambiguity_threshold) {
-                            double dist = tag.getBestCameraToTarget().getTranslation().getDistance(new Translation3d());
-                            if (dist <= maxDistance) {
+                        if (tag.getPoseAmbiguity() <= maxAmbiguityThreshold.in(Value)) {
+                            double targetDist = tag.getBestCameraToTarget().getTranslation().getDistance(new Translation3d());
+                            if (targetDist <= maxDistance.in(Meters)) {
                                 Vector<N3> est_std = settings.single_tag_std;
-                                est_std = est_std.times(1 + (dist * dist / 30));
+                                est_std = est_std.times(1 + (targetDist * targetDist / 30));
 
-                                drive.addVisionPose(estPose.toPose2d(), est_timestamp, est_std);
+                                drive.addVisionPose(estPose.toPose2d(), timestamp, est_std);
                                 last_pose = estPose.toPose2d();
 
                                 aprilTagList[iteration] = AprilTagFieldLayout.loadField(field).getTagPose(tag.getFiducialId()).get();
@@ -177,8 +181,8 @@ public class AprilTagPipeline extends SubsystemBase {
         sb_PoseX.setDouble(last_pose.getX());
         sb_PoseY.setDouble(last_pose.getY());
         sb_PoseR.setDouble(last_pose.getRotation().getDegrees());
-        sb_lastTimestamp.setDouble(last_timestamp);
-        sb_lastUpdatePeriod.setDouble(Timer.getFPGATimestamp() - last_timestamp);
+        sb_lastTimestamp.setString(lastTimestamp.toShortString());
+        sb_lastUpdatePeriod.setString(lastTimestamp.mut_times(-1).mut_plus(Timer.getFPGATimestamp(), Seconds).toShortString());
 
         //Advantage Scope
         as_aprilTags.set(aprilTagList);
