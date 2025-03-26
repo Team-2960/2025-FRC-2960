@@ -7,8 +7,13 @@ import static edu.wpi.first.units.Units.RevolutionsPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.sim.SparkAbsoluteEncoderSim;
+import com.revrobotics.sim.SparkFlexSim;
+import com.revrobotics.sim.SparkMaxSim;
+import com.revrobotics.sim.SparkRelativeEncoderSim;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkRelativeEncoder;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkFlex;
@@ -22,6 +27,7 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
@@ -52,11 +58,16 @@ public class Swerve extends SubsystemBase {
 
 
     private final SparkFlex mDrive;
-
     private final SparkMax mAngle;
 
-    private final SparkAbsoluteEncoder encAngle;
     private final RelativeEncoder encDrive;
+    private final SparkAbsoluteEncoder encAngle;
+
+    private final SparkFlexSim mDriveSim;
+    private final SparkMaxSim mAngleSim;
+
+    private final SparkRelativeEncoderSim encDriveSim;
+    private final SparkAbsoluteEncoderSim encAngleSim;
 
     private final PIDController drivePIDcontroller;
     private final SimpleMotorFeedforward driveFeedforward;
@@ -104,6 +115,12 @@ public class Swerve extends SubsystemBase {
 
         // Initialize Angle Sensor
         encAngle = mAngle.getAbsoluteEncoder();
+
+        // Setup Simulation
+        mDriveSim = new SparkFlexSim(mDrive, DCMotor.getNeoVortex(1));
+        mAngleSim = new SparkMaxSim(mAngle, DCMotor.getNeo550(1));
+        encDriveSim = new SparkRelativeEncoderSim(mDrive);
+        encAngleSim = new SparkAbsoluteEncoderSim(mAngle);
     
 
         // Initialize Drive rate controllers

@@ -51,7 +51,7 @@ public class Drive extends SubsystemBase {
     private final Swerve backLeft;
     private final Swerve backRight;
 
-    private final AHRS navx;
+    private final AHRS navx;        // TODO Simulate navx
 
     private final SwerveDrivePoseEstimator swerveDrivePoseEstimator;
 
