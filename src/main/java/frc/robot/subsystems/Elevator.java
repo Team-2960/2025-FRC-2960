@@ -43,12 +43,8 @@ public class Elevator extends SubsystemBase {
     private RelativeEncoder elevatorEncoder;
 
     private SparkLimitSwitch elevatorLimitBot;
-    
-    private SparkLimitSwitch elevatorLimitTop;
 
     private Trigger elevLimBotTrigger;
-    
-    private Trigger elevLimTopTrigger;
 
     private PIDController elevatorPID;
 
@@ -260,8 +256,6 @@ public class Elevator extends SubsystemBase {
 
         elevatorEncoder = elevatorMotor.getEncoder();
 
-        elevatorLimitTop = elevatorMotor.getForwardLimitSwitch();
-
         elevatorLimitBot = elevatorMotor.getReverseLimitSwitch();
 
         elevatorPID = new PIDController(ElevConst.pid.kP, ElevConst.pid.kI, ElevConst.pid.kD);
@@ -277,8 +271,6 @@ public class Elevator extends SubsystemBase {
         elevatorMotor.configure(elevatorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         elevLimBotTrigger = new Trigger(elevatorLimitBot::isPressed);
-        
-        elevLimTopTrigger = new Trigger(elevatorLimitTop::isPressed);
 
         //TODO change reset values to whatever they need to be
         elevLimBotTrigger.whileTrue(new EncoderResetCommand(0));
