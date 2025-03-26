@@ -523,7 +523,6 @@ public class Drive extends SubsystemBase {
             CAN_IDS.frontLeftDriveM, 
             CAN_IDS.frontLeftAngleM, 
             "FrontLeft",
-            Rotation2d.fromDegrees(0), 
             true, 
             true
         );
@@ -532,7 +531,6 @@ public class Drive extends SubsystemBase {
             CAN_IDS.frontRightDriveM, 
             CAN_IDS.frontRightAngleM, 
             "FrontRight",
-            Rotation2d.fromDegrees(0), 
             false, 
             true
         );
@@ -541,7 +539,6 @@ public class Drive extends SubsystemBase {
             CAN_IDS.backLeftDriveM, 
             CAN_IDS.backLeftAngleM, 
             "BackLeft", 
-            Rotation2d.fromDegrees(0),
             true, 
             true
         );
@@ -550,7 +547,6 @@ public class Drive extends SubsystemBase {
             CAN_IDS.backRightDriveM, 
             CAN_IDS.backRightAngleM, 
             "BackRight",
-            Rotation2d.fromDegrees(0), 
             false, 
             true
         );

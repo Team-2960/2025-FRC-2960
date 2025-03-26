@@ -28,11 +28,28 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConst;
 import frc.robot.Constants.SwerveConst;
 
 public class Swerve extends SubsystemBase {
+
+    /**
+     * Main swerve module command
+     */
+    public class SwerveCommand extends Command {
+        /**
+         * Updates the swerve outputs
+         */
+        public void execute() {
+            desiredState.optimize(getAnglePos());
+
+            updateDrive(desiredState);
+            updateAngle(desiredState);
+        }
+    }
+
 
     private final SparkFlex mDrive;
 
@@ -58,7 +75,15 @@ public class Swerve extends SubsystemBase {
     private GenericEntry sb_driveCurrent;
     private GenericEntry sb_driveVolt;
 
-    public Swerve(int driveMotorID, int angleMotorID, String swerveName, Rotation2d swerveOffset, boolean invertDrive, boolean invertAngle) {
+    /**
+     * Constructor
+     * @param driveMotorID  ID of the drive motor SparkFlex
+     * @param angleMotorID  ID of the angle motor sparkFlex
+     * @param swerveName    Name of the swerve module
+     * @param invertDrive   True to invert the drive motor
+     * @param invertAngle   True to invert the angle motor
+     */
+    public Swerve(int driveMotorID, int angleMotorID, String swerveName, boolean invertDrive, boolean invertAngle) {
         // Initialize Drive Motor
         mDrive = new SparkFlex(driveMotorID, MotorType.kBrushless);
 
@@ -109,6 +134,9 @@ public class Swerve extends SubsystemBase {
 
         // Initialize desired state
         desiredState = new SwerveModuleState();
+
+        // Setup default command
+        setDefaultCommand(new SwerveCommand());
 
         // Setup Shuffleboard
         var layout = Shuffleboard.getTab("Drive")
@@ -191,10 +219,6 @@ public class Swerve extends SubsystemBase {
      */
     @Override
     public void periodic() {
-        desiredState.optimize(getAnglePos());
-
-        updateDrive(desiredState);
-        updateAngle(desiredState);
         updateUI();
     }
 
@@ -208,9 +232,7 @@ public class Swerve extends SubsystemBase {
 
         double ffOutput = driveFeedforward.calculate(state.speedMetersPerSecond);
 
-        mDrive.setVoltage(pidOutput + ffOutput);
-        //mDrive.setVoltage(0);//TODO revove after drive PID fixed
-        
+        mDrive.setVoltage(pidOutput + ffOutput);        
     }
 
     /**
