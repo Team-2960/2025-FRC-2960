@@ -6,6 +6,9 @@ import frc.robot.Constants.ElevConst;
 import frc.robot.Util.Limits;
 
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.sim.SparkFlexSim;
+import com.revrobotics.sim.SparkLimitSwitchSim;
+import com.revrobotics.sim.SparkRelativeEncoderSim;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLimitSwitch;
 import com.revrobotics.spark.SparkBase.PersistMode;
@@ -15,6 +18,7 @@ import com.revrobotics.spark.config.SparkFlexConfig;
 
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
@@ -26,6 +30,7 @@ import edu.wpi.first.units.measure.MutVoltage;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -79,6 +84,14 @@ public class Elevator extends SubsystemBase {
     public final Command sysIdCommandUpDyn;
     public final Command sysIdCommandDownDyn;
     public final Command sysIdCommandGroup;
+
+    
+    // Simulation
+    private final SparkFlexSim motorSim;
+    private final SparkRelativeEncoderSim encoderSim;
+    private final SparkLimitSwitchSim limitBotSim;
+
+    private final ElevatorSim elevatorSim;
 
     /**
      * Command to control the elevator output voltage
@@ -335,9 +348,30 @@ public class Elevator extends SubsystemBase {
                 new SoftLimCheckCommand(SoftLimCheckCommand.Direction.DOWN)
             )
         );
+
+        // Initialize Simulation
+        motorSim = new SparkFlexSim(motor, DCMotor.getNeoVortex(1));
+        encoderSim = new SparkRelativeEncoderSim(motor);
+        limitBotSim = new SparkLimitSwitchSim(motor, false);
+
+        elevatorSim = new ElevatorSim(
+            DCMotor.getNeoVortex(1), 
+            ElevConst.gearRatio.in(Value),
+            ElevConst.carrageMass.in(Kilogram),
+            ElevConst.outputDiam.in(Meters),
+            ElevConst.botLim.in(Meters),
+            ElevConst.topLim.in(Meters),
+            true,
+            ElevConst.botLim.in(Meters),
+            0.01,
+            0.0
+        );
     }
 
-    public void shuffleBoardInit(){
+    /**
+     * Initializes shuffleboard
+     */
+    private void shuffleBoardInit(){
         // Setup Shuffleboard
         var layout = Shuffleboard.getTab("Status")
                 .getLayout("Elevator", BuiltInLayouts.kList)

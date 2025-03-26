@@ -12,6 +12,7 @@ import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Value;
 import static edu.wpi.first.units.Units.Volts;
 import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.Pounds;
 
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
@@ -202,6 +203,7 @@ public class Constants {
         public static final LinearVelocity maxAutoSpeed = InchesPerSecond.of(2);
         public static final Distance rampDownDist = Inches.of(10);
         public static final Distance posTol = Inches.of(.5);
+        public static final Mass carrageMass = Pounds.of(10);
 
         public static final Distance topLim = Inches.of(57.5);
         public static final Distance botLim = Inches.of(0.25);
