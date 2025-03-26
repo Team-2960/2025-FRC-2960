@@ -8,30 +8,21 @@ import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.struct.Pose2dStruct;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.GenericEntry;
-import edu.wpi.first.networktables.NetworkTableEntry;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.StructArrayPublisher;
-import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
-import edu.wpi.first.wpilibj.shuffleboard.ComplexWidget;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.DegreesPerSecond;
@@ -43,17 +34,11 @@ import static edu.wpi.first.units.Units.Seconds;
 import java.util.function.Supplier;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
-import com.pathplanner.lib.path.GoalEndState;
-import com.pathplanner.lib.path.IdealStartingState;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
-import com.pathplanner.lib.path.Waypoint;
-import com.pathplanner.lib.trajectory.PathPlannerTrajectory;
-import com.pathplanner.lib.trajectory.PathPlannerTrajectoryState;
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 
@@ -107,19 +92,13 @@ public class Drive extends SubsystemBase {
     private GenericEntry sb_speedYTarget;
     private GenericEntry sb_speedRTarget;
 
-    private ComplexWidget sb_field2d;
     private Pose2d nearestBranch;
 
     private Field2d field2d;
-    private FieldObject2d fieldTargetPoint;
 
     // PathPlanner
     public RobotConfig config;
     public AutoBuilder autoBuilder;
-
-    // AdvantageScope
-    private StructArrayPublisher<SwerveModuleState> as_swerveModules;
-    private StructPublisher<Pose2d> as_currentPose;
 
     PathConstraints pathConstraints;
 
@@ -652,9 +631,6 @@ public class Drive extends SubsystemBase {
 
         // Initialize Shuffleboard
         shuffleBoardInit();
-
-        // Initialize Advantage Scope
-        initAdvantageScope();
     }
 
     /**
@@ -725,22 +701,7 @@ public class Drive extends SubsystemBase {
         field2d.getObject("fieldTargetPoint").setPose(targetPoint.getX(), targetPoint.getY(),
                 Rotation2d.fromDegrees(0));
         nearestBranch = new Pose2d();
-        field2d.getObject("nearestReefFace").setPose(nearestBranch);
-        sb_field2d = Shuffleboard.getTab("Drive").add(field2d).withWidget("Field");
-
-        
-    }
-
-    /**
-     * Initialize AdvantageScope
-     */
-    private void initAdvantageScope() {
-        odometryPose = NetworkTableInstance.getDefault()
-                .getStructTopic("Odometry Pose", Pose2d.struct).publish();
-        arrayPose = NetworkTableInstance.getDefault()
-                .getStructArrayTopic("Pose Array", Pose2d.struct).publish();
-        swerveModules = NetworkTableInstance.getDefault()
-                .getStructArrayTopic("Swerve States", SwerveModuleState.struct).publish();
+        field2d.getObject("nearestReefFace").setPose(nearestBranch);        
     }
 
     /*
@@ -906,20 +867,6 @@ public class Drive extends SubsystemBase {
         field2d.getObject("fieldTargetPoint").setPose(targetPoint.getX(), targetPoint.getY(),
                 Rotation2d.fromDegrees(0));
         field2d.getObject("nearestReefFace").setPose(nearestBranch);
-    }
-
-    /**
-     * Updates advantage scope
-     */
-    private void updateScope() {
-        swerveModules.set(new SwerveModuleState[] {
-                frontLeft.getState(),
-                frontRight.getState(),
-                backLeft.getState(),
-                backRight.getState()
-        });
-
-        as_currentPose.set(getEstimatedPos());
     }
 
     /**
