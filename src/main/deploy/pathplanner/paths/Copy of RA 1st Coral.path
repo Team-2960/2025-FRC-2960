@@ -16,16 +16,16 @@
     },
     {
       "anchor": {
-        "x": 5.41702302631579,
-        "y": 2.610608552631579
+        "x": 5.311184210526315,
+        "y": 2.5432565789473687
       },
       "prevControl": {
-        "x": 5.985783325150374,
-        "y": 1.6254868177220203
+        "x": 5.879944509360899,
+        "y": 1.5581348440378098
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "RA 1st Coral Align End"
     }
   ],
   "rotationTargets": [

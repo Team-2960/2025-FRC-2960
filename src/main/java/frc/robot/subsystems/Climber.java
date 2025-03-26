@@ -1,9 +1,12 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.PIDCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.ClimberConst;
@@ -11,6 +14,7 @@ import frc.robot.Constants.ClimberConst;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Volts;
 
+import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
@@ -95,17 +99,86 @@ public class Climber extends SubsystemBase {
         }
     }
 
+    public class SetExtPosCommand extends Command{
+        public SetExtPosCommand(){
+            addRequirements(Climber.this);
+        }
+
+        @Override
+        public void execute(){
+            setMotorVolt(Constants.climberExtVolt);
+        }
+
+        @Override
+        public boolean isFinished(){
+            return getPosition().getRotations() >= Constants.climberExtDist;
+        }
+
+        @Override
+        public void end(boolean interrupt){
+            setMotorVolt(0);
+        }
+        
+    }
+
+    public class SetRetPosCommand extends Command {
+        public SetRetPosCommand(){
+            addRequirements(Climber.this);
+        }
+
+        @Override
+        public void execute(){
+            setMotorVolt(Constants.climberRetVolt);
+        }
+
+        @Override
+        public boolean isFinished(){
+            return getPosition().getRotations() <= Constants.climberRetDist;
+    
+        }   
+
+        @Override
+        public void end(boolean interrupt){
+            setMotorVolt(0);
+        }
+    }
+
+    public class HoldPositionCommand extends Command{
+        double targetPosition;
+
+        public HoldPositionCommand(){
+            addRequirements(Climber.this);
+        }
+
+        @Override
+        public void initialize(){
+            encoder.setPosition(0);
+            targetPosition = getRelativePos();
+        }
+
+        @Override
+        public void execute(){
+            setPos(targetPosition);
+        }
+
+    }
+
 
     private static Climber climber = null;
 
     private final SparkFlex motor;
 
     private final RelativeEncoder encoder;
+    private final AbsoluteEncoder absEncoder;
 
     private final ExtendCmd extendCmd;
     private final RetractCmd retractCmd;
     private final ResetCmd resetCmd;
     private final ClimberVoltageCommand climberVoltageCommand;
+    private final SetExtPosCommand setExtPosCommand;
+    private final SetRetPosCommand setRetPosCommand;
+
+    private final PIDController climberPID;
 
     private final GenericEntry sb_command;
     private final GenericEntry sb_voltage;
@@ -121,12 +194,19 @@ public class Climber extends SubsystemBase {
 
         // Initialize Encoder
         encoder = motor.getEncoder();
+        absEncoder = motor.getAbsoluteEncoder();
 
         // Initialize Commands
         extendCmd = new ExtendCmd();
         retractCmd = new RetractCmd();
         resetCmd = new ResetCmd();
         climberVoltageCommand = new ClimberVoltageCommand(0);
+        setExtPosCommand = new SetExtPosCommand();
+        setRetPosCommand = new SetRetPosCommand();
+
+        //setDefaultCommand(new HoldPositionCommand());
+
+        climberPID = new PIDController(1.0, 0, 0);
 
         // Setup Shuffleboard
         var layout = Shuffleboard.getTab("Status")
@@ -147,6 +227,14 @@ public class Climber extends SubsystemBase {
         return encoder.getPosition() * ClimberConst.posScale.in(Inches);
     }
 
+    public Rotation2d getPosition(){
+        return Rotation2d.fromRotations(absEncoder.getPosition());
+    }
+
+    public double getRelativePos(){
+        return encoder.getPosition();
+    }
+
     /**
      * Resets the climber encoder
      */
@@ -164,6 +252,11 @@ public class Climber extends SubsystemBase {
 
     public void runReset() {
         if(getCurrentCommand() != resetCmd) resetCmd.schedule();
+    }
+
+    public void setPos(double pose){
+        double volt = climberPID.calculate(pose);
+        setMotorVolt(volt);
     }
 
     public void setClimberVoltage(double voltage){
@@ -203,7 +296,7 @@ public class Climber extends SubsystemBase {
 
         sb_command.setString(currentCmdName);
         sb_voltage.setDouble(motor.getBusVoltage() * motor.getAppliedOutput());
-        sb_winchExt.setDouble(getExtension());
+        sb_winchExt.setDouble(getPosition().getRotations());
     }
 
     /**

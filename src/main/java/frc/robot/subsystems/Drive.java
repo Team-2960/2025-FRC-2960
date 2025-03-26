@@ -8,21 +8,25 @@ import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.struct.Pose2dStruct;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.ComplexWidget;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -39,11 +43,17 @@ import static edu.wpi.first.units.Units.Seconds;
 import java.util.function.Supplier;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.path.GoalEndState;
+import com.pathplanner.lib.path.IdealStartingState;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.path.Waypoint;
+import com.pathplanner.lib.trajectory.PathPlannerTrajectory;
+import com.pathplanner.lib.trajectory.PathPlannerTrajectoryState;
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 
@@ -108,10 +118,8 @@ public class Drive extends SubsystemBase {
     public AutoBuilder autoBuilder;
 
     // AdvantageScope
-    private SwerveModuleState[] swerveModuleStates;
-    private StructPublisher<Pose2d> odometryPose;
-    private StructArrayPublisher<Pose2d> arrayPose;
-    private StructArrayPublisher<SwerveModuleState> swerveModules;
+    private StructArrayPublisher<SwerveModuleState> as_swerveModules;
+    private StructPublisher<Pose2d> as_currentPose;
 
     PathConstraints pathConstraints;
 
@@ -754,6 +762,10 @@ public class Drive extends SubsystemBase {
         return swerveDrivePoseEstimator.getEstimatedPosition();
     }
 
+    public double getDriveRate(){
+        return Math.hypot(getChassisSpeeds().vxMetersPerSecond, getChassisSpeeds().vyMetersPerSecond);
+    }
+
     /**
      * Gets the measured chassis speeds
      * @return  measured chassis speeds
@@ -906,6 +918,8 @@ public class Drive extends SubsystemBase {
                 backLeft.getState(),
                 backRight.getState()
         });
+
+        as_currentPose.set(getEstimatedPos());
     }
 
     /**
@@ -940,11 +954,11 @@ public class Drive extends SubsystemBase {
      * Gets the current Auton command from Shuffleboard
      * @return  current auton command from Shuffleboard
      */
-    public Command getAutonomousCommand() {
+    public Command followPath(String pathName) {
         // TODO Move to a dedicated PathPlanner class
         try {
             // Load the path you want to follow using its name in the GUI
-            PathPlannerPath path = PathPlannerPath.fromPathFile("Example Path");
+            PathPlannerPath path = PathPlannerPath.fromPathFile(pathName);
 
             // Create a path following command using AutoBuilder. This will also trigger
             // event markers.
@@ -982,6 +996,8 @@ public class Drive extends SubsystemBase {
         followPath(pathCommand);
     }
 
+    
+
     /**
      * Periodic update method
      */
@@ -994,7 +1010,6 @@ public class Drive extends SubsystemBase {
         }
         updateOdometry();
         updateUI();
-        updateScope();
     }
 
     /**

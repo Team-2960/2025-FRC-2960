@@ -2,6 +2,7 @@
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
+      "/Shuffleboard/AprilTags/Camera Update/Field": "Field2d",
       "/Shuffleboard/Drive/Field": "Field2d",
       "/SmartDashboard/Alerts": "Alerts",
       "/SmartDashboard/Choose Auto": "String Chooser",
@@ -11,7 +12,6 @@
     "windows": {
       "/Shuffleboard/Drive/Field": {
         "bottom": 1638,
-        "builtin": "2025 Reefscape",
         "height": 8.051901817321777,
         "left": 534,
         "right": 3466,
@@ -21,9 +21,13 @@
           "visible": true
         }
       },
+      "/SmartDashboard/Choose Auto": {
+        "window": {
+          "visible": true
+        }
+      },
       "/SmartDashboard/VisionSystemSim-main/Sim Field": {
         "bottom": 1638,
-        "builtin": "2025 Reefscape",
         "height": 8.051901817321777,
         "left": 534,
         "right": 3466,
@@ -52,7 +56,7 @@
           }
         },
         "Drive": {
-          "Field": {
+          "Drive Pose": {
             "open": true
           },
           "open": true
@@ -72,6 +76,18 @@
     }
   },
   "NetworkTables Info": {
+    "Clients": {
+      "open": true
+    },
+    "Connections": {
+      "open": true
+    },
+    "Server": {
+      "open": true
+    },
+    "shuffleboard@1": {
+      "open": true
+    },
     "visible": true
   }
 }

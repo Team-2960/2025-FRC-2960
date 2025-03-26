@@ -26,7 +26,7 @@ public class OperatorInterface {
 
     // JOYSTICKS
     private CommandXboxController driverController;
-    private CommandXboxController operatorController1;
+    private CommandXboxController operatorController;
 
     private MutLinearVelocity xSpeed;
     private MutLinearVelocity ySpeed;
@@ -116,10 +116,10 @@ public class OperatorInterface {
         driverController.axisMagnitudeGreaterThan(2, 0.1)
             .whileTrue(endEffector.new IntakeCmd());
 
-        operatorController1.axisMagnitudeGreaterThan(3, 0.1)
+        operatorController.axisMagnitudeGreaterThan(3, 0.1)
             .whileTrue(endEffector.new ReverseCmd());
             
-        operatorController1.axisMagnitudeGreaterThan(2, 0.1)
+        operatorController.axisMagnitudeGreaterThan(2, 0.1)
             .whileTrue(endEffector.new EjectCmd());
     }
 
@@ -134,11 +134,11 @@ public class OperatorInterface {
         operatorController1.pov(0)
             .onTrue(algaeAngle.new AngleCommand(Rotation2d.fromDegrees(20)));
         
-        operatorController1.pov(180)
+        operatorController.pov(180)
             .onTrue(algaeAngle.new AngleCommand(Rotation2d.fromDegrees(80)));
 
-        operatorController1.rightBumper().whileTrue(algaeRoller.new EjectCmd());
-        operatorController1.leftBumper().whileTrue(algaeRoller.new IntakeCmd());
+        operatorController.rightBumper().whileTrue(algaeRoller.new EjectCmd());
+        operatorController.leftBumper().whileTrue(algaeRoller.new IntakeCmd());
     }
 
     /**
@@ -148,8 +148,11 @@ public class OperatorInterface {
         Climber climber = Climber.getInstance();
         driverController.pov(90).whileTrue(climber.new ExtendCmd());
         driverController.pov(270).whileTrue(climber.new RetractCmd());
-    }
 
+        operatorController.start().whileTrue(climber.new SetExtPosCommand());
+
+        operatorController.back().whileTrue(climber.new SetRetPosCommand());
+    }
     /**
      * Source method for getting the target x speed
      * @return  target x speed

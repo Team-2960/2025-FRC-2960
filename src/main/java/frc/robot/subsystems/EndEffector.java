@@ -184,7 +184,7 @@ public class EndEffector extends SubsystemBase{
         coralPresentPE = new DigitalInput(Constants.DIO_PORTS.coralPresentPE);
         coralDrive.configure(new SparkFlexConfig().inverted(true), com.revrobotics.spark.SparkBase.ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-        coralPID = new PIDController(5, 0, 0);
+        coralPID = new PIDController(2, 0, 0);
 
         ejectCmd = new EjectCmd();
         timedEjectCmd = new TimedEjectCmd();
