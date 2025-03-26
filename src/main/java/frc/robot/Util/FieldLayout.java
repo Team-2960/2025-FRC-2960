@@ -10,7 +10,6 @@ import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.MutDistance;
 import edu.wpi.first.wpilibj.DriverStation;
-import frc.robot.Constants;
 import frc.robot.Constants.AutonConst;
 import frc.robot.Constants.RobotConst;
 
