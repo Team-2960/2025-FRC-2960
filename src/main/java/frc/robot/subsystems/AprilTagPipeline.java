@@ -184,7 +184,7 @@ public class AprilTagPipeline extends SubsystemBase {
     }
 
     public Pose3d getRobotRelativeCamPos(){
-        return new Pose3d(Drive.getInstance().getEstimatedPos()).transformBy(settings.robot_to_camera);
+        return new Pose3d(Drive.getInstance().getPose()).transformBy(settings.robot_to_camera);
     }
 
     /**
