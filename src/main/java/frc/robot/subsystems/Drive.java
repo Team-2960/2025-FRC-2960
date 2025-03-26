@@ -723,8 +723,8 @@ public class Drive extends SubsystemBase {
         return swerveDrivePoseEstimator.getEstimatedPosition();
     }
 
-    public double getDriveRate(){
-        return Math.hypot(getChassisSpeeds().vxMetersPerSecond, getChassisSpeeds().vyMetersPerSecond);
+    public LinearVelocity getDriveRate(){
+        return MetersPerSecond.of(Math.hypot(getChassisSpeeds().vxMetersPerSecond, getChassisSpeeds().vyMetersPerSecond));
     }
 
     /**
@@ -802,7 +802,7 @@ public class Drive extends SubsystemBase {
     }
 
     /**
-     * Calculates the lnear rate to move to a target point
+     * Calculates the linear rate to move to a target point
      * @param point     target point
      * @param offset    offset from robot center
      */
@@ -875,9 +875,9 @@ public class Drive extends SubsystemBase {
      * @param timeStamp     timestamp of the estimated pose
      * @param estStd        estimated pose standard deviation values
      */
-    public void addVisionPose(Pose2d estPose, double timeStamp, Vector<N3> estStd) {
+    public void addVisionPose(Pose2d estPose, Time timeStamp, Vector<N3> estStd) {
         Pose2d poseResult = new Pose2d(estPose.getX(), estPose.getY(), getPose().getRotation());
-        swerveDrivePoseEstimator.addVisionMeasurement(poseResult, timeStamp, estStd);
+        swerveDrivePoseEstimator.addVisionMeasurement(poseResult, timeStamp.in(Seconds), estStd);
     }
 
     /**
