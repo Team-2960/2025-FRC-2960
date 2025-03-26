@@ -34,14 +34,11 @@ import static edu.wpi.first.units.Units.Seconds;
 import java.util.function.Supplier;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.config.PIDConstants;
-import com.pathplanner.lib.config.RobotConfig;
-import com.pathplanner.lib.controllers.PPHolonomicDriveController;
-import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 
+import frc.robot.Auton.RobotContainer;
 import frc.robot.Util.FieldLayout;
 import frc.robot.Util.Limits;
 import static frc.robot.Constants.CAN_IDS;
@@ -95,12 +92,6 @@ public class Drive extends SubsystemBase {
     private Pose2d nearestBranch;
 
     private Field2d field2d;
-
-    // PathPlanner
-    public RobotConfig config;
-    public AutoBuilder autoBuilder;
-
-    PathConstraints pathConstraints;
 
     /**
      * Command for controlling the robot via rate
@@ -186,7 +177,7 @@ public class Drive extends SubsystemBase {
                 rRate.in(RadiansPerSecond)
             );
 
-            pathPlannerKinematics(speeds);
+            updateKinematics(speeds);
 
             // Update UI
             sb_rTarget.setString(mut_angle.mut_replace(target.getDegrees(), Degrees).toShortString());
@@ -603,32 +594,6 @@ public class Drive extends SubsystemBase {
 
         mut_targetAV = RadiansPerSecond.mutable(0);
 
-        // Setup PathPlanner
-
-        // TODO move PathPlanner initialization to robot container
-        try {
-            config = RobotConfig.fromGUISettings();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        autoBuilder = new AutoBuilder();
-        AutoBuilder.configure(
-                this::getPose,
-                this::presetPosition,
-                this::getChassisSpeeds,
-                (speeds, feedforwards) -> pathPlannerKinematics(speeds),
-                new PPHolonomicDriveController(
-                        new PIDConstants(5, 0, 0),
-                        new PIDConstants(5, 0, 0)),
-                config,
-                FieldLayout::isRedAlliance,
-                this
-
-        );
-
-        pathConstraints = PathConstraints.unlimitedConstraints(12);
-
         // Initialize Shuffleboard
         shuffleBoardInit();
     }
@@ -773,7 +738,7 @@ public class Drive extends SubsystemBase {
      * Updates the chassis speeds from path planner
      * @param chassisSpeeds
      */
-    private void pathPlannerKinematics(ChassisSpeeds chassisSpeeds) {
+    public void pathPlannerKinematics(ChassisSpeeds chassisSpeeds) {
         updateKinematics(chassisSpeeds, false);
     }
 
@@ -936,14 +901,9 @@ public class Drive extends SubsystemBase {
      * Generate a PathPlanner path on the floy
      */
     public void pathOnTheFly() {
-        // this.wayPoints = poseList;
-        // this.storeWaypoints = PathPlannerPath.waypointsFromPoses(getPose(),
-        // new Pose2d(0, 0, Rotation2d.fromDegrees(0)));
-        Command pathCommand = AutoBuilder.pathfindToPose(new Pose2d(), pathConstraints);
+        Command pathCommand = AutoBuilder.pathfindToPose(new Pose2d(), RobotContainer.getInstance().pathConstraints);
         followPath(pathCommand);
     }
-
-    
 
     /**
      * Periodic update method
