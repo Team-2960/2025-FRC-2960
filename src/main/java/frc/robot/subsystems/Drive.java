@@ -624,7 +624,6 @@ public class Drive extends SubsystemBase {
                 config,
                 this::isRedAlliance,
                 this
-
         );
 
         // Call method to initialize shuffleboard
@@ -779,7 +778,8 @@ public class Drive extends SubsystemBase {
      * @param chassisSpeeds
      */
     private void pathPlannerKinematics(ChassisSpeeds chassisSpeeds) {
-        this.chassisSpeeds = chassisSpeeds;
+        setDriveRate(chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond);
+        setAngleRate(chassisSpeeds.omegaRadiansPerSecond);
     }
 
     /**
