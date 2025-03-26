@@ -1,6 +1,5 @@
 package frc.robot.subsystems;
 
-import java.util.ArrayList;
 import java.util.Optional;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
@@ -18,11 +17,6 @@ import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonUtils;
-import org.photonvision.estimation.TargetModel;
-import org.photonvision.simulation.PhotonCameraSim;
-import org.photonvision.simulation.SimCameraProperties;
-import org.photonvision.simulation.VisionSystemSim;
-import org.photonvision.simulation.VisionTargetSim;
 
 /**
  * Manages connection to a single PhotonVision AprilTag Pipeline
@@ -63,11 +57,6 @@ public class AprilTagPipeline extends SubsystemBase {
     // SimCameraProperties cameraProp;
     // PhotonCameraSim cameraSim;
     // VisionTargetSim visionTargetSim;
-
-    // Test Values
-    private double displayNum;
-    private String resultsList;
-    private boolean tagPresent;
 
     /**
      * Constructor
@@ -116,12 +105,6 @@ public class AprilTagPipeline extends SubsystemBase {
         // cameraProp.setCalibration(640, 480, Rotation2d.fromDegrees(70));
         // cameraSim = new PhotonCameraSim(camera, cameraProp);
         // cameraSim.enableDrawWireframe(true);
-
-        // Test Values
-        // TODO Delete after testing
-        displayNum = -1;
-        resultsList = "";
-        tagPresent = false;
 
         aprilTagList = new Pose3d[] {};
     }
