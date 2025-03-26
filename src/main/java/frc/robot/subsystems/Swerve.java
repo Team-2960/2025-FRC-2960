@@ -58,8 +58,6 @@ public class Swerve extends SubsystemBase {
     private GenericEntry sb_driveCurrent;
     private GenericEntry sb_driveVolt;
 
-    private Rotation2d swerveAngleOffset;
-
     public Swerve(int driveMotorID, int angleMotorID, String swerveName, Rotation2d swerveOffset, boolean invertDrive, boolean invertAngle) {
         // Initialize Drive Motor
         mDrive = new SparkFlex(driveMotorID, MotorType.kBrushless);
@@ -67,7 +65,6 @@ public class Swerve extends SubsystemBase {
         SparkFlexConfig drive_config = new SparkFlexConfig();
         drive_config.inverted(invertDrive);
         mDrive.configure(drive_config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-        swerveAngleOffset = swerveOffset;
 
         // Initialize Angle Motor
         mAngle = new SparkMax(angleMotorID, MotorType.kBrushless);
