@@ -28,33 +28,22 @@ public class Robot extends TimedRobot {
      * initialization code.
      */
     private RobotContainer robotContainer;
-    private Drive drive;
-    private OperatorInterface oi;
-    private Arm arm;
-    private AlgaeAngle algaeAngle;
-    private AlgaeRoller algaeRoller;
-    private ElevArmControl elevArmControl;
-    private Elevator elevator;
-    private EndEffector endEffector;
-    private Climber climber;
-    private Cameras cameras;
-    private LEDControl ledControl;
     private Command autonomousCommand;
     
 
     @Override
     public void robotInit() {
-        drive = Drive.getInstance();
-        oi = OperatorInterface.getInstance();
-        climber = Climber.getInstance();
-        arm = Arm.getInstance();
-        algaeAngle = AlgaeAngle.getInstance();
-        algaeRoller = AlgaeRoller.getInstance();
-        elevArmControl = ElevArmControl.getInstance();
-        elevator = Elevator.getInstance();
-        endEffector = EndEffector.getInstance();
-        //ledControl = LEDControl.getInstance();
-        cameras = Cameras.getInstance();
+        Drive.getInstance();
+        OperatorInterface.getInstance();
+        Climber.getInstance();
+        Arm.getInstance();
+        AlgaeAngle.getInstance();
+        AlgaeRoller.getInstance();
+        ElevArmControl.getInstance();
+        Elevator.getInstance();
+        EndEffector.getInstance();
+        LEDControl.getInstance();
+        Cameras.getInstance();
 
         CameraServer.startAutomaticCapture();
         robotContainer = RobotContainer.getInstance();
