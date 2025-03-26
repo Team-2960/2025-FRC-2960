@@ -1,8 +1,9 @@
 package frc.robot.subsystems;
 
+import frc.robot.Constants;
 import frc.robot.Constants.CAN_IDS;
 import frc.robot.Constants.ElevConst;
-import frc.robot.subsystems.Elevator.SoftLimCheckCommand.SoftLimDirection;
+import frc.robot.Util.Limits;
 
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkFlex;
@@ -15,6 +16,9 @@ import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.MutCurrent;
 import edu.wpi.first.units.measure.MutDistance;
 import edu.wpi.first.units.measure.MutLinearVelocity;
@@ -34,24 +38,25 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 import static edu.wpi.first.units.Units.*;
 
+import java.util.function.Supplier;
+
 
 public class Elevator extends SubsystemBase {
-    private SparkFlex elevatorMotor;
+    private SparkFlex motor;
+    private RelativeEncoder encoder;
+    private SparkLimitSwitch limitBot;
 
-    private RelativeEncoder elevatorEncoder;
+    private Trigger limBotTrigger;
 
-    private SparkLimitSwitch elevatorLimitBot;
+    private PIDController pid;
+    private ElevatorFeedforward ff;
+    
+    private MutDistance currentPos;
+    private MutLinearVelocity currentRate;
+    private MutVoltage currentVoltage;
+    private MutCurrent currentCurrent;
 
-    private Trigger elevLimBotTrigger;
-
-    private PIDController elevatorPID;
-
-    private ElevatorFeedforward elevatorFF;
-
-    private double elevatorVolt;
-    private double elevatorRate;
-
-    private GenericEntry sb_elevatorCmd;
+    private GenericEntry sb_currentCommand;
     private GenericEntry sb_posPosCurrent;
     private GenericEntry sb_posPosSetPoint;
     private GenericEntry sb_posRateCurrent;
@@ -59,16 +64,15 @@ public class Elevator extends SubsystemBase {
     private GenericEntry sb_posRateError;
     private GenericEntry sb_posVolt;
     private GenericEntry sb_posTargetVolt;
-    private GenericEntry sb_posPosRotations;
     private GenericEntry sb_topSoftLim;
     private GenericEntry sb_botSoftLim;
 
     //System Identification
     private final SysIdRoutine sysIdRoutine;
-    private final MutVoltage appliedVoltage;
-    private final MutCurrent appliedCurrent;
-    private final MutDistance distance;
-    private final MutLinearVelocity linearVelocity;
+    private final MutVoltage sysid_appliedVoltage;
+    private final MutCurrent sysid_appliedCurrent;
+    private final MutDistance sysid_distance;
+    private final MutLinearVelocity sysid_linearVelocity;
 
     public final Command sysIdCommandUpQuasi;
     public final Command sysIdCommandDownQuasi;
@@ -76,220 +80,222 @@ public class Elevator extends SubsystemBase {
     public final Command sysIdCommandDownDyn;
     public final Command sysIdCommandGroup;
 
-    //Command to set the voltage of the Elevator
-    public class ElevatorVoltageCommand extends Command{
-        private double targetVoltage;
+    /**
+     * Command to control the elevator output voltage
+     */
+    public class VoltageCommand extends Command{
+        private final Supplier<Voltage> voltageSupplier;  //< voltage supplier
 
-        public ElevatorVoltageCommand(double targetVoltage){
-            this.targetVoltage = targetVoltage;
+        /**
+         * Constructor
+         * @param voltageSupplier    voltage supplier
+         */
+        public VoltageCommand(Supplier<Voltage> voltageSupplier){
+            this.voltageSupplier = voltageSupplier;
 
-            //Makes the Elevator Subsystem required for the command
             addRequirements(Elevator.this);
         }
 
+        /**
+         * Update the output voltage
+         */
         @Override
         public void execute(){
-            //Actually executes the command aka sets the voltage
-            setMotorVolt(targetVoltage);
+            setMotorVolt(voltageSupplier.get());
         }
-
-        //Method used after creating the command to set the voltage
-        public void setVoltage(double targetVoltage){
-            this.targetVoltage = targetVoltage;
-        }
-
     }
 
-    //Command to send values to the PID + Feed Forward
-    //This Controls the rate aka velocity of the elevator, NOT The position
-    public class ElevatorRateCommand extends Command{
-        private double targetRate;
-        private double tolerance;
+    /**
+     * Command to set the target rate of the elevator
+     */
+    public class RateCommand extends Command{
+        private final Supplier<LinearVelocity> rateSupplier;  //< Rate supplier
+        private final boolean autoComplete;                   //< Flag to determine if command will complete automatically
 
-        public ElevatorRateCommand(double targetRate, double tolerance){
-            this.targetRate = targetRate;
-            this.tolerance = tolerance;
+        public RateCommand(Supplier<LinearVelocity> rateSupplier, boolean autoComplete){
+            this.rateSupplier = rateSupplier;
+            this.autoComplete = autoComplete;
             
             //Make Elevator Subsystem required for this command
             addRequirements(Elevator.this);
-        }
-
-        //Just sets rate
-        public void setRate(double targetRate){
-            this.targetRate = targetRate;
-        }
-
-        //Sets both rate and tolerance
-        public void setToleranceRate(double targetRate, double tolerance){
-            this.targetRate = targetRate;
-            this.tolerance = tolerance;
         }
         
         //What actually sets the rate/ execute the action to set the rate
         @Override
         public void execute(){
-            setElevatorRate(targetRate);
+            setRate(rateSupplier.get());
         }
 
         @Override
-        public boolean isFinished(){
-            return targetRate == 0 || Math.abs(targetRate) <= tolerance;
+        public boolean isFinished() {
+            return autoComplete && rateSupplier.get().in(InchesPerSecond) == 0;
         }
     }
 
-    public class ElevatorHoldCommand extends Command{
-        private double target;
+    /**
+     * Command to hold the elevator at the current postion
+     */
+    public class HoldCommand extends Command{
+        private final MutDistance target;     //< Target position
 
-        public ElevatorHoldCommand(){
-            target = 0;
+        /**
+         * Constructor
+         */
+        public HoldCommand(){
+            target = Inches.mutable(0);
             addRequirements(Elevator.this);
         }
 
+        /**
+         * Get the current elevator position
+         */
         @Override
         public void initialize(){
-            target = getElevatorPos();
+            target.mut_replace(getPos());
         }
 
+        /**
+         * Update target position
+         */
         @Override
         public void execute(){
-            setElevatorPos(target);
+            setPos(target);
         }
     }
 
-    public class ElevatorPosCommand extends Command{
-        private double elevatorPos;
+    /**
+     * Command to move to a specific position
+     */
+    public class PositionCommand extends Command{
+        private final Distance target;
+        private final Distance tolerance;
+
+        /**
+         * Constructor. Tolerance is set to the default tolerance.
+         * @param target    target position
+         */
+        public PositionCommand(Distance target){
+            this(target, ElevConst.posTol); // TODO move default tolerance to containing class
+        }
         
-        public ElevatorPosCommand(double elevatorPos){
-            this.elevatorPos = elevatorPos;
+        /**
+         * Constructor
+         * @param target        target position
+         * @param tolerance     position tolerance
+         */
+        public PositionCommand(Distance target, Distance tolerance){
+            this.target = target;
+            this.tolerance = tolerance;
             addRequirements(Elevator.this);
         }
 
-        public void setPos(double elevatorPos){
-            this.elevatorPos = elevatorPos;
-        }
-
+        /**
+         * Update the target position
+         */
         @Override
         public void execute(){
-            setElevatorPos(elevatorPos);
+            setPos(target);
         }
         
+        /**
+         * Check if the elevator is at position
+         */
         @Override
         public boolean isFinished(){
-            return atPos(elevatorPos, ElevConst.posTol.in(Inches));
+            return Limits.inTol(target, tolerance, getPos());
         }
     }
 
+    /**
+     * Command to reset the encoder to a known value
+     */
     public class EncoderResetCommand extends Command{
-        private double resetValue;
+        private Distance resetValue;
 
-        public EncoderResetCommand(double resetValue){
+        /**
+         * Constructor. Reset value is 0 inches.
+         */
+        public EncoderResetCommand() {
+            this(Inches.of(0));
+        }
+
+        /**
+         * Constructor
+         * @param resetValue    value to reset the encoder to
+         */
+        public EncoderResetCommand(Distance resetValue){
             this.resetValue = resetValue;
         }
 
         /**
-         * @param resetValue
-         * The value you want to reset the encoder to
-        */
-        public void resetTo(double resetValue){
-            this.resetValue = resetValue;
-        }
-
+         * Reset the encoder
+         */
         @Override
         public void initialize(){
-            elevatorEncoder.setPosition(resetValue);
+            encoder.setPosition(resetValue.in(Inches));
         }
         
+        /**
+         * Finish the command immediately
+         */
         @Override
         public boolean isFinished(){
             return true;
         }
     }
-
+    
+    /**
+     * Command to monitor the soft limits for SysID
+     */
     public class SoftLimCheckCommand extends Command{
-        public enum SoftLimDirection{
-            UP,
-            DOWN
-        }
+        public enum Direction{UP,DOWN}
 
-        SoftLimDirection softLimDirection;
-        boolean isReached;
+        Direction direction;
 
-        public SoftLimCheckCommand(SoftLimDirection softLimDirection){
-            this.softLimDirection = softLimDirection;
-            isReached = false;
-        }
-
-        public void setDirection(SoftLimDirection softLimDirection){
-            this.softLimDirection = softLimDirection;
-        }
-
-        @Override
-        public void execute(){
-            if(softLimDirection == SoftLimDirection.UP){
-                isReached = topLimitReached();
-
-            }else if(softLimDirection == SoftLimDirection.DOWN){
-                isReached = botLimitReached();
-            }
+        public SoftLimCheckCommand(Direction direction){
+            this.direction = direction;
         }
 
         @Override
         public boolean isFinished(){
-            return isReached;
+            return direction == Direction.UP && topLimitReached() || 
+                direction == Direction.DOWN && botLimitReached();
         }
     }
-
-
-    private final ElevatorVoltageCommand elevatorVoltageCommand;
-    private final ElevatorRateCommand elevatorRateCommand;
-    private final ElevatorPosCommand elevatorPosCommand;
-    private final ElevatorHoldCommand elevatorHoldCommand;
 
     /**
      * Constructor
      */
     public Elevator() {        
+        motor = new SparkFlex(CAN_IDS.elevatorMotor, MotorType.kBrushless);
+        encoder = motor.getEncoder();
+        limitBot = motor.getReverseLimitSwitch();
 
-        elevatorMotor = new SparkFlex(CAN_IDS.elevatorMotor, MotorType.kBrushless);
-
-        elevatorEncoder = elevatorMotor.getEncoder();
-
-        elevatorLimitBot = elevatorMotor.getReverseLimitSwitch();
-
-        elevatorPID = new PIDController(ElevConst.pid.kP, ElevConst.pid.kI, ElevConst.pid.kD);
-
-        //Doesn't have kA value BECAUSe it doesn't need it to function and you have to actually give the feedforward a calculated acceleration
-        elevatorFF = new ElevatorFeedforward(ElevConst.ff.kS, ElevConst.ff.kG, ElevConst.ff.kV);
+        pid = new PIDController(ElevConst.pid.kP, ElevConst.pid.kI, ElevConst.pid.kD);
+        ff = new ElevatorFeedforward(ElevConst.ff.kS, ElevConst.ff.kG, ElevConst.ff.kV);
 
         //Motor Config
-        SparkFlexConfig elevatorConfig = new SparkFlexConfig();
-        elevatorConfig.encoder
+        SparkFlexConfig config = new SparkFlexConfig();
+        config.encoder
             .positionConversionFactor(ElevConst.distScale.in(Inches))
             .velocityConversionFactor(ElevConst.velScale.in(InchesPerSecond));
-        elevatorMotor.configure(elevatorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-        elevLimBotTrigger = new Trigger(elevatorLimitBot::isPressed);
+        // Setup encoder reset trigger
+        limBotTrigger = new Trigger(limitBot::isPressed);
+        limBotTrigger.onTrue(new EncoderResetCommand());
 
-        //TODO change reset values to whatever they need to be
-        elevLimBotTrigger.whileTrue(new EncoderResetCommand(0));
-
-        // TODO Set abs encoder offset
-
-        // Set control mode
-        elevatorVolt = 0;
-        elevatorRate = 0;
+        // Initialize mutable units
+        currentPos = Inches.mutable(0);
+        currentRate = InchesPerSecond.mutable(0);
+        currentVoltage = Volts.mutable(0);
+        currentCurrent = Amps.mutable(0);
 
         // Initialize Timer        
         shuffleBoardInit();
+        setDefaultCommand(new HoldCommand());
 
-        elevatorVoltageCommand = new ElevatorVoltageCommand(0);
-        elevatorRateCommand = new ElevatorRateCommand(0, 0);
-        elevatorPosCommand = new ElevatorPosCommand(0);
-        elevatorHoldCommand = new ElevatorHoldCommand();
-
-        setDefaultCommand(elevatorHoldCommand);
-
-        //System Identification
+        // Initialize SysID
         sysIdRoutine = new SysIdRoutine(
             new Config(
                 Volts.per(Second).of(.5),
@@ -301,31 +307,32 @@ public class Elevator extends SubsystemBase {
                 this::sysIDLogging, this)
         );
 
-        appliedVoltage = Volts.mutable(0);
-        appliedCurrent = Amps.mutable(0);
-        distance = Inches.mutable(0);
-        linearVelocity =  InchesPerSecond.mutable(0);
-        
+        sysid_appliedVoltage = Volts.mutable(0);
+        sysid_appliedCurrent = Amps.mutable(0);
+        sysid_distance = Inches.mutable(0);
+        sysid_linearVelocity =  InchesPerSecond.mutable(0);
+
         sysIdCommandUpQuasi = sysIdRoutine.quasistatic(edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction.kForward);
         sysIdCommandDownQuasi = sysIdRoutine.quasistatic(edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction.kReverse);
         sysIdCommandUpDyn = sysIdRoutine.dynamic(edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction.kForward);
         sysIdCommandDownDyn = sysIdRoutine.dynamic(edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction.kReverse);
+
         sysIdCommandGroup =  new SequentialCommandGroup(
             new ParallelRaceGroup(
                 sysIdCommandUpQuasi,
-                new SoftLimCheckCommand(SoftLimDirection.UP)
+                new SoftLimCheckCommand(SoftLimCheckCommand.Direction.UP)
             ),
             new ParallelRaceGroup(
                 sysIdCommandDownQuasi,
-                new SoftLimCheckCommand(SoftLimDirection.DOWN)
+                new SoftLimCheckCommand(SoftLimCheckCommand.Direction.DOWN)
             ),
             new ParallelRaceGroup(
                 sysIdCommandUpDyn,
-                new SoftLimCheckCommand(SoftLimDirection.UP)
+                new SoftLimCheckCommand(SoftLimCheckCommand.Direction.UP)
             ),
             new ParallelRaceGroup(
                 sysIdCommandDownDyn,
-                new SoftLimCheckCommand(SoftLimDirection.DOWN)
+                new SoftLimCheckCommand(SoftLimCheckCommand.Direction.DOWN)
             )
         );
     }
@@ -336,7 +343,7 @@ public class Elevator extends SubsystemBase {
                 .getLayout("Elevator", BuiltInLayouts.kList)
                 .withSize(2, 6);
 
-        sb_elevatorCmd = layout.add("Elevator Command", "").getEntry();
+        sb_currentCommand = layout.add("Current Command", "").getEntry();
         sb_posPosCurrent = layout.add("Pos Position Current", 0).getEntry();
         sb_posPosSetPoint = layout.add("Pos Position Set Point", 0).getEntry();
         sb_posRateCurrent = layout.add("Pos Rate Current", 0).getEntry();
@@ -344,48 +351,42 @@ public class Elevator extends SubsystemBase {
         sb_posRateError = layout.add("Pos Rate Error", 0).getEntry();
         sb_posVolt = layout.add("Pos Motor Voltage", 0).getEntry();
         sb_posTargetVolt = layout.add("Pos Target Voltage", 0).getEntry();
-        sb_posPosRotations = layout.add("Elevator Encoder Rotations Output", 0).getEntry();
-        sb_topSoftLim = layout.add("Elevator Top Soft Lim", false).getEntry();
-        sb_botSoftLim = layout.add("Elevator Bottom Soft Lim", false).getEntry();
-        
-
+        sb_topSoftLim = layout.add("Top Soft Lim", false).getEntry();
+        sb_botSoftLim = layout.add("Bottom Soft Lim", false).getEntry();
     }
 
     /**
      * Gets the current elevator position
      * 
-     * @return current elevator position (in)
+     * @return current elevator position
      */
-    public double getElevatorPos() {
-        return elevatorEncoder.getPosition();
+    public Distance getPos() {
+        return currentPos.mut_setMagnitude(encoder.getPosition());
     }
 
     /**
      * Gets the current elevator velocity
      * 
-     * @return current elevator velocity (in per sec)
+     * @return current elevator velocity
      */
-    public double getElevatorVelocity() {
-        return elevatorEncoder.getVelocity();
-    }
-
-    public double getElevatorVoltage(){
-        return elevatorMotor.getAppliedOutput() * elevatorMotor.getBusVoltage();
-    }
-
-    public double getElevatorCurrent(){
-        return elevatorMotor.getOutputCurrent();
+    public LinearVelocity getVelocity() {
+        return currentRate.mut_setMagnitude(encoder.getVelocity());
     }
 
     /**
-     * Check if the elevator is at its target position
-     * 
-     * @return true if the position is at their target
+     * Gets the current motor voltage
+     * @return  current motor voltage
      */
-    public boolean atPos(double targetPos, double posTol) {
-        double currentPos = getElevatorPos();
+    public Voltage getVoltage(){
+        return currentVoltage.mut_setMagnitude(motor.getAppliedOutput() * motor.getBusVoltage());
+    }
 
-        return Math.abs(targetPos - currentPos) < posTol;
+    /**
+     * Gets the current motor current
+     * @return  current motor current
+     */
+    public Current getCurrent(){
+        return currentCurrent.mut_setMagnitude(motor.getOutputCurrent());
     }
 
     /**
@@ -393,20 +394,22 @@ public class Elevator extends SubsystemBase {
      * 
      * @return target elevator control rate
      */
-    private void setElevatorPos(double targetPos) {
-        
+    private void setPos(Distance target) {
         // Calculate trapezoidal profile
-        double currentPos = getElevatorPos();
-        double maxPosRate = ElevConst.maxAutoSpeed.in(InchesPerSecond);
-        double posError = targetPos - currentPos;
+        MutLinearVelocity targetSpeed = ElevConst.maxAutoSpeed.mutableCopy();
+        MutDistance error = getPos().mutableCopy();
+        error.mut_times(-1).mut_plus(target);
 
-        double targetSpeed = maxPosRate * (posError > 0 ? 1 : +-1);
-        double rampDownSpeed = posError / ElevConst.rampDownDist.in(Inches) * maxPosRate;
+        targetSpeed.mut_times(error.in(Inches) > 0 ? 1 : +-1);
+        double rampDownSpeed = error.in(Inches) / ElevConst.rampDownDist.in(Inches) * targetSpeed.in(InchesPerSecond);
 
-        if (Math.abs(rampDownSpeed) < Math.abs(targetSpeed))
-            targetSpeed = rampDownSpeed;
+        if (Math.abs(rampDownSpeed) < Math.abs(targetSpeed.in(InchesPerSecond)))
+            targetSpeed.mut_replace(rampDownSpeed, InchesPerSecond);
         
-        setElevatorRate(targetSpeed);
+        setRate(targetSpeed);
+
+        // Update Shuffleboard
+        sb_posPosSetPoint.setString(target.toShortString());
     }
 
     /**
@@ -414,24 +417,22 @@ public class Elevator extends SubsystemBase {
      * 
      * @param targetSpeed target
      */
-    private void setElevatorRate(double targetSpeed) {
-        double result = this.elevatorRate;
-
-        //double currentPos = getElevatorPos();
-        double posRate = getElevatorVelocity();            
-
-        sb_posRateError.setDouble(posRate - targetSpeed);
-
-        // Calculate motor voltage output
-        double calcPID = elevatorPID.calculate(posRate, targetSpeed);
-        double calcFF = elevatorFF.calculate(targetSpeed);
-
-        result = calcPID + calcFF;
+    private void setRate(LinearVelocity target) {
+        // Get current velocity
+        MutLinearVelocity rate = getVelocity().mutableCopy();        
         
+        // Calculate output voltage
+        double calcPID = pid.calculate(rate.in(InchesPerSecond), target.in(InchesPerSecond));
+        double calcFF = ff.calculate(target.in(InchesPerSecond));
+
+        Voltage result = Volts.of(calcPID + calcFF);
+        
+        // Set output voltage
         setMotorVolt(result);
         
         //Shuffleboard display
-        this.elevatorRate = result;
+        sb_posRateSetPoint.setString(target.toShortString());
+        sb_posRateError.setString(rate.mut_minus(target).toShortString());
     }
 
     /**
@@ -441,119 +442,64 @@ public class Elevator extends SubsystemBase {
      * @param voltage desired motor voltage
      */
     private void setMotorVolt(Voltage voltage) {
-        setMotorVolt(voltage.baseUnitMagnitude());
+        if (topLimitReached() && voltage.in(Volts) > 0){
+            voltage = Constants.motorOff;
+        }
+        if (botLimitReached() && voltage.in(Volts) < 0){
+            voltage = Constants.motorOff;
+        }
+
+        motor.setVoltage(voltage);
+        
+        //Shuffleboard display
+        sb_posTargetVolt.setString(voltage.toShortString());
     }
 
     /**
-     * Sets the motor voltage for the elevator angle control. Manages soft limits as
-     * well.
-     * 
-     * @param voltage desired motor voltage
+     * Check if the top limit has been reached
+     * @return true if the top limit has been reached
      */
-    private void setMotorVolt(double voltage) {
-        if (topLimitReached() && voltage > 0){
-            voltage = 0;
-        }
-        if (botLimitReached() && voltage < 0){
-            voltage = 0;
-        }
-
-        elevatorMotor.setVoltage(voltage);
-        
-        //Shuffleboard display
-        this.elevatorVolt = voltage;
-    }
-
     public boolean topLimitReached(){
-        return getElevatorPos() >= ElevConst.topLim.in(Inches);
+        return getPos().in(Inches) >= ElevConst.topLim.in(Inches);
     }
 
+    /**
+     * Check if the bottom limit has been reached
+     * @return  true if the bottom limit has been reached
+     */
     public boolean botLimitReached(){
-        return getElevatorPos() <= ElevConst.botLim.in(Inches);
+        return getPos().in(Inches) <= ElevConst.botLim.in(Inches);
 
     }
 
+    /**
+     * Update sysID logging
+     * @param log   sysID log object
+     */
     private void sysIDLogging(SysIdRoutineLog log){
         log.motor("Elevator")
-            .voltage(appliedVoltage.mut_replace(getElevatorVoltage(), Volts))
-            .current(appliedCurrent.mut_replace(getElevatorCurrent(), Amps))
-            .linearPosition(distance.mut_replace(getElevatorPos(), Inches))
-            .linearVelocity(linearVelocity.mut_replace(getElevatorVelocity(), InchesPerSecond));
+            .voltage(sysid_appliedVoltage.mut_replace(getVoltage()))
+            .current(sysid_appliedCurrent.mut_replace(getCurrent()))
+            .linearPosition(sysid_distance.mut_replace(getPos()))
+            .linearVelocity(sysid_linearVelocity.mut_replace(getVelocity()));
     }
 
 
     /**
      * Updates shuffleboard
      */
-    private void updateUI(double targetRate, double targetVolt) {
+    private void updateUI() {
         Command currentCmd = getCurrentCommand();
         String currentCmdName = "<null>";
 
         if(currentCmd != null) currentCmdName = currentCmd.getName();   
 
-        sb_elevatorCmd.setString(currentCmdName);
-        sb_posPosCurrent.setDouble(getElevatorPos());
-        sb_posPosSetPoint.setDouble(elevatorPosCommand.elevatorPos);
-        sb_posRateCurrent.setDouble(getElevatorVelocity());
-        sb_posRateSetPoint.setDouble(targetRate);
-        sb_posVolt.setDouble(elevatorMotor.getAppliedOutput() * elevatorMotor.getBusVoltage());
-        sb_posTargetVolt.setDouble(this.elevatorVolt);
-        sb_posPosRotations.setDouble(elevatorEncoder.getPosition());
+        sb_currentCommand.setString(currentCmdName);
+        sb_posPosCurrent.setString(getPos().toShortString());
+        sb_posRateCurrent.setString(getVelocity().toShortString());
+        sb_posVolt.setString(getVoltage().toShortString());
         sb_topSoftLim.setBoolean(topLimitReached());
         sb_botSoftLim.setBoolean(botLimitReached());
-    }
-
-    public void setVoltCommand(double voltage) {
-        elevatorVoltageCommand.setVoltage(voltage);
-        if(getCurrentCommand() != elevatorVoltageCommand) elevatorVoltageCommand.schedule();
-    }
-
-    public void setRateCommand(double rate){
-        elevatorRateCommand.setRate(rate);
-        if(getCurrentCommand() != elevatorRateCommand) elevatorRateCommand.schedule();
-    }
-
-    public void setTolRateCommand(double rate, double tolerance){
-        elevatorRateCommand.setToleranceRate(rate, tolerance);
-        if(getCurrentCommand() != elevatorRateCommand) elevatorRateCommand.schedule();
-    }
-
-    public void setPosCommand(double pos){
-        elevatorPosCommand.setPos(pos);
-        if(getCurrentCommand() != elevatorPosCommand) elevatorPosCommand.schedule();
-    }
-
-    public void setHoldCommand(){
-        if(getCurrentCommand() != elevatorHoldCommand) new ElevatorHoldCommand().schedule();
-    }
-
-    public void setSysIDCommand() {
-        if(getCurrentCommand() != sysIdCommandGroup) sysIdCommandGroup.schedule();
-    }
-    
-    public void stopCommands() {
-        Command currentCmd = getCurrentCommand();
-        if(currentCmd != null) currentCmd.cancel();
-    }
-
-    public void setSysIdCommandGroup(){
-        if (getCurrentCommand() != sysIdCommandGroup) sysIdCommandGroup.schedule();
-    }
-
-    public void setSysIdCommandQuasiUp(){
-        if (getCurrentCommand() != sysIdCommandUpQuasi) sysIdCommandUpQuasi.schedule();
-    }
-
-    public void setSysIdCommandQuasiDown(){
-        if (getCurrentCommand() != sysIdCommandDownQuasi) sysIdCommandDownQuasi.schedule();
-    }
-
-    public void setSysIdCommandDynUp(){
-        if (getCurrentCommand() != sysIdCommandUpDyn) sysIdCommandUpDyn.schedule();
-    }
-
-    public void setSysIdCommandDynDown(){
-        if (getCurrentCommand() != sysIdCommandDownDyn) sysIdCommandDownDyn.schedule();
     }
 
     /**
@@ -561,7 +507,7 @@ public class Elevator extends SubsystemBase {
      */
     @Override
     public void periodic() {
-        updateUI(elevatorRate, elevatorVolt);
+        updateUI();
         var currentCommand = getCurrentCommand();
         String curCommandName = "null";
         if (currentCommand != null) curCommandName = currentCommand.getName();

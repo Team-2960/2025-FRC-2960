@@ -116,7 +116,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("coralNotPresentCommand", endEffector.new CoralNotPresentCommand());
         NamedCommands.registerCommand("ejectCommand", endEffector.new EjectCmd());
         NamedCommands.registerCommand("intakeCommand", endEffector.new IntakeCmd());
-        NamedCommands.registerCommand("elevatorHoldCommand", elevator.new ElevatorHoldCommand());
+        NamedCommands.registerCommand("elevatorHoldCommand", elevator.new HoldCommand());
         NamedCommands.registerCommand("armHoldCommand", arm.new ArmHoldCommand());
     }
 
