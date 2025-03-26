@@ -38,7 +38,7 @@ public class OperatorInterface {
     private OperatorInterface() {
         // Create Joysticks
         driverController = new CommandXboxController(0);
-        operatorController1 = new CommandXboxController(1);
+        operatorController = new CommandXboxController(1);
 
         xSpeed = MetersPerSecond.mutable(0);
         ySpeed = MetersPerSecond.mutable(0);
@@ -103,12 +103,12 @@ public class OperatorInterface {
         ElevArmControl elevArmControl = ElevArmControl.getInstance();
 
         //Elevator Arm Triggers
-        operatorController1.y().onTrue(elevArmControl.getGoToL4Command());
-        operatorController1.x().onTrue(elevArmControl.getGoToL3Command());
-        operatorController1.b().onTrue(elevArmControl.getGoToL2Command());
-        operatorController1.a().onTrue(elevArmControl.getGoToIntakeCommand());
-        operatorController1.pov(90).onTrue(elevArmControl.getGoToLowAlgaeCommand());
-        operatorController1.pov(270).onTrue(elevArmControl.getGoToHighAlgaeCommand());
+        operatorController.y().onTrue(elevArmControl.getGoToL4Command());
+        operatorController.x().onTrue(elevArmControl.getGoToL3Command());
+        operatorController.b().onTrue(elevArmControl.getGoToL2Command());
+        operatorController.a().onTrue(elevArmControl.getGoToIntakeCommand());
+        operatorController.pov(90).onTrue(elevArmControl.getGoToLowAlgaeCommand());
+        operatorController.pov(270).onTrue(elevArmControl.getGoToHighAlgaeCommand());
 
         driverController.axisMagnitudeGreaterThan(3, 0.1)
             .whileTrue(endEffector.new EjectCmd());
@@ -131,7 +131,7 @@ public class OperatorInterface {
         AlgaeRoller algaeRoller = AlgaeRoller.getInstance();
 
         // TODO move algea presets to constants
-        operatorController1.pov(0)
+        operatorController.pov(0)
             .onTrue(algaeAngle.new AngleCommand(Rotation2d.fromDegrees(20)));
         
         operatorController.pov(180)
