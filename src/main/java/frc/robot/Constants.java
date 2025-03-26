@@ -70,9 +70,9 @@ public class Constants {
     public static final Pose2d blueCenter = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
     public static final Pose2d blueAmpSide = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
 
-    public static final Translation2d rightBranchOffset = new Translation2d(-fullLength/2.0 + .214, -.1109);
-    public static final Translation2d leftBranchOffset = new Translation2d(-fullLength/2.0 + 0.214, -0.441);
-    public static final Translation2d centerOffset = new Translation2d(-fullLength/2.0 + 0.214, 0);
+    public static final Translation2d rightBranchOffset = new Translation2d(-fullLength/2.0 + 0.05, -.1109);
+    public static final Translation2d leftBranchOffset = new Translation2d(-fullLength/2.0 + 0.05, -0.441);
+    public static final Translation2d centerOffset = new Translation2d(-fullLength/2.0 + 0.05, 0);
 
 
 
@@ -90,7 +90,7 @@ public class Constants {
 
 
     public static final double maxSpeed = 4.5;
-    public static final double maxAutoSpeed = 3.0;
+    public static final double maxAutoSpeed = 4.0;
     public static final double maxAngularSpeed = 1.5 * 2 * Math.PI;
     public static final double maxAutoAngularSpeed = 0.5 * 2 * Math.PI;
 
@@ -103,8 +103,8 @@ public class Constants {
     public static final Rotation2d driveAngleRampDistance = Rotation2d.fromDegrees(10);
     public static final PIDParam angleAlignPID = new PIDParam(4, 0, 0.3);
     public static final TrapezoidProfile.Constraints trapConstraints = new Constraints(4.5, 11);
-    public static final double trapezoidTime = 0.15;
-    public static final double alignRampDistance = 1.0;    //Meters
+    public static final double trapezoidTime = 0.1;
+    public static final double alignRampDistance = 1.2;    //Meters
 
     public static final double alignLinearTolerance = 0.005;  //Meters
     public static final Rotation2d alignRotTolerance = Rotation2d.fromDegrees(2); //Degrees
@@ -157,8 +157,9 @@ public class Constants {
     //End Effector
     public static final double coralEjectVolt = -12;
     public static final double coralIntakeVolt = -3;
-    public static final double algaeRemovalVolt = 6;
+    public static final double algaeRemovalVolt = -6;
     public static final double coralEjectTime = -1;
+    public static final double coralReverseVolt = 2;
 
     //Algae Roller
     public static final PIDParam algaeAnglePID = new PIDParam(0.0, 0.0, 0.0);

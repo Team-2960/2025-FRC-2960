@@ -48,20 +48,20 @@ public class Cameras extends SubsystemBase{
                     Math.toRadians(0))),
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, 
             3, 
-            VecBuilder.fill(3, 3, 8), 
+            VecBuilder.fill(.5, .5, 16), 
             multiStds,
             .2
         );
         
         rightPipeline = new AprilTagPipelineSettings(AprilTagFields.k2025ReefscapeWelded,
             new Transform3d(
-                -13.944 /*in  */ * .0254, 
-                13.944 * 0.0254, 
-                8.791 * .0254, 
+                13.1 /*in  */ * .0254, 
+                -12.614 * 0.0254, 
+                11.068 * .0254, 
                 new Rotation3d(
                     Math.toRadians(0),
-                    Math.toRadians(-20), 
-                    Math.toRadians(135))),
+                    Math.toRadians(0), 
+                    Math.toRadians(65))),
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, 
             3, 
             singleStds , 

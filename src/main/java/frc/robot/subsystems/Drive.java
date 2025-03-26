@@ -612,6 +612,12 @@ public class Drive extends SubsystemBase {
             e.printStackTrace();
         }
 
+        // Make instance of Command Classes
+        linearDriveCommands = new LinearDriveCommands();
+        rotationDriveCommands = new RotationDriveCommands();
+
+        presetPoseCommand = new PresetPoseCommand(new Pose2d());
+
         autoBuilder = new AutoBuilder();
         AutoBuilder.configure(
                 this::getEstimatedPos,
@@ -623,17 +629,14 @@ public class Drive extends SubsystemBase {
                         new PIDConstants(5, 0, 0)),
                 config,
                 this::isRedAlliance,
+                linearDriveCommands,
+                rotationDriveCommands,
                 this
         );
 
         // Call method to initialize shuffleboard
         shuffleBoardInit();
 
-        // Make instance of Command Classes
-        linearDriveCommands = new LinearDriveCommands();
-        rotationDriveCommands = new RotationDriveCommands();
-
-        presetPoseCommand = new PresetPoseCommand(new Pose2d());
 
         pathConstraints = PathConstraints.unlimitedConstraints(12);
     }
@@ -766,6 +769,8 @@ public class Drive extends SubsystemBase {
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.maxSpeed);
 
         sb_speedTargetR.setDouble(rSpeed);
+        sb_speedX.setDouble(chassisSpeeds.vxMetersPerSecond);
+        sb_speedY.setDouble(chassisSpeeds.vyMetersPerSecond);
 
         frontLeft.setDesiredState(swerveModuleStates[0]);
         frontRight.setDesiredState(swerveModuleStates[1]);
@@ -778,9 +783,11 @@ public class Drive extends SubsystemBase {
      * @param chassisSpeeds
      */
     private void pathPlannerKinematics(ChassisSpeeds chassisSpeeds) {
-        setDriveRate(chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond);
-        setAngleRate(chassisSpeeds.omegaRadiansPerSecond);
+        // updateKinematics(chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond);
+        // setAngleRate(chassisSpeeds.omegaRadiansPerSecond);
+        this.chassisSpeeds = chassisSpeeds;
     }
+
 
     /**
      * Calculates the angle rate to move to the target angle from the current angle
@@ -866,7 +873,7 @@ public class Drive extends SubsystemBase {
         //Calculates the X and Y Speeds by multiplying the distance between the two points by the angle components
         double xSpeed = angleError.getCos() * targetSpeed;
         double ySpeed = angleError.getSin() * targetSpeed;
-
+        
         updateKinematics(xSpeed, ySpeed);
     }
 

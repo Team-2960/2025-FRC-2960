@@ -59,25 +59,24 @@ public class RobotContainer {
     //   }
     //   , drive.linearDriveCommands);
 
-    rightBranchAlign = new ParallelCommandGroup(
-      drive.linearDriveCommands.new AutonLinearGoToReefCommand(Constants.rightBranchOffset),
-      drive.rotationDriveCommands.new AutonRotGoToReefCommand(Rotation2d.fromDegrees(0))
-    );
+    // rightBranchAlign = new ParallelCommandGroup(
+    //   drive.linearDriveCommands.new AutonLinearGoToReefCommand(Constants.rightBranchOffset),
+    //   drive.rotationDriveCommands.new AutonRotGoToReefCommand(Rotation2d.fromDegrees(0))
+    // );
 
-    leftBranchAlign = new ParallelCommandGroup(
-      drive.linearDriveCommands.new AutonLinearGoToReefCommand(Constants.leftBranchOffset),
-      drive.rotationDriveCommands.new AutonRotGoToReefCommand(Rotation2d.fromDegrees(0))
-    );
+    // leftBranchAlign = new ParallelCommandGroup(
+    //   drive.linearDriveCommands.new AutonLinearGoToReefCommand(Constants.leftBranchOffset),
+    //   drive.rotationDriveCommands.new AutonRotGoToReefCommand(Rotation2d.fromDegrees(0))
+    // );
 
     testAuton = new SequentialCommandGroup(
       AutoBuilder.resetOdom(new Pose2d(7.255, 1.899, Rotation2d.fromDegrees(180))),
-
       drive.followPath("Copy of RA 1st Coral"),
-      new ParallelCommandGroup(
-        elevArmControl.getGoToL4Command(),
-        drive.linearDriveCommands.new AutonLinearGoToReefCommand(Constants.leftBranchOffset),
-        drive.rotationDriveCommands.new RotGoToReefCommand(new Rotation2d())
-      ),
+      // new ParallelCommandGroup(
+      //   elevArmControl.getGoToL4Command(),
+      //   drive.linearDriveCommands.new AutonLinearGoToReefCommand(Constants.leftBranchOffset),
+      //   drive.rotationDriveCommands.new RotGoToReefCommand(new Rotation2d())
+      // ),
 
       endEffector.new EjectCmd()
     );
@@ -85,8 +84,8 @@ public class RobotContainer {
 
 
     NamedCommands.registerCommand("goToIntakeCommand", elevArmControl.getGoToIntakeCommand());
-    NamedCommands.registerCommand("leftBranchAlign", leftBranchAlign);
-    NamedCommands.registerCommand("rightBranchAlign", rightBranchAlign);
+    //NamedCommands.registerCommand("leftBranchAlign", leftBranchAlign);
+    //NamedCommands.registerCommand("rightBranchAlign", rightBranchAlign);
     NamedCommands.registerCommand("goToL1Command", elevArmControl.getGoToL1Command());
     NamedCommands.registerCommand("goToL2Command", elevArmControl.getGoToL2Command());
     NamedCommands.registerCommand("goToL3Command", elevArmControl.getGoToL3Command());
