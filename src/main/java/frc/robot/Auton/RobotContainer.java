@@ -19,23 +19,18 @@ import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.EndEffector;
 
 public class RobotContainer {
-    SendableChooser<Command> autoChooser;
-    Command chosenAuto;
-    Command leftBranchAlign;
-    Command rightBranchAlign;
-    private Command testAuton;
-    private static RobotContainer robotContainer = null;
+    private static SendableChooser<Command> autoChooser;
 
     // PathPlanner
-    public RobotConfig config;
-    public AutoBuilder autoBuilder;
+    public static RobotConfig config;
+    public static AutoBuilder autoBuilder;
 
-    public PathConstraints pathConstraints;
+    public static PathConstraints pathConstraints;
 
     /**
      * Constructor
      */
-    public RobotContainer(){
+    static {
 
         initPathPlanner();
 
@@ -49,7 +44,7 @@ public class RobotContainer {
     /**
      * Initializes PathPlanner
      */
-    private void initPathPlanner() {
+    private static void initPathPlanner() {
         Drive drive = Drive.getInstance();
 
         // Get Path Planner RobotConfig
@@ -80,7 +75,7 @@ public class RobotContainer {
     /**
      * Adds Named Commands to PathPlanner
      */
-    private void initNamedCommands() {
+    private static void initNamedCommands() {
         Drive drive = Drive.getInstance();
         ElevArmControl elevArmControl = ElevArmControl.getInstance();
         Elevator elevator = Elevator.getInstance();
@@ -89,8 +84,9 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("gotoNearestBranch", drive.new GotoNearestBranchCommand(Constants.RobotConst.coralOffset));
         NamedCommands.registerCommand("goToIntakeCommand", elevArmControl.getGoToIntakeCommand());
-        NamedCommands.registerCommand("leftBranchAlign", leftBranchAlign);
-        NamedCommands.registerCommand("rightBranchAlign", rightBranchAlign);
+        // TODO Implement left & right branch align
+        //NamedCommands.registerCommand("leftBranchAlign", leftBranchAlign);
+        //NamedCommands.registerCommand("rightBranchAlign", rightBranchAlign);
         NamedCommands.registerCommand("goToL1Command", elevArmControl.getGoToL1Command());
         NamedCommands.registerCommand("goToL2Command", elevArmControl.getGoToL2Command());
         NamedCommands.registerCommand("goToL3Command", elevArmControl.getGoToL3Command());
@@ -109,25 +105,7 @@ public class RobotContainer {
      * Gets the currently selected auton command
      * @return currently selected Auton command
      */
-    public Command getAutonomousCommand() {
-
-        chosenAuto = autoChooser.getSelected();
-        
-        // Load the path you want to follow using its name in the GUI
-        // Create a path following command using AutoBuilder. This will also trigger event markers.
-        return testAuton;
+    public static Command getAutonomousCommand() {
+        return autoChooser.getSelected();
     }
-
-    /**
-     * Gets an instance of RobotContainer
-     * @return
-     */
-    public static RobotContainer getInstance(){
-        if (robotContainer == null){
-          robotContainer = new RobotContainer();
-        }
-        return robotContainer;
-    }
-
-  
 }

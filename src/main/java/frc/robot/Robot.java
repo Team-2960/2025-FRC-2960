@@ -27,7 +27,6 @@ public class Robot extends TimedRobot {
      * for any
      * initialization code.
      */
-    private RobotContainer robotContainer;
     private Command autonomousCommand;
     
 
@@ -46,7 +45,8 @@ public class Robot extends TimedRobot {
         Cameras.getInstance();
 
         CameraServer.startAutomaticCapture();
-        robotContainer = RobotContainer.getInstance();
+        
+        autonomousCommand = RobotContainer.getAutonomousCommand();
     }
 
     @Override
@@ -57,10 +57,9 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousInit() {
-        autonomousCommand = robotContainer.getAutonomousCommand();
-        if(autonomousCommand != null){
-            autonomousCommand.schedule();
-        }
+        autonomousCommand = RobotContainer.getAutonomousCommand();
+
+        if(autonomousCommand != null) autonomousCommand.schedule();
     }
 
     @Override
@@ -69,9 +68,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopInit() {
-        if (autonomousCommand != null) {
-            autonomousCommand.cancel();
-        }
+        if (autonomousCommand != null) autonomousCommand.cancel();
     }
 
     @Override

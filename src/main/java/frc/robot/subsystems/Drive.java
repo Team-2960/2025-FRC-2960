@@ -901,7 +901,7 @@ public class Drive extends SubsystemBase {
      * Generate a PathPlanner path on the floy
      */
     public void pathOnTheFly() {
-        Command pathCommand = AutoBuilder.pathfindToPose(new Pose2d(), RobotContainer.getInstance().pathConstraints);
+        Command pathCommand = AutoBuilder.pathfindToPose(new Pose2d(), RobotContainer.pathConstraints);
         followPath(pathCommand);
     }
 
