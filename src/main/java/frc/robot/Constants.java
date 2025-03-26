@@ -12,6 +12,7 @@ import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Value;
 import static edu.wpi.first.units.Units.Volts;
+import static edu.wpi.first.units.Units.Rotations;
 
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
@@ -29,6 +30,8 @@ import edu.wpi.first.units.measure.*;
 import frc.robot.Util.*;
 
 public class Constants {
+
+    public static final Voltage motorOff = Volts.of(0);
 
     public static class CommonConst {
         public static final Dimensionless revTBEncCountPerRev = Value.of(4096);
@@ -247,8 +250,8 @@ public class Constants {
         public static final Distance spoolCircum = spoolDiam.times(Math.PI);
         public static final Distance posScale = spoolCircum.times(gearRatio);
 
-        public static final Angle extAngle = Degrees.of(135);
-        public static final Angle retAngle = Degrees.of(45);
+        public static final Angle extAngle = Rotations.of(0.325);
+        public static final Angle retAngle = Rotations.of(0.127);
 
         public static final Voltage extVolt = Volts.of(-6);      
         public static final Voltage retVolt = Volts.of(12);     

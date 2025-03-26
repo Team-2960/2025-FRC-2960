@@ -3,15 +3,18 @@ package frc.robot.subsystems;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.MutVoltage;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.PIDCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.ClimberConst;
 
-import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.revrobotics.AbsoluteEncoder;
@@ -30,7 +33,7 @@ public class Climber extends SubsystemBase {
 
         @Override
         public void initialize() {
-            setMotorVolt(ClimberConst.extVolt.in(Volts));
+            setMotorVolt(ClimberConst.extVolt);
         }
 
         // @Override
@@ -40,7 +43,7 @@ public class Climber extends SubsystemBase {
 
         @Override
         public void end(boolean interrupted) {
-            setMotorVolt(0);
+            setMotorVolt(Constants.motorOff);
         }
     }
 
@@ -51,7 +54,7 @@ public class Climber extends SubsystemBase {
         
         @Override
         public void initialize() {
-            setMotorVolt(ClimberConst.retVolt.in(Volts));
+            setMotorVolt(ClimberConst.retVolt);
         }
 
         // @Override
@@ -61,7 +64,7 @@ public class Climber extends SubsystemBase {
 
         @Override
         public void end(boolean interrupted) {
-            setMotorVolt(0);
+            setMotorVolt(Constants.motorOff);
         }
     }
 
@@ -72,24 +75,24 @@ public class Climber extends SubsystemBase {
 
         @Override
         public void initialize() {
-            setMotorVolt(ClimberConst.resetVolt.in(Volts));
+            setMotorVolt(ClimberConst.resetVolt);
         }
 
         @Override
         public void end(boolean interrupted) {
-            setMotorVolt(0);
+            setMotorVolt(Constants.motorOff);
         }
     }
 
     public class ClimberVoltageCommand extends Command{
-        private double voltage;
+        private Voltage voltage;
 
-        public ClimberVoltageCommand(double voltage){
+        public ClimberVoltageCommand(Voltage voltage){
             this.voltage = voltage;
             addRequirements(Climber.this);
         }
 
-        public void setVoltage(double voltage){
+        public void setVoltage(Voltage voltage){
             this.voltage = voltage;
         }
 
@@ -106,17 +109,17 @@ public class Climber extends SubsystemBase {
 
         @Override
         public void execute(){
-            setMotorVolt(Constants.climberExtVolt);
+            setMotorVolt(ClimberConst.extVolt);
         }
 
         @Override
         public boolean isFinished(){
-            return getPosition().getRotations() >= Constants.climberExtDist;
+            return getPosition().getRotations() >= ClimberConst.extAngle.in(Rotations);
         }
 
         @Override
         public void end(boolean interrupt){
-            setMotorVolt(0);
+            setMotorVolt(Constants.motorOff);
         }
         
     }
@@ -128,23 +131,23 @@ public class Climber extends SubsystemBase {
 
         @Override
         public void execute(){
-            setMotorVolt(Constants.climberRetVolt);
+            setMotorVolt(ClimberConst.retVolt);
         }
 
         @Override
         public boolean isFinished(){
-            return getPosition().getRotations() <= Constants.climberRetDist;
+            return getPosition().getRotations() <= ClimberConst.retAngle.in(Rotations);
     
         }   
 
         @Override
         public void end(boolean interrupt){
-            setMotorVolt(0);
+            setMotorVolt(Constants.motorOff);
         }
     }
 
     public class HoldPositionCommand extends Command{
-        double targetPosition;
+        Angle targetPosition;
 
         public HoldPositionCommand(){
             addRequirements(Climber.this);
@@ -175,14 +178,14 @@ public class Climber extends SubsystemBase {
     private final RetractCmd retractCmd;
     private final ResetCmd resetCmd;
     private final ClimberVoltageCommand climberVoltageCommand;
-    private final SetExtPosCommand setExtPosCommand;
-    private final SetRetPosCommand setRetPosCommand;
 
     private final PIDController climberPID;
 
     private final GenericEntry sb_command;
     private final GenericEntry sb_voltage;
     private final GenericEntry sb_winchExt;
+
+    private MutVoltage poseVolt;
 
 
     /**
@@ -200,13 +203,13 @@ public class Climber extends SubsystemBase {
         extendCmd = new ExtendCmd();
         retractCmd = new RetractCmd();
         resetCmd = new ResetCmd();
-        climberVoltageCommand = new ClimberVoltageCommand(0);
-        setExtPosCommand = new SetExtPosCommand();
-        setRetPosCommand = new SetRetPosCommand();
+        climberVoltageCommand = new ClimberVoltageCommand(Constants.motorOff);
 
         //setDefaultCommand(new HoldPositionCommand());
 
         climberPID = new PIDController(1.0, 0, 0);
+
+        poseVolt = Volts.mutable(0);
 
         // Setup Shuffleboard
         var layout = Shuffleboard.getTab("Status")
@@ -223,16 +226,16 @@ public class Climber extends SubsystemBase {
      * 
      * @return distance the climber is extended
      */
-    public double getExtension() {
-        return encoder.getPosition() * ClimberConst.posScale.in(Inches);
+    public Distance getExtension() {
+        return ClimberConst.posScale.times(encoder.getPosition());
     }
 
     public Rotation2d getPosition(){
         return Rotation2d.fromRotations(absEncoder.getPosition());
     }
 
-    public double getRelativePos(){
-        return encoder.getPosition();
+    public Angle getRelativePos(){
+        return Rotations.of(encoder.getPosition());
     }
 
     /**
@@ -254,12 +257,11 @@ public class Climber extends SubsystemBase {
         if(getCurrentCommand() != resetCmd) resetCmd.schedule();
     }
 
-    public void setPos(double pose){
-        double volt = climberPID.calculate(pose);
-        setMotorVolt(volt);
+    public void setPos(Angle pose){
+        setMotorVolt(poseVolt.mut_replace(climberPID.calculate(pose.in(Rotations)), Volts));
     }
 
-    public void setClimberVoltage(double voltage){
+    public void setClimberVoltage(Voltage voltage){
         climberVoltageCommand.setVoltage(voltage);
         if(getCurrentCommand() != climberVoltageCommand) climberVoltageCommand.schedule();
     }
@@ -273,7 +275,7 @@ public class Climber extends SubsystemBase {
      * Sets the motor voltage
      * @param voltage   sets the output voltage for the motor
      */
-    private void setMotorVolt(double voltage) {
+    private void setMotorVolt(Voltage voltage) {
         motor.setVoltage(voltage);
     }
 
