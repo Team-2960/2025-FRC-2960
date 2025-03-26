@@ -1070,11 +1070,11 @@ public class Drive extends SubsystemBase {
      * Gets the current Auton command from Shuffleboard
      * @return  current auton command from Shuffleboard
      */
-    public Command getAutonomousCommand() {
+    public Command followPath(String pathName) {
         // TODO Move to a dedicated PathPlanner class
         try {
             // Load the path you want to follow using its name in the GUI
-            PathPlannerPath path = PathPlannerPath.fromPathFile("Example Path");
+            PathPlannerPath path = PathPlannerPath.fromPathFile(pathName);
 
             // Create a path following command using AutoBuilder. This will also trigger
             // event markers.
