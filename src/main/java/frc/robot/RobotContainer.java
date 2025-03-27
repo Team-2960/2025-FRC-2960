@@ -1,4 +1,4 @@
-package frc.robot.Auton;
+package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;

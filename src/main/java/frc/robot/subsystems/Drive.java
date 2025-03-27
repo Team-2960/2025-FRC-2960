@@ -38,7 +38,7 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 
-import frc.robot.Auton.RobotContainer;
+import frc.robot.RobotContainer;
 import frc.robot.Util.FieldLayout;
 import frc.robot.Util.Limits;
 import static frc.robot.Constants.CAN_IDS;
