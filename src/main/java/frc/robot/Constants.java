@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.InchesPerSecond;
+import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
@@ -36,6 +37,9 @@ public class Constants {
     // Robot constants
     public static class RobotConst {
         public static final Time updatePeriod = Seconds.of(0.02);
+
+        public static final Mass robotMass = Pounds.of(107+13+12);
+        public static final MomentOfInertia robotMOI = KilogramSquareMeters.of(6.883);
         
         public static final Distance frameWidth = Inches.of(29.5);
         public static final Distance frameLength = Inches.of(29.5);
@@ -115,13 +119,6 @@ public class Constants {
 
     // Drive
     public static class DriveConst {
-        public static final Dimensionless driveGearRatio = Value.of(5.08);
-        public static final Distance wheelDiameter = Inches.of(2.95);
-        public static final Distance wheelRadius = wheelDiameter.div(2);
-        public static final Distance wheelCirc = wheelDiameter.times(Math.PI);
-        public static final Distance distRatio = wheelCirc.div(driveGearRatio);
-        public static final LinearVelocity velRatio = distRatio.div(Seconds.of(60));
-
         public static final Distance wheelXOffset = RobotConst.frameLength.div(2).minus(RobotConst.wheelInset);
         public static final Distance wheelYOffset = RobotConst.frameWidth.div(2).minus(RobotConst.wheelInset);
 
@@ -155,6 +152,17 @@ public class Constants {
 
     // Swerve
     public static class SwerveConst {
+        public static final Dimensionless driveGR = Value.of(5.08);
+        public static final Distance wheelDiameter = Inches.of(2.95);
+        public static final Distance wheelRadius = wheelDiameter.div(2);
+        public static final Distance wheelCirc = wheelDiameter.times(Math.PI);
+        public static final Distance distRatio = wheelCirc.div(driveGR);
+        public static final LinearVelocity velRatio = distRatio.div(Seconds.of(60));
+
+        public static final Dimensionless angleGR = Value.of(9424.0/203.0);
+
+        public static final MomentOfInertia angleMOI = KilogramSquareMeters.of(0.0006936473521);
+
         public static PIDParam drivePID = new PIDParam(.5, 0.0, 0.0);
         public static FFParam driveFF = FFParam.simpleMotor(0.0, 2.25, 0.0);
 

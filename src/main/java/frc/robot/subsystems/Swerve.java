@@ -1,10 +1,10 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.RevolutionsPerSecond;
-import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.Volts;
 
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.sim.SparkAbsoluteEncoderSim;
@@ -13,7 +13,6 @@ import com.revrobotics.sim.SparkMaxSim;
 import com.revrobotics.sim.SparkRelativeEncoderSim;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.SparkRelativeEncoder;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkFlex;
@@ -25,19 +24,26 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.units.measure.MutAngularVelocity;
+import edu.wpi.first.units.measure.MutDistance;
+import edu.wpi.first.units.measure.MutLinearVelocity;
+import edu.wpi.first.units.measure.MutVoltage;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.DriveConst;
 import frc.robot.Constants.SwerveConst;
+import frc.robot.simulation.SwerveSim;
 
 public class Swerve extends SubsystemBase {
 
@@ -56,6 +62,10 @@ public class Swerve extends SubsystemBase {
         }
     }
 
+    public final Translation2d translation;
+    public final String name;
+
+    public final SwerveSim sim;
 
     private final SparkFlex mDrive;
     private final SparkMax mAngle;
@@ -69,11 +79,18 @@ public class Swerve extends SubsystemBase {
     private final SparkRelativeEncoderSim encDriveSim;
     private final SparkAbsoluteEncoderSim encAngleSim;
 
+    private final MutVoltage simDriveVoltage;
+    private final MutVoltage simAngleVoltage;
+
     private final PIDController drivePIDcontroller;
     private final SimpleMotorFeedforward driveFeedforward;
 
     private final PIDController anglePIDController;
     private final SimpleMotorFeedforward angleFeedforward;
+
+    private final MutDistance driveDist;
+    private final MutLinearVelocity driveVel;
+    private final MutAngularVelocity angleVel;
 
     private SwerveModuleState desiredState;
 
@@ -90,15 +107,20 @@ public class Swerve extends SubsystemBase {
      * Constructor
      * @param driveMotorID  ID of the drive motor SparkFlex
      * @param angleMotorID  ID of the angle motor sparkFlex
-     * @param swerveName    Name of the swerve module
+     * @param name          Name of the swerve module
      * @param invertDrive   True to invert the drive motor
      * @param invertAngle   True to invert the angle motor
      */
-    public Swerve(int driveMotorID, int angleMotorID, String swerveName, boolean invertDrive, boolean invertAngle) {
+    public Swerve(int driveMotorID, int angleMotorID, String name, Translation2d translation, boolean invertDrive, boolean invertAngle) {
+        this.translation = translation;
+        this.name = name;
+
         // Initialize Drive Motor
         mDrive = new SparkFlex(driveMotorID, MotorType.kBrushless);
 
         SparkFlexConfig drive_config = new SparkFlexConfig();
+        drive_config.encoder.positionConversionFactor(SwerveConst.distRatio.in(Meters));
+        drive_config.encoder.velocityConversionFactor(SwerveConst.velRatio.in(MetersPerSecond));
         drive_config.inverted(invertDrive);
         mDrive.configure(drive_config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
@@ -107,6 +129,8 @@ public class Swerve extends SubsystemBase {
         
         SparkMaxConfig angle_config = new SparkMaxConfig();
         angle_config.inverted(invertAngle);
+        angle_config.encoder.positionConversionFactor(2 * Math.PI);
+        angle_config.encoder.velocityConversionFactor(2 * Math.PI / 60);
         angle_config.apply(new AbsoluteEncoderConfig().inverted(true));
         mAngle.configure(angle_config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
@@ -121,7 +145,20 @@ public class Swerve extends SubsystemBase {
         mAngleSim = new SparkMaxSim(mAngle, DCMotor.getNeo550(1));
         encDriveSim = new SparkRelativeEncoderSim(mDrive);
         encAngleSim = new SparkAbsoluteEncoderSim(mAngle);
-    
+        
+        simDriveVoltage = Volts.mutable(0);
+        simAngleVoltage = Volts.mutable(0);
+
+        sim = new SwerveSim(
+            DCMotor.getNeoVortex(1),
+            DCMotor.getNeo550(1),
+            SwerveConst.wheelDiameter,
+            SwerveConst.driveGR,
+            SwerveConst.angleGR,
+            SwerveConst.driveFF,
+            SwerveConst.angleFF,
+            SwerveConst.angleMOI
+        );
 
         // Initialize Drive rate controllers
         drivePIDcontroller = new PIDController(
@@ -149,6 +186,12 @@ public class Swerve extends SubsystemBase {
             SwerveConst.angleFF.kA
         );
 
+        // Initialize mutable units
+        driveDist = Meters.mutable(0);
+        driveVel = MetersPerSecond.mutable(0);
+        angleVel = RadiansPerSecond.mutable(0);
+
+
         // Initialize desired state
         desiredState = new SwerveModuleState();
 
@@ -157,7 +200,7 @@ public class Swerve extends SubsystemBase {
 
         // Setup Shuffleboard
         var layout = Shuffleboard.getTab("Drive")
-                .getLayout(swerveName + " Swerve", BuiltInLayouts.kList)
+                .getLayout(name + " Swerve", BuiltInLayouts.kList)
                 .withSize(1, 4);
         sb_angleSetPoint = layout.add("Angle Desired", 0).getEntry();
         sb_angleCurrent = layout.add("Angle Current", 0).getEntry();
@@ -176,14 +219,14 @@ public class Swerve extends SubsystemBase {
      * @return current swerve module angle
      */
     public Rotation2d getAnglePos() {
-        return new Rotation2d(Rotations.of(encAngle.getPosition()));
+        return Rotation2d.fromRadians(encAngle.getPosition());
     }
 
     /**
      * Get the current swerve module angle rate
      */
     public AngularVelocity getAngleRate() {
-        return RevolutionsPerSecond.of(encAngle.getVelocity());
+        return angleVel.mut_setMagnitude(encAngle.getVelocity());
     }
 
     /**
@@ -192,7 +235,7 @@ public class Swerve extends SubsystemBase {
      * @return current swerve module drive distance
      */
     public Distance getDrivePos() {
-        return DriveConst.distRatio.times(encDrive.getPosition());
+        return driveDist.mut_setMagnitude(encDrive.getPosition());
     }
 
     /**
@@ -201,7 +244,7 @@ public class Swerve extends SubsystemBase {
      * @return current swerve module drive speed
      */
     public LinearVelocity getDriveVelocity() {
-        return  DriveConst.velRatio.times(encDrive.getVelocity());
+        return driveVel.mut_setMagnitude(encDrive.getVelocity());
     }
 
     /**
@@ -294,5 +337,36 @@ public class Swerve extends SubsystemBase {
         sb_driveSetPoint.setDouble(desiredState.speedMetersPerSecond);
         sb_driveCurrent.setString(getDriveVelocity().toShortString());
         sb_driveVolt.setDouble(mDrive.getAppliedOutput() * mDrive.getBusVoltage());
+    }
+
+    /**
+     * Get the simulated applied voltage for the drive motor
+     * @return  simulated applied voltage for the drive motor
+     */
+    public Voltage getSimDriveVoltage() {
+        return simDriveVoltage.mut_setMagnitude(mDriveSim.getAppliedOutput() * mDriveSim.getBusVoltage());
+    }
+
+
+    /**
+     * Get the simulated applied voltage for the angle motor
+     * @return  simulated applied voltage for the angle motor
+     */
+    public Voltage getSimAngleVoltage() {
+        return simAngleVoltage.mut_setMagnitude(mAngleSim.getAppliedOutput() * mAngleSim.getBusVoltage());
+    }
+
+    /**
+     * Update the current state of the simulation
+     * @param driveDist Distance to increment the wheel drive distance
+     * @param driveVel  Drive wheel velocity
+     * @param angleDist Angle to increment the azimuth angle
+     * @param angleVel  Angle azimuth angle rate
+     */
+    public void setSimState(Distance driveDist, LinearVelocity driveVel, Angle angleDist, AngularVelocity angleVel) {
+        encDriveSim.setPosition(encDriveSim.getPosition() + driveDist.in(Meters));
+        encDriveSim.setVelocity(driveVel.in(MetersPerSecond));
+        encAngleSim.setPosition(encAngleSim.getPosition() + angleDist.in(Radians));
+        encAngleSim.setVelocity(angleVel.in(RadiansPerSecond));
     }
 }

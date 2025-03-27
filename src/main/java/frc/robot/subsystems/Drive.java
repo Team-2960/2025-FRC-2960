@@ -46,10 +46,7 @@ import static frc.robot.Constants.RobotConst;
 import static frc.robot.Constants.DriveConst;
 
 public class Drive extends SubsystemBase {
-    private final Swerve frontLeft;
-    private final Swerve frontRight;
-    private final Swerve backLeft;
-    private final Swerve backRight;
+    private final Swerve[] modules;
 
     private final AHRS navx;        // TODO Simulate navx
 
@@ -510,46 +507,50 @@ public class Drive extends SubsystemBase {
      * Constructor
      */
     public Drive() {
-        // Initialize Swerve Kinematics
-        kinematics = new SwerveDriveKinematics(
-            DriveConst.frontLeftLocation, 
-            DriveConst.frontRightLocation, 
-            DriveConst.backLeftLocation, 
-            DriveConst.backRightLocation
-        );
-        
         // Create swerve drive module objects
-        frontLeft = new Swerve(
+        modules = new Swerve[4];
+
+        modules[0] = new Swerve(
             CAN_IDS.frontLeftDriveM, 
             CAN_IDS.frontLeftAngleM, 
             "FrontLeft",
+            DriveConst.frontLeftLocation,
             true, 
             true
         );
 
-        frontRight = new Swerve(
+        modules[1] = new Swerve(
             CAN_IDS.frontRightDriveM, 
             CAN_IDS.frontRightAngleM, 
             "FrontRight",
+            DriveConst.frontRightLocation,
             false, 
             true
         );
 
-        backLeft = new Swerve(
+        modules[2] = new Swerve(
             CAN_IDS.backLeftDriveM, 
             CAN_IDS.backLeftAngleM, 
             "BackLeft", 
+            DriveConst.backLeftLocation,
             true, 
             true
         );
-        
-        backRight = new Swerve(
+            
+        modules[3] = new Swerve(
             CAN_IDS.backRightDriveM, 
             CAN_IDS.backRightAngleM, 
             "BackRight",
+            DriveConst.backRightLocation,
             false, 
             true
         );
+
+        // Initialize kinematics
+        Translation2d translations[] = new Translation2d[modules.length];
+        for(int i = 0; i < modules.length; i++) translations[i] = modules[i].translation;
+
+        kinematics = new SwerveDriveKinematics(translations);
 
         // Initialize NavX
         navx = new AHRS(NavXComType.kMXP_SPI);
@@ -568,12 +569,7 @@ public class Drive extends SubsystemBase {
         swerveDrivePoseEstimator = new SwerveDrivePoseEstimator(
             kinematics,
             navx.getRotation2d(),
-            new SwerveModulePosition[] {
-                frontLeft.getPosition(),
-                frontRight.getPosition(),
-                backLeft.getPosition(),
-                backRight.getPosition()
-            },
+            getPositions(),
             new Pose2d(),
             VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(5)),
             VecBuilder.fill(0.5, 0.5, Units.degreesToRadians(30))
@@ -690,12 +686,7 @@ public class Drive extends SubsystemBase {
      * @return  measured chassis speeds
      */
     public ChassisSpeeds getChassisSpeeds() {
-        return kinematics.toChassisSpeeds(new SwerveModuleState[] {
-                frontLeft.getState(),
-                frontRight.getState(),
-                backLeft.getState(),
-                backRight.getState()
-        });
+        return kinematics.toChassisSpeeds(getStates());
     }
 
     private void updateKinematics(ChassisSpeeds speeds) {
@@ -715,11 +706,7 @@ public class Drive extends SubsystemBase {
         var swerveModuleStates = kinematics.toSwerveModuleStates(speeds);
 
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, DriveConst.maxSpeed);
-
-        frontLeft.setDesiredState(swerveModuleStates[0]);
-        frontRight.setDesiredState(swerveModuleStates[1]);
-        backLeft.setDesiredState(swerveModuleStates[2]);
-        backRight.setDesiredState(swerveModuleStates[3]);
+        setStates(swerveModuleStates);
 
         // Update target speed ui
         sb_speedXTarget.setString(mut_linVel.mut_replace(speeds.vxMetersPerSecond, MetersPerSecond).toShortString());
@@ -783,16 +770,38 @@ public class Drive extends SubsystemBase {
     }
 
     /**
+     * Set the desired swerve module states
+     * @param states    array of swerve module states
+     */
+    private void setStates(SwerveModuleState[] states) {
+        for(int i = 0; i < modules.length; i++) modules[i].setDesiredState(states[i]);
+    }
+
+    /**
+     * Get list of current swerve module states
+     * @return  list of current swerve module states
+     */
+    public SwerveModuleState[] getStates() {
+        SwerveModuleState states[] = new SwerveModuleState[modules.length];
+        for(int i = 0; i < modules.length; i++) states[i] = modules[i].getState();
+        return states;
+    }
+
+    /**
+     * Get list of current swerve module positions
+     * @return  list of current swerve module positions
+     */
+    public SwerveModulePosition[] getPositions() {
+        SwerveModulePosition positions[] = new SwerveModulePosition[modules.length];
+        for(int i = 0; i < modules.length; i++)positions[i] = modules[i].getPosition();
+        return positions;
+    }
+
+    /**
      * Updates the robot swerve odometry
      */
     private void updateOdometry() {
-        swerveDrivePoseEstimator.update(navx.getRotation2d(),
-                new SwerveModulePosition[] {
-                        frontLeft.getPosition(),
-                        frontRight.getPosition(),
-                        backLeft.getPosition(),
-                        backRight.getPosition()
-                });
+        swerveDrivePoseEstimator.update(navx.getRotation2d(), getPositions());
     }
 
     /**
@@ -845,12 +854,7 @@ public class Drive extends SubsystemBase {
     public void presetPosition(Pose2d new_pose) {
         swerveDrivePoseEstimator.resetPosition(
                 navx.getRotation2d(),
-                new SwerveModulePosition[] {
-                        frontLeft.getPosition(),
-                        frontRight.getPosition(),
-                        backLeft.getPosition(),
-                        backRight.getPosition()
-                },
+                getPositions(),
                 new_pose
         );
     }
