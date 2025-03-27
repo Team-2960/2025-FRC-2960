@@ -123,7 +123,7 @@ public class Constants {
     public static final Rotation2d armTopLim = Rotation2d.fromDegrees(95);
     public static final Rotation2d armBotLim = Rotation2d.fromDegrees(0);
 
-    public static final Rotation2d armIntakeAngle = Rotation2d.fromDegrees(87);
+    public static final Rotation2d armIntakeAngle = Rotation2d.fromDegrees(85);
     public static final Rotation2d armTravelAngle = Rotation2d.fromDegrees(75);
     public static final Rotation2d armL1CoralScoreAngle = Rotation2d.fromDegrees(73);
     public static final Rotation2d armCoralScoreAngle = Rotation2d.fromDegrees(60);

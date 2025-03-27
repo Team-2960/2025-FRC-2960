@@ -13,6 +13,7 @@ import frc.robot.subsystems.Drive.RotationDriveCommands.ReefAlignCommand;
 import frc.robot.subsystems.Drive.RotationDriveCommands.RotationRateCommand;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
+import edu.wpi.first.math.controller.LinearQuadraticRegulator;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -205,44 +206,44 @@ public class Drive extends SubsystemBase {
             }   
         }
 
-        public class AutonLinearGoToReefCommand extends Command{
-            Translation2d offset;
+        // public class AutonLinearGoToReefCommand extends Command{
+        //     Translation2d offset;
 
-            public AutonLinearGoToReefCommand(Translation2d offset){
-                this.offset = offset;
-                addRequirements(LinearDriveCommands.this);
-            }
+        //     public AutonLinearGoToReefCommand(Translation2d offset){
+        //         this.offset = offset;
+        //         addRequirements(LinearDriveCommands.this);
+        //     }
 
-            public void setOffset(Translation2d offset){
-                this.offset = offset;
-            }
+        //     public void setOffset(Translation2d offset){
+        //         this.offset = offset;
+        //     }
 
 
-            @Override
-            public void initialize(){
-                PPHolonomicDriveController.overrideXFeedback(() -> 
-                    drive.getCalcToPoint(
-                        drive.calcGoToReef(
-                            new Pose2d(Constants.rightBranchOffset, 
-                            Rotation2d.fromDegrees(0))).getTranslation()).get(1));
+        //     @Override
+        //     public void initialize(){
+        //         PPHolonomicDriveController.overrideXFeedback(() -> 
+        //             drive.getCalcToPoint(
+        //                 drive.calcGoToReef(
+        //                     new Pose2d(Constants.rightBranchOffset, 
+        //                     Rotation2d.fromDegrees(0))).getTranslation()).get(1));
                 
-                PPHolonomicDriveController.overrideYFeedback(() -> 
-                    drive.getCalcToPoint(
-                        drive.calcGoToReef(
-                            new Pose2d(Constants.rightBranchOffset, 
-                            Rotation2d.fromDegrees(0))).getTranslation()).get(2));
-            }
+        //         PPHolonomicDriveController.overrideYFeedback(() -> 
+        //             drive.getCalcToPoint(
+        //                 drive.calcGoToReef(
+        //                     new Pose2d(Constants.rightBranchOffset, 
+        //                     Rotation2d.fromDegrees(0))).getTranslation()).get(2));
+        //     }
 
-            @Override
-            public boolean isFinished(){
-                return PhotonUtils.getDistanceToPose(getEstimatedPos(), getReefFace(offset)) <= Constants.alignLinearTolerance;
-            }   
+        //     @Override
+        //     public boolean isFinished(){
+        //         return PhotonUtils.getDistanceToPose(getEstimatedPos(), getReefFace(offset)) <= Constants.alignLinearTolerance;
+        //     }   
 
-            @Override
-            public void end(boolean interrupt){
-                PPHolonomicDriveController.clearXYFeedbackOverride();
-            }
-        }
+        //     @Override
+        //     public void end(boolean interrupt){
+        //         PPHolonomicDriveController.clearXYFeedbackOverride();
+        //     }
+        // }
 
         public class LinearDoNothingCommand extends Command{
 
@@ -453,36 +454,36 @@ public class Drive extends SubsystemBase {
             }
         }
 
-        public class AutonRotGoToReefCommand extends Command{
-            Rotation2d offset;
+        // public class AutonRotGoToReefCommand extends Command{
+        //     Rotation2d offset;
 
-            public AutonRotGoToReefCommand(Rotation2d offset){
-                this.offset = offset;
-                addRequirements(RotationDriveCommands.this);
-            }
+        //     public AutonRotGoToReefCommand(Rotation2d offset){
+        //         this.offset = offset;
+        //         addRequirements(RotationDriveCommands.this);
+        //     }
 
-            public void setOffset(Rotation2d offset){
-                this.offset = offset;
-            }
+        //     public void setOffset(Rotation2d offset){
+        //         this.offset = offset;
+        //     }
 
-            @Override
-            public void initialize(){
-                PPHolonomicDriveController.overrideRotationFeedback(() -> 
-                    getCalcRateToAngle(
-                        calcGoToReef(new Pose2d(new Translation2d(), offset)).getRotation())
-                );
-            }
+        //     @Override
+        //     public void initialize(){
+        //         PPHolonomicDriveController.overrideRotationFeedback(() -> 
+        //             getCalcRateToAngle(
+        //                 calcGoToReef(new Pose2d(new Translation2d(), offset)).getRotation())
+        //         );
+        //     }
 
-            @Override
-            public boolean isFinished(){
-                return getReefFace(new Translation2d()).getRotation().minus(getEstimatedPos().getRotation()).getDegrees() <= 2;
-            }
+        //     @Override
+        //     public boolean isFinished(){
+        //         return getReefFace(new Translation2d()).getRotation().minus(getEstimatedPos().getRotation()).getDegrees() <= 2;
+        //     }
 
-            @Override
-            public void end(boolean interrupt){
-                PPHolonomicDriveController.clearRotationFeedbackOverride();
-            }
-        }
+        //     @Override
+        //     public void end(boolean interrupt){
+        //         PPHolonomicDriveController.clearRotationFeedbackOverride();
+        //     }
+        // }
 
         public class RotDoNothingCommand extends Command{
             public RotDoNothingCommand(){
@@ -629,8 +630,8 @@ public class Drive extends SubsystemBase {
                         new PIDConstants(5, 0, 0)),
                 config,
                 this::isRedAlliance,
-                linearDriveCommands,
-                rotationDriveCommands,
+                // linearDriveCommands,
+                // rotationDriveCommands,
                 this
         );
 
@@ -981,6 +982,27 @@ public class Drive extends SubsystemBase {
         return finalReefFace;
     }
 
+    public void autonCalcGoToReef(Pose2d offset){
+        Rotation2d rotOffset = Rotation2d.fromDegrees(0);
+        if (isRedAlliance()) {
+            offset = new Pose2d(-offset.getX(), -offset.getY(), offset.getRotation());
+            rotOffset = Rotation2d.fromDegrees(180);
+        }
+
+        Rotation2d reefFaceRotation = FieldLayout.getReefFaceZone(getEstimatedPos());
+        Pose2d zeroFace = FieldLayout.getReef(ReefFace.ZERO);
+        Translation2d poseOffset = new Translation2d(zeroFace.getX() + offset.getX(), zeroFace.getY() + offset.getY())
+                .rotateAround(FieldLayout.getReef(ReefFace.CENTER).getTranslation(),
+                        reefFaceRotation);
+        Pose2d finalReefFace = new Pose2d(poseOffset, reefFaceRotation.rotateBy(rotOffset));
+
+        Vector<N2> linearRate = getCalcToPoint(finalReefFace.getTranslation());
+        double angleRate = getCalcRateToAngle(finalReefFace.getRotation().plus(offset.getRotation()));
+        ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(new ChassisSpeeds(linearRate.get(0), linearRate.get(1), angleRate), getEstimatedPos().getRotation());
+        pathPlannerKinematics(speeds);
+        this.nearestReefFace = finalReefFace;
+    }
+
     /**
      * Checks if the robot is on the red alliance
      * @return  true if the current alliance is red, false if blue or not set
@@ -1091,6 +1113,20 @@ public class Drive extends SubsystemBase {
             return Commands.none();
         }
     }
+
+    public PathPlannerPath getPath (String pathName){
+        try {
+            // Load the path you want to follow using its name in the GUI
+            PathPlannerPath path = PathPlannerPath.fromPathFile(pathName);
+
+            // Create a path following command using AutoBuilder. This will also trigger
+            // event markers.
+            return path;
+        } catch (Exception e) {
+            DriverStation.reportError("Big oops: " + e.getMessage(), e.getStackTrace());
+            return null;
+        }
+    }
     
     /**
      * Sets the target linear rate
@@ -1143,18 +1179,18 @@ public class Drive extends SubsystemBase {
     }
 
 
-    /**
-     * Sets the robot to follow a PathPlanner path command
-     * @param path  PathPlanner path command
-     */
-    public void followPath(Command path) {
-        if (getCurrentCommand() != path) {
-            linearDriveCommands.getCurrentCommand().cancel();
-            rotationDriveCommands.getCurrentCommand().cancel();
-            path.addRequirements(linearDriveCommands, rotationDriveCommands);
-            path.schedule();
-        }
-    }
+    // /**
+    //  * Sets the robot to follow a PathPlanner path command
+    //  * @param path  PathPlanner path command
+    //  */
+    // public void followPath(Command path) {
+    //     if (getCurrentCommand() != path) {
+    //         linearDriveCommands.getCurrentCommand().cancel();
+    //         rotationDriveCommands.getCurrentCommand().cancel();
+    //         path.addRequirements(linearDriveCommands, rotationDriveCommands);
+    //         path.schedule();
+    //     }
+    // }
 
     /**
      * Aligns to the reef
@@ -1179,15 +1215,15 @@ public class Drive extends SubsystemBase {
         presetPoseCommand.schedule();
     }
 
-    /**
-     * Generate a PathPlanner path on the floy
-     */
-    public void pathOnTheFly(Pose2d targetPose, IdealStartingState idealStartingState, GoalEndState goalEndState) {
-        List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(getEstimatedPos(), targetPose);
+    // /**
+    //  * Generate a PathPlanner path on the floy
+    //  */
+    // public void pathOnTheFly(Pose2d targetPose, IdealStartingState idealStartingState, GoalEndState goalEndState) {
+    //     List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(getEstimatedPos(), targetPose);
         
-        PathPlannerPath path = new PathPlannerPath(waypoints, pathConstraints, idealStartingState, goalEndState);
-        followPath(AutoBuilder.followPath(path));
-    }
+    //     PathPlannerPath path = new PathPlannerPath(waypoints, pathConstraints, idealStartingState, goalEndState);
+    //     followPath(AutoBuilder.followPath(path));
+    // }
 
     
 

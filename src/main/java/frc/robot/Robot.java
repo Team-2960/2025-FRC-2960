@@ -7,6 +7,10 @@ package frc.robot;
 
 import org.opencv.video.Video;
 
+import com.pathplanner.lib.commands.FollowPathCommand;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.path.PathPlannerPath;
+
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.VideoMode;
 import edu.wpi.first.cscore.VideoSource;
@@ -63,6 +67,7 @@ public class Robot extends TimedRobot {
 
         CameraServer.startAutomaticCapture();
         robotContainer = RobotContainer.getInstance();
+        FollowPathCommand.warmupCommand().schedule();
     }
 
     @Override
