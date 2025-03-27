@@ -1,5 +1,6 @@
 package frc.robot.Auton;
 
+import com.fasterxml.jackson.databind.util.Named;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
@@ -69,7 +70,7 @@ public class RobotContainer {
     // );
 
 
-
+    NamedCommands.registerCommand("rightBranchAlign", drive.new AutonReefAlign(new Pose2d(Constants.rightBranchOffset, new Rotation2d())));
     NamedCommands.registerCommand("goToIntakeCommand", elevArmControl.getGoToIntakeCommand());
     NamedCommands.registerCommand("goToL1Command", elevArmControl.getGoToL1Command());
     NamedCommands.registerCommand("goToL2Command", elevArmControl.getGoToL2Command());
@@ -97,7 +98,8 @@ public class RobotContainer {
       //   drive.linearDriveCommands.new AutonLinearGoToReefCommand(Constants.leftBranchOffset),
       //   drive.rotationDriveCommands.new RotGoToReefCommand(new Rotation2d())
       // ),
-      new RunCommand(() -> drive.autonCalcGoToReef(new Pose2d(Constants.rightBranchOffset, new Rotation2d())), drive).withTimeout(3),
+      // new RunCommand(() -> drive.autonCalcGoToReef(new Pose2d(Constants.rightBranchOffset, new Rotation2d())), drive).withTimeout(3),
+      drive.new AutonReefAlign(new Pose2d(Constants.rightBranchOffset, new Rotation2d())),
       elevArmControl.getGoToL4Command(),
       endEffector.new EjectCmd()
     );
@@ -110,7 +112,7 @@ public class RobotContainer {
     
     // Load the path you want to follow using its name in the GUI
     // Create a path following command using AutoBuilder. This will also trigger event markers.
-    return testAuton;
+    return chosenAuto;
   }
 
   public static RobotContainer getInstance(){

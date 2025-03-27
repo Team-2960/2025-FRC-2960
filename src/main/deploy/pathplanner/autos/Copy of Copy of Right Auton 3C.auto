@@ -26,6 +26,12 @@
                 "data": {
                   "name": "goToL4Command"
                 }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "rightBranchAlign"
+                }
               }
             ]
           }

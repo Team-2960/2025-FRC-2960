@@ -517,6 +517,30 @@ public class Drive extends SubsystemBase {
         }
     }
 
+    public class AutonReefAlign extends Command{
+        Pose2d offset;
+
+        public AutonReefAlign(Pose2d offset){
+            this.offset = offset;
+            addRequirements(Drive.this);
+        }
+
+        public void setOffset(Pose2d offset){
+            this.offset = offset;
+        }
+
+        @Override
+        public void execute(){
+            autonCalcGoToReef(offset);
+        }
+
+        @Override
+        public boolean isFinished(){
+            return Math.abs(getReefFace(new Translation2d()).getRotation().minus(getEstimatedPos().getRotation()).getDegrees()) <= Constants.alignRotTolerance.getDegrees()
+               && PhotonUtils.getDistanceToPose(getEstimatedPos(), getReefFace(offset.getTranslation())) <= Constants.alignLinearTolerance;
+        }
+    }
+
     public class PresetPoseCommand extends Command{
         Pose2d pose;
 
@@ -902,7 +926,12 @@ public class Drive extends SubsystemBase {
         double xSpeed = angleError.getCos() * targetSpeed;
         double ySpeed = angleError.getSin() * targetSpeed;
 
+        SmartDashboard.putNumber("Align Linear Error", linearError);
+        SmartDashboard.putNumber("Align Rotation Error", Math.abs(getReefFace(new Translation2d()).getRotation().minus(getEstimatedPos().getRotation()).getDegrees()));
+
         return VecBuilder.fill(xSpeed, ySpeed);
+
+        
     }
 
     // 

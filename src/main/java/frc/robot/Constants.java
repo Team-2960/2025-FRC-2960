@@ -106,8 +106,8 @@ public class Constants {
     public static final double trapezoidTime = 0.1;
     public static final double alignRampDistance = 1.2;    //Meters
 
-    public static final double alignLinearTolerance = 0.005;  //Meters
-    public static final Rotation2d alignRotTolerance = Rotation2d.fromDegrees(2); //Degrees
+    public static final double alignLinearTolerance = 0.05;  //Meters
+    public static final Rotation2d alignRotTolerance = Rotation2d.fromDegrees(3); //Degrees
 
 
     // Arm
