@@ -48,6 +48,8 @@ public class AprilTagPipeline extends SubsystemBase {
     private GenericEntry sb_PoseR;
     private GenericEntry sb_lastTimestamp;
     private GenericEntry sb_lastUpdatePeriod;
+    private GenericEntry sb_aprilTagSeen;
+    private boolean aprilTagSeen;
 
     //Advantage Scope
     private StructArrayPublisher<Pose3d> as_aprilTags;
@@ -98,6 +100,7 @@ public class AprilTagPipeline extends SubsystemBase {
         sb_PoseR = layout.add("Pose R" + cameraName, 0).getEntry();
         sb_lastTimestamp = layout.add("Last Timestamp" + cameraName, last_timestamp).getEntry();
         sb_lastUpdatePeriod = layout.add("Time Since Last Update" + cameraName, 0).getEntry();
+        sb_aprilTagSeen = layout.add(cameraName + "April Tag Read", false).getEntry();
 
         //Advantage Scope
         as_aprilTags = NetworkTableInstance.getDefault()
@@ -142,6 +145,7 @@ public class AprilTagPipeline extends SubsystemBase {
         Optional<EstimatedRobotPose> visionEst = Optional.empty();
         Drive drive = Drive.getInstance();
         var unreadResults = camera.getAllUnreadResults();
+        aprilTagSeen = false;
         
         for (var change : unreadResults) {
             visionEst = pose_est.update(change);
@@ -169,6 +173,7 @@ public class AprilTagPipeline extends SubsystemBase {
 
                                 aprilTagList[iteration] = AprilTagFieldLayout.loadField(field).getTagPose(tag.getFiducialId()).get();
                                 iteration++;
+                                aprilTagSeen = true;
                             }
                         }
 
@@ -196,6 +201,7 @@ public class AprilTagPipeline extends SubsystemBase {
         sb_PoseR.setDouble(last_pose.getRotation().getDegrees());
         sb_lastTimestamp.setDouble(last_timestamp);
         sb_lastUpdatePeriod.setDouble(Timer.getFPGATimestamp() - last_timestamp);
+        sb_aprilTagSeen.setBoolean(aprilTagSeen);
 
         //Advantage Scope
         as_aprilTags.set(aprilTagList);

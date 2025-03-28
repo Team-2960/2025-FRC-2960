@@ -204,7 +204,7 @@ public class EndEffector extends SubsystemBase{
         coralPresentPE = new DigitalInput(Constants.coralPresentPE);
         //coralDrive.configure(new SparkFlexConfig().inverted(true), com.revrobotics.spark.SparkBase.ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-        coralPID = new PIDController(2, 0, 0);
+        coralPID = new PIDController(3, 0, 0);
 
         ejectCmd = new EjectCmd();
         timedEjectCmd = new TimedEjectCmd();
@@ -213,7 +213,7 @@ public class EndEffector extends SubsystemBase{
 
 
         intakeTrigger = new Trigger(() -> isCoralPresentTeleop());
-        //intakeTrigger.whileFalse(intakeCmd);
+        intakeTrigger.whileTrue(intakeCmd);
 
         setDefaultCommand(coralHoldCommand);
         

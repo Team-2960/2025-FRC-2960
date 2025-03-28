@@ -261,7 +261,7 @@ public class Arm extends SubsystemBase {
         armAngleCommand = new ArmAngleCommand(Rotation2d.fromDegrees(0));
         armHoldCommand = new ArmHoldCommand();
 
-        setDefaultCommand(armHoldCommand);
+        setDefaultCommand(new ArmHoldCommand());
 
         //System Identification
         sysIdRoutine = new SysIdRoutine(
@@ -367,7 +367,7 @@ public class Arm extends SubsystemBase {
      * 
      * @return target arm control rate
      */
-    private void setArmAngle(Rotation2d targetAngle) {
+    public void setArmAngle(Rotation2d targetAngle) {
         
         // Calculate trapezoidal profile
         Rotation2d currentAngle = getArmAngle();

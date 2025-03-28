@@ -537,8 +537,9 @@ public class Drive extends SubsystemBase {
 
         @Override
         public boolean isFinished(){
+            //TODO Uncomment this part as soon as you're done testing
             return Math.abs(getReefFace(new Translation2d()).getRotation().minus(getEstimatedPos().getRotation()).getDegrees()) <= Constants.alignRotTolerance.getDegrees()
-               && PhotonUtils.getDistanceToPose(getEstimatedPos(), getReefFace(offset.getTranslation())) <= Constants.alignLinearTolerance;
+              && PhotonUtils.getDistanceToPose(getEstimatedPos(), getReefFace(offset.getTranslation())) <= Constants.alignLinearTolerance;
         }
     }
 

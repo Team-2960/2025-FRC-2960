@@ -105,7 +105,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "goToIntakeCommand"
+                  "name": "armIntakeAngle"
                 }
               }
             ]
@@ -124,7 +124,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "goToIntakeCommand"
+                  "name": "armIntakeAngle"
                 }
               },
               {
@@ -231,7 +231,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "goToIntakeCommand"
+                  "name": "armIntakeAngle"
                 }
               }
             ]
@@ -250,13 +250,13 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "goToIntakeCommand"
+                  "name": "intakeCommand"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "intakeCommand"
+                  "name": "armIntakeAngle"
                 }
               }
             ]

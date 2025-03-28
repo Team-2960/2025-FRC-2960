@@ -85,6 +85,7 @@ public class RobotContainer {
     NamedCommands.registerCommand("intakeCommand", endEffector.new AutonIntakeCmd());
     NamedCommands.registerCommand("elevatorHoldCommand", elevator.new ElevatorHoldCommand());
     NamedCommands.registerCommand("armHoldCommand", arm.new ArmHoldCommand());
+    NamedCommands.registerCommand("armIntakeAngle", new RunCommand(() -> arm.setArmAngle(Constants.armIntakeAngle), arm));
 
     autoChooser = AutoBuilder.buildAutoChooser();
     

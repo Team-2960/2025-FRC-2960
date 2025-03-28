@@ -92,7 +92,7 @@ public class OperatorInterface extends SubsystemBase {
             .whileTrue(
                 drive.linearDriveCommands
                 .new LinearGoToReefCommand(
-                    Constants.leftBranchOffset))
+                    Constants.rightBranchOffset))
             .whileTrue(drive.rotationDriveCommands
                 .new RotGoToReefCommand(Rotation2d.fromDegrees(0))
         );
@@ -101,7 +101,7 @@ public class OperatorInterface extends SubsystemBase {
             .whileTrue(
                 drive.linearDriveCommands
                 .new LinearGoToReefCommand(
-                    Constants.rightBranchOffset))
+                    Constants.leftBranchOffset))
             .whileTrue(drive.rotationDriveCommands
                 .new RotGoToReefCommand(Rotation2d.fromDegrees(0))
         );
