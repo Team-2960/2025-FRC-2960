@@ -1,0 +1,69 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "RA 1st Coral"
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "coralPresentCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "goToIntakeCommand"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "coralNotPresentCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "goToIntakeCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "intakeCommand"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "RA HP Station 1"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

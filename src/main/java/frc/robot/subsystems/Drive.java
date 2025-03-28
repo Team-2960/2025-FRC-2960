@@ -111,6 +111,7 @@ public class Drive extends SubsystemBase {
     private GenericEntry sb_robotTargetAngle;
     private GenericEntry sb_speedTargetR;
     private GenericEntry sb_linearCommand;
+    private GenericEntry sb_driveCommand;
     private GenericEntry sb_rotationCommand;
     private GenericEntry sb_batteryVoltage;
 
@@ -693,6 +694,7 @@ public class Drive extends SubsystemBase {
 
         sb_linearCommand = pose_layout.add("Linear Current Command", "---").getEntry();
         sb_rotationCommand = pose_layout.add("Rotation Current Command", "---").getEntry();
+        sb_driveCommand = pose_layout.add("Drive Current Command", "---").getEntry();
 
         sb_speedTargetR = pose_layout.add("Target Speed R", 0).getEntry();
 
@@ -1085,6 +1087,13 @@ public class Drive extends SubsystemBase {
         if (currentCommand != null)
             curCommandName = currentCommand.getName();
         sb_linearCommand.setString(curCommandName);
+
+        currentCommand = Drive.getInstance().getCurrentCommand();
+        curCommandName = "null";
+
+        if (currentCommand != null)
+            curCommandName = currentCommand.getName();
+        sb_driveCommand.setString(curCommandName);
 
         as_swerveModules.set(new SwerveModuleState[] {
             frontLeft.getState(),

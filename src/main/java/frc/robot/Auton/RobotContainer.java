@@ -71,6 +71,7 @@ public class RobotContainer {
 
 
     NamedCommands.registerCommand("rightBranchAlign", drive.new AutonReefAlign(new Pose2d(Constants.rightBranchOffset, new Rotation2d())));
+    NamedCommands.registerCommand("leftBranchAlign", drive.new AutonReefAlign(new Pose2d(Constants.leftBranchOffset, new Rotation2d())));
     NamedCommands.registerCommand("goToIntakeCommand", elevArmControl.getGoToIntakeCommand());
     NamedCommands.registerCommand("goToL1Command", elevArmControl.getGoToL1Command());
     NamedCommands.registerCommand("goToL2Command", elevArmControl.getGoToL2Command());
@@ -81,7 +82,7 @@ public class RobotContainer {
     NamedCommands.registerCommand("coralPresentCommand", endEffector.new CoralPresentCommand());
     NamedCommands.registerCommand("coralNotPresentCommand", endEffector.new CoralNotPresentCommand());
     NamedCommands.registerCommand("ejectCommand", endEffector.new EjectCmd());
-    NamedCommands.registerCommand("intakeCommand", endEffector.new IntakeCmd());
+    NamedCommands.registerCommand("intakeCommand", endEffector.new AutonIntakeCmd());
     NamedCommands.registerCommand("elevatorHoldCommand", elevator.new ElevatorHoldCommand());
     NamedCommands.registerCommand("armHoldCommand", arm.new ArmHoldCommand());
 

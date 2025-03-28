@@ -12,6 +12,7 @@ import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -21,6 +22,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
+import frc.robot.subsystems.Drive.AutonReefAlign;
 
 /**
  * Manages coral end effector
@@ -115,6 +117,24 @@ public class EndEffector extends SubsystemBase{
         }
     }
 
+    public class AutonIntakeCmd extends Command{
+        
+        public AutonIntakeCmd(){
+            addRequirements(EndEffector.this);
+        }
+
+        @Override
+        public void execute(){
+            if(isCoralPresent()) setIntake();
+        }
+
+        @Override
+        public void end(boolean interrupt){
+            setStop();
+        }
+
+    }
+
     public class ReverseCmd extends Command{
         public ReverseCmd(){
             addRequirements(EndEffector.this);
@@ -192,8 +212,8 @@ public class EndEffector extends SubsystemBase{
         coralHoldCommand = new CoralHoldCommand();
 
 
-        intakeTrigger = new Trigger(coralPresentPE::get);
-        intakeTrigger.whileFalse(intakeCmd);
+        intakeTrigger = new Trigger(() -> isCoralPresentTeleop());
+        //intakeTrigger.whileFalse(intakeCmd);
 
         setDefaultCommand(coralHoldCommand);
         
@@ -275,6 +295,10 @@ public class EndEffector extends SubsystemBase{
 
     public boolean isCoralPresent(){
         return !coralPresentPE.get();
+    }
+
+    public boolean isCoralPresentTeleop(){
+        return DriverStation.isTeleop() && isCoralPresent();
     }
 
     public double getPos(){
