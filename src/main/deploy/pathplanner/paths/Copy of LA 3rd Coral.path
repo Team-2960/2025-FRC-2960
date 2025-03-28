@@ -3,36 +3,36 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.9256578947368417,
-        "y": 2.8415296052631582
+        "x": 1.1834703947368421,
+        "y": 6.998108552631579
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.450377065893799,
-        "y": 2.6042913778780865
+        "x": 2.110050771731346,
+        "y": 6.404276734888951
       },
       "isLocked": false,
-      "linkedName": "RA 2nd Coral End"
+      "linkedName": "LA HP Station End"
     },
     {
       "anchor": {
-        "x": 1.0968749999999998,
-        "y": 1.071134868421053
+        "x": 3.5215460526315785,
+        "y": 5.679934210526316
       },
       "prevControl": {
-        "x": 1.3203373442896504,
-        "y": 1.1832267088224566
+        "x": 2.7614309210526313,
+        "y": 6.112911184210526
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "RA HP Station End"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
   "constraintZones": [
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 0.5053475935828877,
+      "minWaypointRelativePos": 0.55,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
         "maxVelocity": 2.0,
@@ -56,13 +56,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 54.0
+    "rotation": -59.99999999999999
   },
   "reversed": false,
-  "folder": "Right Auton",
+  "folder": "Left Auton",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 59.99999999999999
+    "rotation": -54.0
   },
   "useDefaultConstraints": true
 }

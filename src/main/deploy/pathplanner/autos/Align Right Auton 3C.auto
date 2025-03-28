@@ -1,0 +1,334 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Copy of RA 1st Coral"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "goToIntakeCommand"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 2.0
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "goToL4Command"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "leftBranchAlign"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 1.0
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ejectCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "goToL4Command"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "RA HP Station 1"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "goToIntakeCommand"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "coralPresentCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "goToIntakeCommand"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "coralNotPresentCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "goToIntakeCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "intakeCommand"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Copy of RA 2nd Coral"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "goToIntakeCommand"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "leftBranchAlign"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "goToL4Command"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 1.0
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ejectCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "goToL4Command"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "RA HP Station 2"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "goToIntakeCommand"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "coralPresentCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "goToIntakeCommand"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "coralNotPresentCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "goToIntakeCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "intakeCommand"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Copy of RA 2nd Coral"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "goToIntakeCommand"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "rightBranchAlign"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "goToL4Command"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 1.0
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ejectCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "goToL4Command"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}
