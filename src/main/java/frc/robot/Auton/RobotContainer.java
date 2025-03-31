@@ -29,6 +29,7 @@ public class RobotContainer {
   Command chosenAuto;
   private Command testAuton;
   private Command testPath;
+  private Command elevIntakeCommand;
   private static RobotContainer robotContainer = null;
 
   public RobotContainer(){
@@ -69,6 +70,7 @@ public class RobotContainer {
     //   drive.rotationDriveCommands.new AutonRotGoToReefCommand(Rotation2d.fromDegrees(0))
     // );
 
+    elevIntakeCommand = new RunCommand(() -> elevator.setElevatorPos(Constants.elevIntakePos), elevator);
 
     NamedCommands.registerCommand("rightBranchAlign", drive.new AutonReefAlign(new Pose2d(Constants.rightBranchOffset, new Rotation2d())));
     NamedCommands.registerCommand("leftBranchAlign", drive.new AutonReefAlign(new Pose2d(Constants.leftBranchOffset, new Rotation2d())));
@@ -86,6 +88,7 @@ public class RobotContainer {
     NamedCommands.registerCommand("elevatorHoldCommand", elevator.new ElevatorHoldCommand());
     NamedCommands.registerCommand("armHoldCommand", arm.new ArmHoldCommand());
     NamedCommands.registerCommand("armIntakeAngle", new RunCommand(() -> arm.setArmAngle(Constants.armIntakeAngle), arm));
+    NamedCommands.registerCommand("elevIntakePos", elevIntakeCommand);
 
     autoChooser = AutoBuilder.buildAutoChooser();
     

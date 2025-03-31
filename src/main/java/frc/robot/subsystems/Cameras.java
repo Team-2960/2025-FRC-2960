@@ -1,9 +1,6 @@
 package frc.robot.subsystems;
 
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
-import org.photonvision.simulation.VisionSystemSim;
-
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -11,7 +8,6 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.WidgetType;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Util.AprilTagPipelineSettings;
@@ -71,7 +67,7 @@ public class Cameras extends SubsystemBase{
 
         leftPipeline = new AprilTagPipelineSettings(AprilTagFields.k2025ReefscapeWelded,
             new Transform3d(
-                0.876 /*in  */ * .0254, 
+                (0.876 + 0.125) /*in  */ * .0254, 
                 12.357 * 0.0254, 
                 11.068 * .0254, 
                 new Rotation3d(

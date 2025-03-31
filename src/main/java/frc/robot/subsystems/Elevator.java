@@ -402,7 +402,7 @@ public class Elevator extends SubsystemBase {
      * 
      * @return target elevator control rate
      */
-    private void setElevatorPos(double targetPos) {
+    public void setElevatorPos(double targetPos) {
         
         // Calculate trapezoidal profile
         double currentPos = getElevatorPos();
