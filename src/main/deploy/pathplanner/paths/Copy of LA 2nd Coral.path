@@ -8,24 +8,24 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.1056330373983254,
-        "y": 6.604273285052031
+        "x": 2.8686836958349446,
+        "y": 6.066867541481455
       },
       "isLocked": false,
       "linkedName": "LA HP Station End"
     },
     {
       "anchor": {
-        "x": 3.184786184210526,
-        "y": 6.141776315789473
+        "x": 3.550411184210526,
+        "y": 5.689555921052631
       },
       "prevControl": {
-        "x": 2.744274216475019,
-        "y": 6.326218724987819
+        "x": 2.631376817778803,
+        "y": 6.186998808034336
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "LA 2nd Coral Align End"
+      "linkedName": null
     }
   ],
   "rotationTargets": [
@@ -34,7 +34,21 @@
       "rotationDegrees": -59.99999999999999
     }
   ],
-  "constraintZones": [],
+  "constraintZones": [
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 0.5254010695187157,
+      "maxWaypointRelativePos": 1.0,
+      "constraints": {
+        "maxVelocity": 2.0,
+        "maxAcceleration": 5.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
@@ -46,7 +60,7 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 1.0,
+    "velocity": 0,
     "rotation": -59.99999999999999
   },
   "reversed": false,

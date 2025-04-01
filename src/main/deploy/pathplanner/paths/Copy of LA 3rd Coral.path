@@ -8,24 +8,24 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.1487010135553364,
-        "y": 6.58396186085913
+        "x": 2.110050771731346,
+        "y": 6.404276734888951
       },
       "isLocked": false,
       "linkedName": "LA HP Station End"
     },
     {
       "anchor": {
-        "x": 3.184786184210526,
-        "y": 6.141776315789473
+        "x": 3.5215460526315785,
+        "y": 5.679934210526316
       },
       "prevControl": {
-        "x": 2.9546655651916196,
-        "y": 6.239472276311673
+        "x": 2.7614309210526313,
+        "y": 6.112911184210526
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "LA 2nd Coral Align End"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
@@ -55,7 +55,7 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0.0,
+    "velocity": 0,
     "rotation": -59.99999999999999
   },
   "reversed": false,

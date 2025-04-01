@@ -30,7 +30,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 1.5
+                  "waitTime": 2.0
                 }
               },
               {
@@ -55,7 +55,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 0.5
+                  "waitTime": 1.0
                 }
               },
               {
@@ -174,7 +174,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 1.5
+                  "waitTime": 2.0
                 }
               },
               {
@@ -199,7 +199,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 0.5
+                  "waitTime": 1.0
                 }
               },
               {
@@ -300,15 +300,9 @@
           }
         },
         {
-          "type": "deadline",
+          "type": "parallel",
           "data": {
             "commands": [
-              {
-                "type": "wait",
-                "data": {
-                  "waitTime": 1.5
-                }
-              },
               {
                 "type": "named",
                 "data": {
@@ -331,7 +325,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 0.5
+                  "waitTime": 1.0
                 }
               },
               {

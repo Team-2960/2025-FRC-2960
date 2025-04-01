@@ -67,7 +67,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "goToL4Command"
+                  "name": "elevL4Pos"
                 }
               }
             ]
@@ -251,6 +251,12 @@
                 "data": {
                   "name": "armIntakeAngle"
                 }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "elevIntakeCommand"
+                }
               }
             ]
           }
@@ -275,6 +281,12 @@
                 "type": "named",
                 "data": {
                   "name": "armIntakeAngle"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "elevIntakeCommand"
                 }
               }
             ]
