@@ -70,9 +70,9 @@ public class Constants {
     public static final Pose2d blueCenter = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
     public static final Pose2d blueAmpSide = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
 
-    public static final Translation2d leftBranchOffset = new Translation2d(-fullLength/2.0 + 0.05, -.1109);
-    public static final Translation2d rightBranchOffset = new Translation2d(-fullLength/2.0 + 0.05, -0.441);
-    public static final Translation2d centerOffset = new Translation2d(-fullLength/2.0 + 0.05, 0);
+    public static final Translation2d leftBranchOffset = new Translation2d(-fullLength/2.0, -.1109);
+    public static final Translation2d rightBranchOffset = new Translation2d(-fullLength/2.0, -0.441);
+    public static final Translation2d centerOffset = new Translation2d(-fullLength/2.0, 0);
 
 
 
