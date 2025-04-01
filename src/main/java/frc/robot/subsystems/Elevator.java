@@ -56,6 +56,8 @@ public class Elevator extends SubsystemBase {
     private double elevatorVolt;
     private double elevatorRate;
 
+    private double elevatorLastPos = 0;
+
     private GenericEntry sb_elevatorCmd;
     private GenericEntry sb_posPosCurrent;
     private GenericEntry sb_posPosSetPoint;
@@ -146,13 +148,13 @@ public class Elevator extends SubsystemBase {
         private double target;
 
         public ElevatorHoldCommand(){
-            target = 0;
+            target = elevatorLastPos;
             addRequirements(Elevator.this);
         }
 
         @Override
         public void initialize(){
-            target = getElevatorPos();
+            target = elevatorLastPos;
         }
 
         @Override
@@ -181,6 +183,11 @@ public class Elevator extends SubsystemBase {
         @Override
         public boolean isFinished(){
             return atPos(elevatorPos, Constants.elevatorPosTol);
+        }
+
+        @Override
+        public void end(boolean interrupt){
+            Elevator.this.elevatorLastPos = elevatorPos;
         }
     }
 
