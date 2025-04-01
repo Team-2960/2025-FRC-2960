@@ -8,24 +8,24 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.8686836958349446,
-        "y": 6.066867541481455
+        "x": 2.1056330373983254,
+        "y": 6.604273285052031
       },
       "isLocked": false,
       "linkedName": "LA HP Station End"
     },
     {
       "anchor": {
-        "x": 3.550411184210526,
-        "y": 5.689555921052631
+        "x": 3.184786184210526,
+        "y": 6.141776315789473
       },
       "prevControl": {
-        "x": 2.631376817778803,
-        "y": 6.186998808034336
+        "x": 2.744274216475019,
+        "y": 6.326218724987819
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "LA 2nd Coral Align End"
     }
   ],
   "rotationTargets": [
@@ -38,7 +38,7 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 4.5,
+    "maxVelocity": 4.0,
     "maxAcceleration": 5.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,

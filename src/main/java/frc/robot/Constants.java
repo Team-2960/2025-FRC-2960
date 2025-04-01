@@ -80,6 +80,7 @@ public class Constants {
     public static final double driveGearRatio = 5.08;
     public static final double wheelCirc = 2.9 * .0254 * Math.PI; // Meters
     public static final double driveRatio =  Constants.wheelCirc / Constants.driveGearRatio;   // Meters
+    public static final int driveCurrentLimit = 60;
 
     public static PIDParam drivePID = new PIDParam(1, 0.0, 0.0);  //.5
     public static FFParam driveFF = FFParam.simpleMotor(0.08, 2.5, 0.0);

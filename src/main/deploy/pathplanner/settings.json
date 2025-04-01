@@ -11,7 +11,7 @@
   "autoFolders": [
     "New Folder"
   ],
-  "defaultMaxVel": 4.5,
+  "defaultMaxVel": 4.0,
   "defaultMaxAccel": 5.0,
   "defaultMaxAngVel": 540.0,
   "defaultMaxAngAccel": 720.0,
@@ -23,7 +23,7 @@
   "driveGearing": 5.08,
   "maxDriveSpeed": 5.33,
   "driveMotorType": "vortex",
-  "driveCurrentLimit": 60.0,
+  "driveCurrentLimit": 50.0,
   "wheelCOF": 1.2,
   "flModuleX": 0.33,
   "flModuleY": 0.33,

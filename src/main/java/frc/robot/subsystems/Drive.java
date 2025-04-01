@@ -451,7 +451,7 @@ public class Drive extends SubsystemBase {
 
             @Override
             public boolean isFinished(){
-                return getReefFace(new Translation2d()).getRotation().minus(getEstimatedPos().getRotation()).getDegrees() <= 2;
+                return Math.abs(getReefFace(new Translation2d()).getRotation().minus(getEstimatedPos().getRotation()).getDegrees()) <= 2;
             }
         }
 
