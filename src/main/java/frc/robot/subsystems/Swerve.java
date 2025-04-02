@@ -51,6 +51,15 @@ public class Swerve extends SubsystemBase {
      * Main swerve module command
      */
     public class SwerveCommand extends Command {
+
+        /**
+         * Constructor
+         */
+        public SwerveCommand() {
+            this.addRequirements(Swerve.this);
+        }
+
+        @Override
         /**
          * Updates the swerve outputs
          */
@@ -358,10 +367,10 @@ public class Swerve extends SubsystemBase {
 
     /**
      * Update the current state of the simulation
-     * @param driveDist Distance to increment the wheel drive distance
-     * @param driveVel  Drive wheel velocity
-     * @param angleDist Angle to increment the azimuth angle
-     * @param angleVel  Angle azimuth angle rate
+     * @param driveDelta    Distance to increment the wheel drive distance
+     * @param driveVel      Drive wheel velocity
+     * @param angleDelta    Angle to increment the azimuth angle
+     * @param angleVel      Angle azimuth angle rate
      */
     public void setSimState(Distance driveDist, LinearVelocity driveVel, Angle angleDist, AngularVelocity angleVel) {
         encDriveSim.setPosition(encDriveSim.getPosition() + driveDist.in(Meters));

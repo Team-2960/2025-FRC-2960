@@ -3,6 +3,8 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.hal.SimDouble;
+import edu.wpi.first.hal.simulation.SimDeviceDataJNI;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.controller.PIDController;
@@ -38,9 +40,14 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 
+import frc.robot.Constants.CAN_IDS;
+import frc.robot.Constants.DriveConst;
+import frc.robot.Constants.RobotConst;
 import frc.robot.RobotContainer;
 import frc.robot.Util.FieldLayout;
 import frc.robot.Util.Limits;
+import frc.robot.simulation.SwerveDriveSim;
+
 import static frc.robot.Constants.CAN_IDS;
 import static frc.robot.Constants.RobotConst;
 import static frc.robot.Constants.DriveConst;
@@ -64,6 +71,16 @@ public class Drive extends SubsystemBase {
     private MutAngularVelocity mut_angVel;
 
     private MutAngularVelocity mut_targetAV;
+
+    // Simulation variables
+    private final SwerveDriveSim sim;
+
+    private final MutLinearVelocity sim_xVel;
+    private final MutLinearVelocity sim_yVel;
+    private final MutAngularVelocity sim_rVel;
+
+    private final int dev;
+    private final SimDouble gyroSimAngle;
 
     // Shuffleboard
     private GenericEntry sb_currentCommand;
@@ -583,6 +600,16 @@ public class Drive extends SubsystemBase {
 
         mut_targetAV = RadiansPerSecond.mutable(0);
 
+        // Setup Simulation
+        sim = new SwerveDriveSim(modules, RobotConst.robotMass, RobotConst.robotMOI);
+        
+        sim_xVel = MetersPerSecond.mutable(0);
+        sim_yVel = MetersPerSecond.mutable(0);
+        sim_rVel = RadiansPerSecond.mutable(0);
+        
+        dev = SimDeviceDataJNI.getSimDeviceHandle("navX-Sensor[0]");
+        gyroSimAngle = new SimDouble(SimDeviceDataJNI.getSimValueHandle(dev, "Yaw"));
+
         // Initialize Shuffleboard
         shuffleBoardInit();
     }
@@ -595,6 +622,8 @@ public class Drive extends SubsystemBase {
         var pose_layout = Shuffleboard.getTab("Drive")
                 .getLayout("Drive Pose", BuiltInLayouts.kList)
                 .withSize(1, 4);
+
+        sb_currentCommand = pose_layout.add("Current Command", "<null>").getEntry();
 
         // Setup Current Pose display
         Pose2d estPose = getPose();
@@ -914,5 +943,22 @@ public class Drive extends SubsystemBase {
         }
         updateOdometry();
         updateUI();
+    }
+
+    /**
+     * Update the drivetrain simulation
+     */
+    @Override
+    public void simulationPeriodic() {
+        ChassisSpeeds speeds = getChassisSpeeds();
+        Angle rDelta = sim.update(
+            sim_xVel.mut_setMagnitude(speeds.vxMetersPerSecond), 
+            sim_yVel.mut_setMagnitude(speeds.vyMetersPerSecond),
+            sim_rVel.mut_setMagnitude(speeds.omegaRadiansPerSecond),
+            RobotConst.updatePeriod
+        );
+
+        // Update Gyro Angle
+        gyroSimAngle.set(navx.getAngle() + rDelta.in(Degrees));
     }
 }

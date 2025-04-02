@@ -16,6 +16,7 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Force;
 import edu.wpi.first.units.measure.LinearVelocity;
@@ -128,7 +129,6 @@ public class SwerveDriveSim {
             double dist = module.translation.getDistance(new Translation2d(0, 0));
             robotTorque.mut_setMagnitude(tangentForce * dist);
 
-
             CurrentSimTracking.updateCurrent(module.name + " Drive", driveCurrent);
             CurrentSimTracking.updateCurrent(module.name + " Angle", angleCurrent);
         }
@@ -150,9 +150,11 @@ public class SwerveDriveSim {
             double rotMag = rVel.in(RadiansPerSecond) * dist;
             double rotAngle = module.translation.getAngle().getRadians();
 
-            driveFinalVel.mut_setMagnitude(Math.cos(rotAngle - driveForce.dir.in(Radians)) * rotMag);
+            angleFinalVel.mut_setMagnitude(Math.cos(rotAngle - driveForce.dir.in(Radians)) * rotMag);
 
             driveChange.mut_setMagnitude(driveFinalVel.in(MetersPerSecond) * period.in(Seconds));
+
+            module.setSimState(driveChange, driveFinalVel, rDelta, angleFinalVel);
         }
     }
 
@@ -167,6 +169,8 @@ public class SwerveDriveSim {
     public final MutLinearVelocity xVelMut = MetersPerSecond.mutable(0);
     public final MutLinearVelocity yVelMut = MetersPerSecond.mutable(0);
     public final MutAngularVelocity rVelMut = RadiansPerSecond.mutable(0);
+
+    public final MutAngle rDelta = Radians.mutable(0);
 
     /**
      * Constructor
@@ -185,11 +189,14 @@ public class SwerveDriveSim {
     }
 
     /**
-     * Update the swerve simulation
-     * 
-     * @param period
+     * Update the swerve drive simulation
+     * @param xVelInit  initial x linear velocity
+     * @param yVelInit  initial y linear velocity
+     * @param rVelInit  initial angular velocity
+     * @param period    update period
+     * @return angular change of the robot position
      */
-    public void update(LinearVelocity xVel, LinearVelocity yVel, AngularVelocity rVel, Time period) {
+    public Angle update(LinearVelocity xVelInit, LinearVelocity yVelInit, AngularVelocity rVelInit, Time period) {
         // Zero force accumulators
         forceVector.mag.mut_setMagnitude(0);
         forceVector.dir.mut_setMagnitude(0);
@@ -209,9 +216,9 @@ public class SwerveDriveSim {
         forceVector.dir.mut_divide(4);
         
         // Calculate 
-        xVelMut.mut_replace(xVel);
-        yVelMut.mut_replace(yVel);
-        rVelMut.mut_replace(rVel);
+        xVelMut.mut_replace(xVelInit);
+        yVelMut.mut_replace(yVelInit);
+        rVelMut.mut_replace(rVelInit);
 
         double linAccel = forceVector.mag.in(Newtons) * robotMass.in(Kilograms);
         double angAccel = robotTorque.in(NewtonMeters) * robotMOI.in(KilogramSquareMeters);
@@ -219,6 +226,12 @@ public class SwerveDriveSim {
         xVelMut.mut_plus(linAccel * Math.cos(forceVector.dir.in(Radians) * period.in(Seconds)), MetersPerSecond);
         yVelMut.mut_plus(linAccel * Math.sin(forceVector.dir.in(Radians) * period.in(Seconds)), MetersPerSecond);
         rVelMut.mut_plus(angAccel * period.in(Seconds), RadiansPerSecond);
+
+        for (var state : states) {
+            state.updateDriveDist(period, xVelMut, yVelMut, rVelMut);
+        }
+
+        return rDelta.mut_setMagnitude(rVelMut.in(RadiansPerSecond) * period.in(Seconds));
     }
 
 }

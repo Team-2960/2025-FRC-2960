@@ -21,6 +21,13 @@ public class LEDControl extends SubsystemBase{
      */
     public class TeamColorCommand extends Command {
         /**
+         * Constructor
+         */
+        public TeamColorCommand() {
+            addRequirements(LEDControl.this);
+        }
+
+        /**
          * Sets the LEDs to the team colors
          */
         @Override
@@ -72,6 +79,9 @@ public class LEDControl extends SubsystemBase{
             for(int i = 0; i < colors.length; i++) {
                 this.colors[i] = LEDPattern.solid(colors[i]);
             }
+
+            
+            addRequirements(LEDControl.this);
         }
 
         /**
