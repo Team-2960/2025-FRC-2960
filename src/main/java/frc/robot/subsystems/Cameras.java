@@ -31,7 +31,7 @@ public class Cameras extends SubsystemBase{
 
     public Cameras(){
 
-        singleStds = VecBuilder.fill(1, 1, 16);
+        singleStds = VecBuilder.fill(0.5, 0.5, 16);
         multiStds = VecBuilder.fill(0.5, 0.5, 1);
         frontPipeline = new AprilTagPipelineSettings(AprilTagFields.k2025ReefscapeWelded,
             new Transform3d(
