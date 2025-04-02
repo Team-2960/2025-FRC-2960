@@ -3,10 +3,11 @@
   "robotLength": 0.914,
   "holonomicMode": true,
   "pathFolders": [
-    "Right Auton",
-    "Middle Auton",
     "Left Auton",
-    "Test Paths"
+    "Middle Auton",
+    "RA Obselete",
+    "Right Auton",
+    "LA Obselete"
   ],
   "autoFolders": [
     "New Folder"
@@ -36,6 +37,6 @@
   "bumperOffsetX": 0.0,
   "bumperOffsetY": 0.0,
   "robotFeatures": [
-    "{\"name\":\"Coral\",\"type\":\"circle\",\"data\":{\"center\":{\"x\":0.474,\"y\":0.275},\"radius\":0.093,\"strokeWidth\":0.006,\"filled\":false}}"
+    "{\"name\":\"Coral\",\"type\":\"circle\",\"data\":{\"center\":{\"x\":0.474,\"y\":0.275},\"radius\":0.093,\"strokeWidth\":0.01,\"filled\":false}}"
   ]
 }

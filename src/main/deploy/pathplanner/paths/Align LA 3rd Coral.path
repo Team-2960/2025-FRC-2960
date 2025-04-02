@@ -3,44 +3,39 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.437582236842105,
-        "y": 6.189884868421052
+        "x": 1.1834703947368421,
+        "y": 6.998108552631579
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.3599506578947365,
-        "y": 6.10328947368421
+        "x": 1.7896381578947367,
+        "y": 7.123190789473683
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "LA HP Station End"
     },
     {
       "anchor": {
-        "x": 5.340049342105263,
-        "y": 5.737664473684211
+        "x": 2.7902960526315788,
+        "y": 6.122532894736842
       },
       "prevControl": {
-        "x": 5.619078947368421,
-        "y": 6.21875
+        "x": 2.1360197368421048,
+        "y": 7.026973684210526
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": null
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0.5,
-      "rotationDegrees": -119.99999999999999
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 0.7882882882882885,
-      "maxWaypointRelativePos": 0.9399399399399397,
+      "minWaypointRelativePos": 0.55,
+      "maxWaypointRelativePos": 1.0,
       "constraints": {
-        "maxVelocity": 1.0,
+        "maxVelocity": 2.0,
         "maxAcceleration": 5.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
@@ -61,13 +56,13 @@
   },
   "goalEndState": {
     "velocity": 1.5,
-    "rotation": -119.99999999999999
+    "rotation": -59.99999999999999
   },
   "reversed": false,
   "folder": "Left Auton",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": -54.0
   },
   "useDefaultConstraints": true
 }

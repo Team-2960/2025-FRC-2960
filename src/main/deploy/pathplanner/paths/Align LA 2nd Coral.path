@@ -8,31 +8,36 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.110050771731346,
-        "y": 6.404276734888951
+        "x": 1.693421052631579,
+        "y": 6.911513157894737
       },
       "isLocked": false,
       "linkedName": "LA HP Station End"
     },
     {
       "anchor": {
-        "x": 3.146299342105263,
-        "y": 5.689555921052631
+        "x": 3.0885690789473683,
+        "y": 6.324588815789473
       },
       "prevControl": {
-        "x": 2.4342927631578943,
-        "y": 6.199506578947369
+        "x": 2.7229440789473682,
+        "y": 6.882648026315788
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": null
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.5,
+      "rotationDegrees": -59.99999999999999
+    }
+  ],
   "constraintZones": [
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 0.55,
+      "minWaypointRelativePos": 0.5254010695187157,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
         "maxVelocity": 2.0,
