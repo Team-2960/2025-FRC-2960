@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
@@ -105,26 +106,15 @@ public class OperatorInterface extends SubsystemBase {
             .whileTrue(drive.rotationDriveCommands
                 .new RotGoToReefCommand(Rotation2d.fromDegrees(0))
         );
-
+    
         driverController.x()
             .onTrue(
-                drive
-                .rotationDriveCommands
-                .new AngleAlignCommand(Rotation2d.fromDegrees(-54))
+                new RunCommand(() -> drive.allianceAngleCalc(Rotation2d.fromDegrees(-54)), drive.rotationDriveCommands)
         );
         
         driverController.b()
             .onTrue(
-                drive
-                .rotationDriveCommands
-                .new AngleAlignCommand(Rotation2d.fromDegrees(54))
-        );
-
-        driverController.a()
-            .onTrue(
-                drive
-                .rotationDriveCommands
-                .new AngleAlignCommand(Rotation2d.fromDegrees(-90))
+                new RunCommand(() -> drive.allianceAngleCalc(Rotation2d.fromDegrees(54)), drive.rotationDriveCommands)
         );
 
     }

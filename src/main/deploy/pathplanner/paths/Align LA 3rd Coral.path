@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.1834703947368421,
-        "y": 6.998108552631579
+        "x": 1.2604440789473683,
+        "y": 6.959621710526315
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.7896381578947367,
-        "y": 7.123190789473683
+        "x": 1.8666118421052629,
+        "y": 7.0847039473684195
       },
       "isLocked": false,
       "linkedName": "LA HP Station End"
@@ -32,11 +32,11 @@
   "constraintZones": [
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 0.55,
+      "minWaypointRelativePos": 0.6081081081081092,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
         "maxVelocity": 2.0,
-        "maxAcceleration": 5.0,
+        "maxAcceleration": 7.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
         "nominalVoltage": 12.0,
@@ -55,7 +55,7 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 1.5,
+    "velocity": 2.0,
     "rotation": -59.99999999999999
   },
   "reversed": false,

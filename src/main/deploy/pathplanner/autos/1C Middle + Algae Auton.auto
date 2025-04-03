@@ -68,15 +68,22 @@
           }
         },
         {
-          "type": "wait",
+          "type": "deadline",
           "data": {
-            "waitTime": 3.0
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "goToHighAlgaeCommand"
+            "commands": [
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 3.0
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "goToIntakeCommand"
+                }
+              }
+            ]
           }
         },
         {
@@ -88,14 +95,14 @@
                 "data": {
                   "pathName": "MA 1 Algae Remove Setup"
                 }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "goToHighAlgaeCommand"
-                }
               }
             ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "goToLowAlgaeCommand"
           }
         },
         {
@@ -111,7 +118,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "goToHighAlgaeCommand"
+                  "name": "goToLowAlgaeCommand"
                 }
               }
             ]

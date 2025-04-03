@@ -30,7 +30,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 2.0
+                  "waitTime": 1.5
                 }
               },
               {
@@ -55,7 +55,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 1.0
+                  "waitTime": 0.35
                 }
               },
               {
@@ -67,7 +67,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "goToL4Command"
+                  "name": "elevL4Pos"
                 }
               }
             ]
@@ -122,9 +122,22 @@
           "data": {
             "commands": [
               {
-                "type": "named",
+                "type": "parallel",
                 "data": {
-                  "name": "coralNotPresentCommand"
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "coralNotPresentCommand"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "coralInEndEffector"
+                      }
+                    }
+                  ]
                 }
               },
               {
@@ -174,7 +187,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 2.0
+                  "waitTime": 1.5
                 }
               },
               {
@@ -199,7 +212,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 1.0
+                  "waitTime": 0.35
                 }
               },
               {
@@ -251,6 +264,12 @@
                 "data": {
                   "name": "armIntakeAngle"
                 }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "elevIntakeCommand"
+                }
               }
             ]
           }
@@ -259,6 +278,25 @@
           "type": "deadline",
           "data": {
             "commands": [
+              {
+                "type": "parallel",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "coralNotPresentCommand"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "coralInEndEffector"
+                      }
+                    }
+                  ]
+                }
+              },
               {
                 "type": "named",
                 "data": {
@@ -276,6 +314,12 @@
                 "data": {
                   "name": "armIntakeAngle"
                 }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "elevIntakeCommand"
+                }
               }
             ]
           }
@@ -287,7 +331,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Align RA 2nd Coral"
+                  "pathName": "Align RA 3rd Coral"
                 }
               },
               {
@@ -300,9 +344,15 @@
           }
         },
         {
-          "type": "parallel",
+          "type": "deadline",
           "data": {
             "commands": [
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 1.5
+                }
+              },
               {
                 "type": "named",
                 "data": {
@@ -325,7 +375,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 1.0
+                  "waitTime": 0.35
                 }
               },
               {

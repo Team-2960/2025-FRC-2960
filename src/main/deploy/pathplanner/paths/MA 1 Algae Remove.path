@@ -4,24 +4,24 @@
     {
       "anchor": {
         "x": 5.801891447368421,
-        "y": 3.2841282894736845
+        "y": 4.678617294520548
       },
       "prevControl": null,
       "nextControl": {
         "x": 5.78330475670523,
-        "y": 3.034820177030084
+        "y": 4.429309182076948
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "MA Algae Remove Setup End"
     },
     {
       "anchor": {
         "x": 5.801891447368421,
-        "y": 5.025657894736842
+        "y": 3.5366652397260276
       },
       "prevControl": {
         "x": 5.812255498907419,
-        "y": 5.3858327022249295
+        "y": 3.896840047214117
       },
       "nextControl": null,
       "isLocked": false,

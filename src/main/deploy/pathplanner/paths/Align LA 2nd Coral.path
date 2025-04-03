@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.1834703947368421,
-        "y": 6.998108552631579
+        "x": 1.2604440789473683,
+        "y": 6.959621710526315
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.693421052631579,
-        "y": 6.911513157894737
+        "x": 1.7703947368421051,
+        "y": 6.873026315789473
       },
       "isLocked": false,
       "linkedName": "LA HP Station End"
@@ -60,7 +60,7 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 1.5,
+    "velocity": 2.0,
     "rotation": -59.99999999999999
   },
   "reversed": false,

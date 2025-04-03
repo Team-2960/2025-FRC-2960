@@ -180,6 +180,13 @@ public class EndEffector extends SubsystemBase{
         }
     }
 
+    public class CoralInEndEffectorCommand extends Command{
+        @Override
+        public boolean isFinished(){
+            return isCoralInEndEffector();
+        }
+    }
+
     public class CoralHoldCommand extends Command{
         double startPos = 0;
 

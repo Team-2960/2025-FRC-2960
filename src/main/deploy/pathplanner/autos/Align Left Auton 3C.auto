@@ -122,9 +122,22 @@
           "data": {
             "commands": [
               {
-                "type": "named",
+                "type": "parallel",
                 "data": {
-                  "name": "coralNotPresentCommand"
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "coralNotPresentCommand"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "coralInEndEffector"
+                      }
+                    }
+                  ]
                 }
               },
               {
@@ -266,9 +279,22 @@
           "data": {
             "commands": [
               {
-                "type": "named",
+                "type": "parallel",
                 "data": {
-                  "name": "coralNotPresentCommand"
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "coralNotPresentCommand"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "coralInEndEffector"
+                      }
+                    }
+                  ]
                 }
               },
               {

@@ -85,6 +85,7 @@ public class RobotContainer {
     NamedCommands.registerCommand("goToHighAlgaeCommand", elevArmControl.getGoToHighAlgaeCommand());
     NamedCommands.registerCommand("coralPresentCommand", endEffector.new CoralPresentCommand());
     NamedCommands.registerCommand("coralNotPresentCommand", endEffector.new CoralNotPresentCommand());
+    NamedCommands.registerCommand("coralInEndEffector", endEffector.new CoralInEndEffectorCommand());
     NamedCommands.registerCommand("ejectCommand", endEffector.new EjectCmd());
     NamedCommands.registerCommand("intakeCommand", endEffector.new AutonIntakeCmd());
     NamedCommands.registerCommand("elevatorHoldCommand", elevator.new ElevatorHoldCommand());
@@ -97,20 +98,20 @@ public class RobotContainer {
     
     SmartDashboard.putData("Choose Auto", autoChooser);
 
-    String pathName = "Copy of RA 1st Coral";
-    testAuton = new SequentialCommandGroup(
-      AutoBuilder.resetOdom(drive.getPath(pathName).getStartingHolonomicPose().get()),
-      drive.followPath(pathName),
-      // new ParallelCommandGroup(
-      //   elevArmControl.getGoToL4Command(),
-      //   drive.linearDriveCommands.new AutonLinearGoToReefCommand(Constants.leftBranchOffset),
-      //   drive.rotationDriveCommands.new RotGoToReefCommand(new Rotation2d())
-      // ),
-      // new RunCommand(() -> drive.autonCalcGoToReef(new Pose2d(Constants.rightBranchOffset, new Rotation2d())), drive).withTimeout(3),
-      drive.new AutonReefAlign(new Pose2d(Constants.rightBranchOffset, new Rotation2d())),
-      elevArmControl.getGoToL4Command(),
-      endEffector.new EjectCmd()
-    );
+    // String pathName = "Copy of RA 1st Coral";
+    // testAuton = new SequentialCommandGroup(
+    //   AutoBuilder.resetOdom(drive.getPath(pathName).getStartingHolonomicPose().get()),
+    //   drive.followPath(pathName),
+    //   // new ParallelCommandGroup(
+    //   //   elevArmControl.getGoToL4Command(),
+    //   //   drive.linearDriveCommands.new AutonLinearGoToReefCommand(Constants.leftBranchOffset),
+    //   //   drive.rotationDriveCommands.new RotGoToReefCommand(new Rotation2d())
+    //   // ),
+    //   // new RunCommand(() -> drive.autonCalcGoToReef(new Pose2d(Constants.rightBranchOffset, new Rotation2d())), drive).withTimeout(3),
+    //   drive.new AutonReefAlign(new Pose2d(Constants.rightBranchOffset, new Rotation2d())),
+    //   elevArmControl.getGoToL4Command(),
+    //   endEffector.new EjectCmd()
+    // );
 
   }
 

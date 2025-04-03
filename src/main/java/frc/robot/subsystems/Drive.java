@@ -36,6 +36,7 @@ import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.ComplexWidget;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -47,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.DoubleSupplier;
 
 import org.photonvision.PhotonUtils;
 
@@ -66,11 +68,6 @@ import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 
 public class Drive extends SubsystemBase {
-    public enum AngleControlMode {
-        AngleRate,
-        Angle,
-        LookAtPoint
-    }
 
     private static Drive drive = null; // Statically initialized instance
 
@@ -91,8 +88,8 @@ public class Drive extends SubsystemBase {
     private final SwerveDriveKinematics kinematics;
 
     private double rSpeed;
+    private Rotation2d targetAngle;
     private Translation2d targetPoint = new Translation2d();
-    private AngleControlMode angleMode = AngleControlMode.AngleRate;
     private boolean fieldRelative = false;
     private ChassisSpeeds chassisSpeeds;
     private PIDController angleAlignPID;
@@ -652,8 +649,8 @@ public class Drive extends SubsystemBase {
                 this::getChassisSpeeds,
                 (speeds, feedforwards) -> pathPlannerKinematics(speeds),
                 new PPHolonomicDriveController(
-                        new PIDConstants(7, 0, 0),
-                        new PIDConstants(7, 0, 0)),
+                        new PIDConstants(7.25, 0, 0),
+                        new PIDConstants(7.25, 0, 0)),
                 config,
                 this::isRedAlliance,
                 // linearDriveCommands,
@@ -691,6 +688,7 @@ public class Drive extends SubsystemBase {
         sb_speedX = pose_layout.add("Speed X", 0).getEntry();
         sb_speedY = pose_layout.add("Speed Y", 0).getEntry();
         sb_speedR = pose_layout.add("Speed R", 0).getEntry();
+        targetAngle = new Rotation2d();
         sb_robotTargetAngle = pose_layout.add("Robot Target Angle", 0).getEntry();
 
         sb_linearCommand = pose_layout.add("Linear Current Command", "---").getEntry();
@@ -698,6 +696,7 @@ public class Drive extends SubsystemBase {
         sb_driveCommand = pose_layout.add("Drive Current Command", "---").getEntry();
 
         sb_speedTargetR = pose_layout.add("Target Speed R", 0).getEntry();
+        sb_robotTargetAngle = pose_layout.add("Target Angle", 0).getEntry();
 
         sb_field2d = Shuffleboard.getTab("Drive").add(field2d).withWidget("Field");
         sb_batteryVoltage = Shuffleboard.getTab("Drive").add("Battery voltage", 0).getEntry();
@@ -838,6 +837,16 @@ public class Drive extends SubsystemBase {
         return speed;
     }
 
+    public void allianceAngleCalc(Rotation2d angle){
+        Rotation2d targetAngle = Rotation2d.fromDegrees(angle.getDegrees());
+        if (isRedAlliance()){
+            targetAngle = angle.plus(Rotation2d.fromDegrees(180));
+        }
+
+        calcRateToAngle(targetAngle);
+        System.out.println(targetAngle.getDegrees());
+    }
+
     /**
      * Calculates the angle rate for moving to a target angle from a given angle
      * @param targetAngle   target angle
@@ -847,6 +856,7 @@ public class Drive extends SubsystemBase {
         double speed = angleAlignPID.calculate(currentAngle.getRadians(), targetAngle.getRadians());
 
         this.rSpeed = speed;
+        this.targetAngle = targetAngle;
     }
 
     /**
@@ -1068,6 +1078,7 @@ public class Drive extends SubsystemBase {
         sb_posEstR.setDouble(pose.getRotation().getDegrees());
 
         sb_speedR.setDouble(rSpeed);
+        sb_robotTargetAngle.setDouble(targetAngle.getDegrees());
         field2d.setRobotPose(getEstimatedPos());
         field2d.getObject("fieldTargetPoint").setPose(targetPoint.getX(), targetPoint.getY(),
                 Rotation2d.fromDegrees(0));
@@ -1153,19 +1164,19 @@ public class Drive extends SubsystemBase {
         }
     }
 
-    public PathPlannerPath getPath (String pathName){
-        try {
-            // Load the path you want to follow using its name in the GUI
-            PathPlannerPath path = PathPlannerPath.fromPathFile(pathName);
+    // public PathPlannerPath getPath (String pathName){
+    //     try {
+    //         // Load the path you want to follow using its name in the GUI
+    //         PathPlannerPath path = PathPlannerPath.fromPathFile(pathName);
 
-            // Create a path following command using AutoBuilder. This will also trigger
-            // event markers.
-            return path;
-        } catch (Exception e) {
-            DriverStation.reportError("Big oops: " + e.getMessage(), e.getStackTrace());
-            return null;
-        }
-    }
+    //         // Create a path following command using AutoBuilder. This will also trigger
+    //         // event markers.
+    //         return path;
+    //     } catch (Exception e) {
+    //         DriverStation.reportError("Big oops: " + e.getMessage(), e.getStackTrace());
+    //         return null;
+    //     }
+    // }
     
     /**
      * Sets the target linear rate
