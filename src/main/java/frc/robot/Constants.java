@@ -70,8 +70,8 @@ public class Constants {
     public static final Pose2d blueCenter = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
     public static final Pose2d blueAmpSide = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
 
-    public static final Translation2d leftBranchOffset = new Translation2d(-fullLength/2.0, -.1109);
-    public static final Translation2d rightBranchOffset = new Translation2d(-fullLength/2.0, -0.441);
+    public static final Translation2d leftBranchOffset = new Translation2d(-fullLength/2.0, -.1109 + (2 * .0254));
+    public static final Translation2d rightBranchOffset = new Translation2d(-fullLength/2.0, -0.441 - (2 * .0254));
     public static final Translation2d centerOffset = new Translation2d(-fullLength/2.0, 0);
 
 
@@ -125,7 +125,7 @@ public class Constants {
     public static final Rotation2d armBotLim = Rotation2d.fromDegrees(0);
 
     public static final Rotation2d armIntakeAngle = Rotation2d.fromDegrees(85.5);
-    public static final Rotation2d armTravelAngle = Rotation2d.fromDegrees(80.0);
+    public static final Rotation2d armTravelAngle = Rotation2d.fromDegrees(75.0);
     public static final Rotation2d armL1CoralScoreAngle = Rotation2d.fromDegrees(73);
     public static final Rotation2d armCoralScoreAngle = Rotation2d.fromDegrees(60);
     public static final Rotation2d armCoralL4Angle = Rotation2d.fromDegrees(60);
@@ -157,7 +157,7 @@ public class Constants {
 
     //End Effector
     public static final double coralEjectVolt = -12;
-    public static final double coralIntakeVolt = -5;
+    public static final double coralIntakeVolt = -4.5;
     public static final double coralSlowIntakeVolt = -1;
     public static final double algaeRemovalVolt = -5;
     public static final double coralEjectTime = -1;
