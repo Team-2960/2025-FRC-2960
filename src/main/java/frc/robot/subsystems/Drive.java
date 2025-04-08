@@ -39,10 +39,6 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
-
-import frc.robot.Constants.CAN_IDS;
-import frc.robot.Constants.DriveConst;
-import frc.robot.Constants.RobotConst;
 import frc.robot.RobotContainer;
 import frc.robot.Util.FieldLayout;
 import frc.robot.Util.Limits;
