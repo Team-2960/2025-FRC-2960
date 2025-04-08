@@ -153,7 +153,7 @@ public class SwerveDriveSim {
 
             driveChange.mut_setMagnitude(driveFinalVel.in(MetersPerSecond) * period.in(Seconds));
 
-            module.setSimState(driveChange, driveFinalVel, rDelta, angleFinalVel);
+            module.setSimState(period, driveChange, driveFinalVel, rDelta, angleFinalVel);
         }
     }
 

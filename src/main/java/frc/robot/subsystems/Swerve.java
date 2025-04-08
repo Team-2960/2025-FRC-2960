@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.revrobotics.RelativeEncoder;
@@ -28,6 +29,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -37,9 +39,12 @@ import edu.wpi.first.units.measure.MutAngularVelocity;
 import edu.wpi.first.units.measure.MutDistance;
 import edu.wpi.first.units.measure.MutLinearVelocity;
 import edu.wpi.first.units.measure.MutVoltage;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.SwerveConst;
@@ -228,7 +233,8 @@ public class Swerve extends SubsystemBase {
      * @return current swerve module angle
      */
     public Rotation2d getAnglePos() {
-        return Rotation2d.fromRadians(encAngle.getPosition());
+        double angle = encAngle.getPosition();
+        return Rotation2d.fromRadians(angle);
     }
 
     /**
@@ -301,7 +307,13 @@ public class Swerve extends SubsystemBase {
 
         double ffOutput = driveFeedforward.calculate(state.speedMetersPerSecond);
 
-        mDrive.setVoltage(pidOutput + ffOutput);        
+        double voltage = pidOutput + ffOutput;
+
+        if(RobotBase.isReal()) {
+            mDrive.setVoltage(voltage);
+        } else {
+            mDrive.set(voltage / RoboRioSim.getVInVoltage());
+        }
     }
 
     /**
@@ -329,7 +341,13 @@ public class Swerve extends SubsystemBase {
         double ffOutput = angleFeedforward.calculate(angleVelocity);
 
         // Set Motor Output
-        mAngle.setVoltage(pidOutput + ffOutput);
+        double voltage = pidOutput + ffOutput;
+
+        if(RobotBase.isReal()) {
+            mAngle.setVoltage(voltage);
+        } else {
+            mAngle.set(voltage / RoboRioSim.getVInVoltage());
+        }
 
         sb_angleRate.setDouble(angleVelocity);
         sb_angleError.setDouble(SwerveConst.angleRampDist.in(Radians));
@@ -353,7 +371,11 @@ public class Swerve extends SubsystemBase {
      * @return  simulated applied voltage for the drive motor
      */
     public Voltage getSimDriveVoltage() {
-        return simDriveVoltage.mut_setMagnitude(mDriveSim.getAppliedOutput() * mDriveSim.getBusVoltage());
+        double vIn = RoboRioSim.getVInVoltage();
+        double mag = mDriveSim.getAppliedOutput();
+
+        simDriveVoltage.mut_setMagnitude(mag * vIn);
+        return simDriveVoltage;
     }
 
 
@@ -362,7 +384,11 @@ public class Swerve extends SubsystemBase {
      * @return  simulated applied voltage for the angle motor
      */
     public Voltage getSimAngleVoltage() {
-        return simAngleVoltage.mut_setMagnitude(mAngleSim.getAppliedOutput() * mAngleSim.getBusVoltage());
+        double vIn = RoboRioSim.getVInVoltage();
+        double mag = mAngleSim.getAppliedOutput();
+
+        simAngleVoltage.mut_setMagnitude(mag * RoboRioSim.getVInVoltage() * vIn);
+        return simAngleVoltage;
     }
 
     /**
@@ -372,10 +398,27 @@ public class Swerve extends SubsystemBase {
      * @param angleDelta    Angle to increment the azimuth angle
      * @param angleVel      Angle azimuth angle rate
      */
-    public void setSimState(Distance driveDist, LinearVelocity driveVel, Angle angleDist, AngularVelocity angleVel) {
+    public void setSimState(Time period, Distance driveDist, LinearVelocity driveVel, Angle angleDist, AngularVelocity angleVel) {
+        // Update motor simulation
+        mDriveSim.iterate(
+            Units.radiansPerSecondToRotationsPerMinute(driveVel.in(MetersPerSecond) / SwerveConst.distRatio.in(Meters) * Math.PI), 
+            RoboRioSim.getVInVoltage(), 
+            period.in(Seconds)
+        );
+
+        mAngleSim.iterate(
+            Units.radiansPerSecondToRotationsPerMinute(angleVel.in(RadiansPerSecond)), 
+            RoboRioSim.getVInVoltage(), 
+            period.in(Seconds)
+        );
+
+        // Update Sensors
         encDriveSim.setPosition(encDriveSim.getPosition() + driveDist.in(Meters));
         encDriveSim.setVelocity(driveVel.in(MetersPerSecond));
-        encAngleSim.setPosition(encAngleSim.getPosition() + angleDist.in(Radians));
+
+        double angle = encAngleSim.getPosition();
+        angle += angleDist.in(Radians);
+        encAngleSim.setPosition(angle);
         encAngleSim.setVelocity(angleVel.in(RadiansPerSecond));
     }
 }
