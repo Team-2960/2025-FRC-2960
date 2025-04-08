@@ -22,6 +22,10 @@ import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonUtils;
+import org.photonvision.estimation.TargetModel;
+import org.photonvision.simulation.PhotonCameraSim;
+import org.photonvision.simulation.SimCameraProperties;
+import org.photonvision.simulation.VisionTargetSim;
 
 /**
  * Manages connection to a single PhotonVision AprilTag Pipeline
@@ -56,10 +60,10 @@ public class AprilTagPipeline extends SubsystemBase {
 
 
     // Camera Simulation
-    // TargetModel targetModel;
-    // SimCameraProperties cameraProp;
-    // PhotonCameraSim cameraSim;
-    // VisionTargetSim visionTargetSim;
+    TargetModel targetModel;
+    SimCameraProperties cameraProp;
+    PhotonCameraSim cameraSim;
+    VisionTargetSim visionTargetSim;
 
     /**
      * Constructor
@@ -105,12 +109,12 @@ public class AprilTagPipeline extends SubsystemBase {
             .getStructTopic(cameraName + " Estimated Pose", Pose2d.struct).publish();
 
         // Vision Simulation
-        // targetModel = TargetModel.kAprilTag16h5;
-        // cameraProp = new SimCameraProperties();
-        // cameraProp.setFPS(60);
-        // cameraProp.setCalibration(640, 480, Rotation2d.fromDegrees(70));
-        // cameraSim = new PhotonCameraSim(camera, cameraProp);
-        // cameraSim.enableDrawWireframe(true);
+        targetModel = TargetModel.kAprilTag16h5;
+        cameraProp = new SimCameraProperties();
+        cameraProp.setFPS(60);
+        cameraProp.setCalibration(640, 480, Rotation2d.fromDegrees(70));
+        cameraSim = new PhotonCameraSim(camera, cameraProp);
+        cameraSim.enableDrawWireframe(true);
 
         aprilTagList = new Pose3d[] {};
     }
