@@ -1164,19 +1164,23 @@ public class Drive extends SubsystemBase {
         }
     }
 
-    // public PathPlannerPath getPath (String pathName){
-    //     try {
-    //         // Load the path you want to follow using its name in the GUI
-    //         PathPlannerPath path = PathPlannerPath.fromPathFile(pathName);
+    public PathPlannerPath getPath (String pathName){
+        try {
+            // Load the path you want to follow using its name in the GUI
+            PathPlannerPath path = PathPlannerPath.fromPathFile(pathName);
 
-    //         // Create a path following command using AutoBuilder. This will also trigger
-    //         // event markers.
-    //         return path;
-    //     } catch (Exception e) {
-    //         DriverStation.reportError("Big oops: " + e.getMessage(), e.getStackTrace());
-    //         return null;
-    //     }
-    // }
+            // Create a path following command using AutoBuilder. This will also trigger
+            // event markers.
+            return path;
+        } catch (Exception e) {
+            DriverStation.reportError("Big oops: " + e.getMessage(), e.getStackTrace());
+            return null;
+        }
+    }
+
+    public Command getPathFindtoPose(Pose2d pose, PathConstraints pathConstraints, double goalVelocity){
+        return AutoBuilder.pathfindToPose(pose, pathConstraints, goalVelocity);
+    }
     
     /**
      * Sets the target linear rate
@@ -1228,20 +1232,6 @@ public class Drive extends SubsystemBase {
             pointAlign.schedule();
     }
 
-
-    // /**
-    //  * Sets the robot to follow a PathPlanner path command
-    //  * @param path  PathPlanner path command
-    //  */
-    // public void followPath(Command path) {
-    //     if (getCurrentCommand() != path) {
-    //         linearDriveCommands.getCurrentCommand().cancel();
-    //         rotationDriveCommands.getCurrentCommand().cancel();
-    //         path.addRequirements(linearDriveCommands, rotationDriveCommands);
-    //         path.schedule();
-    //     }
-    // }
-
     /**
      * Aligns to the reef
      * @param offset    offset angle
@@ -1264,18 +1254,6 @@ public class Drive extends SubsystemBase {
         PresetPoseCommand presetPoseCommand = new PresetPoseCommand(pose);
         presetPoseCommand.schedule();
     }
-
-    // /**
-    //  * Generate a PathPlanner path on the floy
-    //  */
-    // public void pathOnTheFly(Pose2d targetPose, IdealStartingState idealStartingState, GoalEndState goalEndState) {
-    //     List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(getEstimatedPos(), targetPose);
-        
-    //     PathPlannerPath path = new PathPlannerPath(waypoints, pathConstraints, idealStartingState, goalEndState);
-    //     followPath(AutoBuilder.followPath(path));
-    // }
-
-    
 
     /**
      * Periodic update method

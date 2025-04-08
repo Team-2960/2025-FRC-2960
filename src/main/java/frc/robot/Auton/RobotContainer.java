@@ -27,8 +27,6 @@ import frc.robot.subsystems.EndEffector;
 public class RobotContainer {
   SendableChooser<Command> autoChooser;
   Command chosenAuto;
-  private Command testAuton;
-  private Command testPath;
   private Command elevIntakeCommand;
   private Command elevL4PosCommand;
   private static RobotContainer robotContainer = null;
@@ -39,37 +37,6 @@ public class RobotContainer {
     Elevator elevator = Elevator.getInstance();
     Arm arm = Arm.getInstance();
     EndEffector endEffector = EndEffector.getInstance();
-
-    // leftBranchAlign = new ParallelCommandGroup(
-    //   drive.linearDriveCommands.new LinearGoToReefCommand(
-    //     Constants.leftBranchOffset),
-    //   drive.rotationDriveCommands
-    //     .new RotGoToReefCommand(Rotation2d.fromDegrees(0))
-    // );
-
-    // rightBranchAlign = new ParallelCommandGroup(
-    //   drive.linearDriveCommands
-    //     .new LinearGoToReefCommand(
-    //       Constants.rightBranchOffset),
-    //   drive.rotationDriveCommandsl
-    //     .new RotGoToReefCommand(Rotation2d.fromDegrees(0))
-    // );
-
-    // rightBranchAlign = new RunCommand(() -> {
-    //     PPHolonomicDriveController.overrideXFeedback(() -> drive.getCalcToPoint(drive.calcGoToReef(new Pose2d(Constants.rightBranchOffset, Rotation2d.fromDegrees(0))).getTranslation()).get(1));
-    //     PPHolonomicDriveController.overrideYFeedback(() -> drive.getCalcToPoint(drive.calcGoToReef(new Pose2d(Constants.rightBranchOffset, Rotation2d.fromDegrees(0))).getTranslation()).get(2));
-    //   }
-    //   , drive.linearDriveCommands);
-
-    // rightBranchAlign = new ParallelCommandGroup(
-    //   drive.linearDriveCommands.new AutonLinearGoToReefCommand(Constants.rightBranchOffset),
-    //   drive.rotationDriveCommands.new AutonRotGoToReefCommand(Rotation2d.fromDegrees(0))
-    // );
-
-    // leftBranchAlign = new ParallelCommandGroup(
-    //   drive.linearDriveCommands.new AutonLinearGoToReefCommand(Constants.leftBranchOffset),
-    //   drive.rotationDriveCommands.new AutonRotGoToReefCommand(Rotation2d.fromDegrees(0))
-    // );
 
     elevIntakeCommand = new RunCommand(() -> elevator.setElevatorPos(Constants.elevIntakePos), elevator);
     elevL4PosCommand = new RunCommand(() -> elevator.setElevatorPos(Constants.elevL4Pos), elevator);
@@ -97,22 +64,6 @@ public class RobotContainer {
     autoChooser = AutoBuilder.buildAutoChooser();
     
     SmartDashboard.putData("Choose Auto", autoChooser);
-
-    // String pathName = "Copy of RA 1st Coral";
-    // testAuton = new SequentialCommandGroup(
-    //   AutoBuilder.resetOdom(drive.getPath(pathName).getStartingHolonomicPose().get()),
-    //   drive.followPath(pathName),
-    //   // new ParallelCommandGroup(
-    //   //   elevArmControl.getGoToL4Command(),
-    //   //   drive.linearDriveCommands.new AutonLinearGoToReefCommand(Constants.leftBranchOffset),
-    //   //   drive.rotationDriveCommands.new RotGoToReefCommand(new Rotation2d())
-    //   // ),
-    //   // new RunCommand(() -> drive.autonCalcGoToReef(new Pose2d(Constants.rightBranchOffset, new Rotation2d())), drive).withTimeout(3),
-    //   drive.new AutonReefAlign(new Pose2d(Constants.rightBranchOffset, new Rotation2d())),
-    //   elevArmControl.getGoToL4Command(),
-    //   endEffector.new EjectCmd()
-    // );
-
   }
 
   public Command getAutonomousCommand() {

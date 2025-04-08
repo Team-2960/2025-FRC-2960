@@ -10,7 +10,11 @@ import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.ElevArmControl;
 import frc.robot.subsystems.EndEffector;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.path.PathConstraints;
+
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -116,6 +120,13 @@ public class OperatorInterface extends SubsystemBase {
             .onTrue(
                 new RunCommand(() -> drive.allianceAngleCalc(Rotation2d.fromDegrees(54)), drive.rotationDriveCommands)
         );
+
+        driverController.a()
+            .onTrue(
+                drive.getPathFindtoPose(new Pose2d(5, 5, new Rotation2d()),
+                    new PathConstraints(4.5, 7, 9.42478, 12.5664, 12),
+                    0)
+            );
 
     }
 
