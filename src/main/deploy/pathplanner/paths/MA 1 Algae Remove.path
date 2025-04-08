@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.5954545454545452,
-        "y": 7.329870129870129
+        "x": 5.801891447368421,
+        "y": 4.678617294520548
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.128107550213568,
-        "y": 6.649129319201246
+        "x": 5.78330475670523,
+        "y": 4.429309182076948
       },
       "isLocked": false,
-      "linkedName": "Left Coral Station"
+      "linkedName": "MA Algae Remove Setup End"
     },
     {
       "anchor": {
-        "x": 3.443937789454237,
-        "y": 4.94958969337111
+        "x": 5.801891447368421,
+        "y": 3.5366652397260276
       },
       "prevControl": {
-        "x": 3.22014927820967,
-        "y": 5.209704903698734
+        "x": 5.812255498907419,
+        "y": 3.896840047214117
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Coral L"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
@@ -34,7 +34,7 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.5,
-    "maxAcceleration": 10.0,
+    "maxAcceleration": 7.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -59.85939805283046
+    "rotation": 180.0
   },
   "reversed": false,
-  "folder": "Left Auto Paths",
+  "folder": "Middle Auton",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -52.73359809902284
+    "rotation": 180.0
   },
   "useDefaultConstraints": true
 }

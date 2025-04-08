@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 4.749049001865014,
-        "y": 5.3998583576433425
+        "x": 1.500986842105263,
+        "y": 7.257894736842105
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.3530262745922865,
-        "y": 6.973945208292692
+        "x": 1.9309076721325997,
+        "y": 6.881849836641253
       },
       "isLocked": false,
-      "linkedName": "Coral J"
+      "linkedName": "Test Human Player"
     },
     {
       "anchor": {
-        "x": 1.5954545454545452,
-        "y": 7.329870129870129
+        "x": 3.8294407894736837,
+        "y": 5.1411184210526315
       },
       "prevControl": {
-        "x": 2.0115210372817183,
-        "y": 7.040928521385833
+        "x": 3.2639418915444285,
+        "y": 5.629179254290936
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Left Coral Station"
+      "linkedName": "Test Reef"
     }
   ],
   "rotationTargets": [],
@@ -33,8 +33,8 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.0,
-    "maxAcceleration": 5.0,
+    "maxVelocity": 4.5,
+    "maxAcceleration": 7.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -52.73359809902284
+    "rotation": -59.99999999999999
   },
   "reversed": false,
-  "folder": "Test Paths",
+  "folder": "LA Obselete",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -119.62374875117386
+    "rotation": -54.0
   },
   "useDefaultConstraints": true
 }

@@ -5,32 +5,25 @@
     "data": {
       "commands": [
         {
-          "type": "parallel",
+          "type": "path",
           "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "Copy of RA 1st Coral"
-                }
-              }
-            ]
+            "pathName": "RA 1st Coral"
           }
         },
         {
-          "type": "parallel",
+          "type": "deadline",
           "data": {
             "commands": [
               {
                 "type": "named",
                 "data": {
-                  "name": "goToL4Command"
+                  "name": "coralPresentCommand"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "rightBranchAlign"
+                  "name": "goToIntakeCommand"
                 }
               }
             ]
@@ -41,18 +34,30 @@
           "data": {
             "commands": [
               {
-                "type": "wait",
+                "type": "named",
                 "data": {
-                  "waitTime": 1.0
+                  "name": "coralNotPresentCommand"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "ejectCommand"
+                  "name": "goToIntakeCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "intakeCommand"
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Align RA HP Station 1"
           }
         }
       ]

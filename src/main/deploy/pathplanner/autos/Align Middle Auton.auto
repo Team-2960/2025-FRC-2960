@@ -5,19 +5,25 @@
     "data": {
       "commands": [
         {
-          "type": "parallel",
+          "type": "path",
+          "data": {
+            "pathName": "Copy of MA 1"
+          }
+        },
+        {
+          "type": "deadline",
           "data": {
             "commands": [
               {
                 "type": "named",
                 "data": {
-                  "name": "goToL4Command"
+                  "name": "rightBranchAlign"
                 }
               },
               {
-                "type": "path",
+                "type": "named",
                 "data": {
-                  "pathName": "LA 1st Coral"
+                  "name": "goToL4Command"
                 }
               }
             ]
@@ -38,6 +44,12 @@
                 "data": {
                   "name": "ejectCommand"
                 }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "goToL4Command"
+                }
               }
             ]
           }
@@ -46,30 +58,6 @@
           "type": "named",
           "data": {
             "name": "goToIntakeCommand"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Align LA HP Station 1"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "LA 2nd Coral"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Align LA HP Station 2"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "LA 3rd Coral"
           }
         }
       ]
