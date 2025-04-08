@@ -127,8 +127,6 @@ public class Drive extends SubsystemBase {
     private StructArrayPublisher<SwerveModuleState> as_swerveModules;
     private StructPublisher<Pose2d> as_currentPose;
 
-    PathConstraints pathConstraints;
-
     /**
      * Subsystem to handle linear motion commands
      */
@@ -661,8 +659,6 @@ public class Drive extends SubsystemBase {
         // Call method to initialize shuffleboard
         shuffleBoardInit();
 
-
-        pathConstraints = PathConstraints.unlimitedConstraints(12);
     }
 
     /**
@@ -1179,8 +1175,51 @@ public class Drive extends SubsystemBase {
     }
 
     public Command getPathFindtoPose(Pose2d pose, PathConstraints pathConstraints, double goalVelocity){
-        return AutoBuilder.pathfindToPose(pose, pathConstraints, goalVelocity);
+        Command pathFindCommand;
+        if(isRedAlliance()){
+            pathFindCommand =  AutoBuilder.pathfindToPose(pose, pathConstraints, goalVelocity);
+        }else{
+            pathFindCommand =  AutoBuilder.pathfindToPoseFlipped(pose, pathConstraints, goalVelocity);
+        }
+
+        pathFindCommand.addRequirements(linearDriveCommands, rotationDriveCommands);
+        
+        return pathFindCommand;
     }
+
+    public void pathFindtoPose(Pose2d pose, PathConstraints pathConstraints, double goalVelocity){
+        Command pathFindCommand;
+        if(isRedAlliance()){
+            pathFindCommand =  AutoBuilder.pathfindToPose(pose, pathConstraints, goalVelocity);
+        }else{
+            pathFindCommand =  AutoBuilder.pathfindToPoseFlipped(pose, pathConstraints, goalVelocity);
+        }
+
+        pathFindCommand.addRequirements(linearDriveCommands, rotationDriveCommands);
+        
+        pathFindCommand.schedule();
+    }
+
+    public Command getPathFindtoPath(PathPlannerPath path, PathConstraints pathConstraints){
+        if (isRedAlliance()) path.flipPath();
+
+        Command pathFindCommand = AutoBuilder.pathfindThenFollowPath(path, pathConstraints);
+
+        pathFindCommand.addRequirements(linearDriveCommands, rotationDriveCommands);
+
+        return pathFindCommand;
+    }
+
+    public void pathFindtoPath(PathPlannerPath path, PathConstraints pathConstraints){
+        if (isRedAlliance()) path.flipPath();
+
+        Command pathFindCommand = AutoBuilder.pathfindThenFollowPath(path, pathConstraints);
+
+        pathFindCommand.addRequirements(linearDriveCommands, rotationDriveCommands);
+
+        pathFindCommand.schedule();
+    }
+
     
     /**
      * Sets the target linear rate

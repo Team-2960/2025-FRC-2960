@@ -10,19 +10,17 @@ import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.ElevArmControl;
 import frc.robot.subsystems.EndEffector;
 
-import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathConstraints;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -110,24 +108,29 @@ public class OperatorInterface extends SubsystemBase {
             .whileTrue(drive.rotationDriveCommands
                 .new RotGoToReefCommand(Rotation2d.fromDegrees(0))
         );
-    
-        driverController.x()
-            .onTrue(
-                new RunCommand(() -> drive.allianceAngleCalc(Rotation2d.fromDegrees(-54)), drive.rotationDriveCommands)
-        );
         
         driverController.b()
             .onTrue(
                 new RunCommand(() -> drive.allianceAngleCalc(Rotation2d.fromDegrees(54)), drive.rotationDriveCommands)
         );
 
-        driverController.a()
+        driverController.b()
             .onTrue(
-                drive.getPathFindtoPose(new Pose2d(5, 5, new Rotation2d()),
-                    new PathConstraints(4.5, 7, 9.42478, 12.5664, 12),
-                    0)
+                new InstantCommand(() -> drive.pathFindtoPath(drive.getPath("Left HP Teleop"), 
+                    new PathConstraints(4.5, 7, 9.42478, 12.5664, 12)),
+                    drive.linearDriveCommands,
+                    drive.rotationDriveCommands
+                )
             );
 
+        driverController.x()
+            .onTrue(
+                new InstantCommand(() -> drive.pathFindtoPath(drive.getPath("Right HP Teleop"), 
+                    new PathConstraints(4.5, 7, 9.42478, 12.5664, 12)),
+                    drive.linearDriveCommands,
+                    drive.rotationDriveCommands
+                )
+            );
     }
 
     private void coralPlacementTriggers(){

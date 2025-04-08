@@ -3,11 +3,12 @@
   "robotLength": 0.914,
   "holonomicMode": true,
   "pathFolders": [
+    "LA Obselete",
     "Left Auton",
     "Middle Auton",
+    "Teleop Paths",
     "RA Obselete",
-    "Right Auton",
-    "LA Obselete"
+    "Right Auton"
   ],
   "autoFolders": [
     "New Folder"
