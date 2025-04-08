@@ -27,24 +27,24 @@ public class RobotContainer {
     private static SendableChooser<Command> autoChooser;
 
     // Subsystems
-    public static Drive drive = new Drive();
+    public static final Drive drive;
     
-    public static Arm arm = new Arm();
-    public static Elevator elevator = new Elevator();
-    public static ElevArmControl elevArmControl = new ElevArmControl(arm, elevator);
-    public static EndEffector endEffector = new EndEffector();
+    public static final Arm arm;
+    public static final Elevator elevator;
+    public static final ElevArmControl elevArmControl;
+    public static final EndEffector endEffector;
 
-    public static AlgaeAngle algaeAngle = new AlgaeAngle();
-    public static AlgaeRoller algaeRoller = new AlgaeRoller();
+    public static final AlgaeAngle algaeAngle;
+    public static final AlgaeRoller algaeRoller;
 
-    public static Climber climber = new Climber();
+    public static final Climber climber;
 
-    public static Cameras cameras = new Cameras(drive);
-    public static DriverCamera driverCamera = new DriverCamera();
+    public static final Cameras cameras;
+    public static final DriverCamera driverCamera;
 
-    public static LEDControl ledControl = new LEDControl(endEffector);
+    public static final LEDControl ledControl;
 
-    public static OperatorInterface oi = new OperatorInterface(drive, elevArmControl, endEffector, algaeAngle, algaeRoller, climber);
+    public static final OperatorInterface oi;
 
     // PathPlanner
     public static RobotConfig config;
@@ -56,6 +56,24 @@ public class RobotContainer {
      * Constructor
      */
     static {
+        drive = new Drive();
+        
+        arm = new Arm();
+        elevator = new Elevator();
+        elevArmControl = new ElevArmControl(arm, elevator);
+        endEffector = new EndEffector();
+    
+        algaeAngle = new AlgaeAngle();
+        algaeRoller = new AlgaeRoller();
+    
+        climber = new Climber();
+    
+        cameras = new Cameras(drive);
+        driverCamera = new DriverCamera();
+    
+        ledControl = new LEDControl(endEffector);
+    
+        oi = new OperatorInterface(drive, elevArmControl, endEffector, algaeAngle, algaeRoller, climber);
 
         initPathPlanner();
 
