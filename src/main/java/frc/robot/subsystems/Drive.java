@@ -20,11 +20,16 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructArrayPublisher;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
+import edu.wpi.first.wpilibj.shuffleboard.ComplexWidget;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.DegreesPerSecond;
@@ -39,6 +44,10 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
+
+import frc.robot.Constants.CAN_IDS;
+import frc.robot.Constants.DriveConst;
+import frc.robot.Constants.RobotConst;
 import frc.robot.RobotContainer;
 import frc.robot.Util.FieldLayout;
 import frc.robot.Util.Limits;
@@ -97,9 +106,14 @@ public class Drive extends SubsystemBase {
     private GenericEntry sb_speedYTarget;
     private GenericEntry sb_speedRTarget;
 
+    private ComplexWidget sb_field2d;
     private Pose2d nearestBranch;
-
     private Field2d field2d;
+    private FieldObject2d fieldTargetPoint;
+
+    // AdvantageScope
+    private StructArrayPublisher<SwerveModuleState> as_swerveModules;
+    private StructPublisher<Pose2d> as_currentPose;
 
     /**
      * Command for controlling the robot via rate
@@ -613,7 +627,7 @@ public class Drive extends SubsystemBase {
     /**
      * Initialize suffleboard
      */
-    private void shuffleBoardInit() {
+    private void shuffleBoardInit() {  
         // Setup Layout
         var pose_layout = Shuffleboard.getTab("Drive")
                 .getLayout("Drive Pose", BuiltInLayouts.kList)
@@ -680,7 +694,15 @@ public class Drive extends SubsystemBase {
         field2d.getObject("fieldTargetPoint").setPose(targetPoint.getX(), targetPoint.getY(),
                 Rotation2d.fromDegrees(0));
         nearestBranch = new Pose2d();
-        field2d.getObject("nearestReefFace").setPose(nearestBranch);        
+        
+        sb_field2d = Shuffleboard.getTab("Drive").add(field2d).withWidget("Field");
+
+        //Advantage Scope
+        as_swerveModules = NetworkTableInstance.getDefault()
+                .getStructArrayTopic("Swerve States", SwerveModuleState.struct).publish();
+
+        as_currentPose = NetworkTableInstance.getDefault()
+            .getStructTopic("Current Pose2d", Pose2d.struct).publish();
     }
 
     /*
@@ -859,6 +881,10 @@ public class Drive extends SubsystemBase {
         field2d.getObject("fieldTargetPoint").setPose(targetPoint.getX(), targetPoint.getY(),
                 Rotation2d.fromDegrees(0));
         field2d.getObject("nearestReefFace").setPose(nearestBranch);
+
+        // Update UI
+        as_swerveModules.set(getStates());
+        as_currentPose.set(getPose());
     }
 
     /**
