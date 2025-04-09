@@ -3,25 +3,21 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants;
 import frc.robot.Util.FieldLayout;
 import frc.robot.Util.FieldLayout.ReefFace;
-import frc.robot.subsystems.Drive.LinearDriveCommands.DriveRateCommand;
-import frc.robot.subsystems.Drive.RotationDriveCommands.AngleAlignCommand;
-import frc.robot.subsystems.Drive.RotationDriveCommands.PointAlignCommand;
-import frc.robot.subsystems.Drive.RotationDriveCommands.ReefAlignCommand;
-import frc.robot.subsystems.Drive.RotationDriveCommands.RotationRateCommand;
+// import frc.robot.subsystems.Drive.LinearDriveCommands.DriveRateCommand;
+// import frc.robot.subsystems.Drive.RotationDriveCommands.AngleAlignCommand;
+// import frc.robot.subsystems.Drive.RotationDriveCommands.PointAlignCommand;
+// import frc.robot.subsystems.Drive.RotationDriveCommands.ReefAlignCommand;
+// import frc.robot.subsystems.Drive.RotationDriveCommands.RotationRateCommand;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
-import edu.wpi.first.math.controller.LinearQuadraticRegulator;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.struct.Pose2dStruct;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -30,40 +26,24 @@ import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.GenericEntry;
-import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.ComplexWidget;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
-import java.util.ArrayList;
-import java.util.Dictionary;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.DoubleSupplier;
-
 import org.photonvision.PhotonUtils;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
-import com.pathplanner.lib.path.GoalEndState;
-import com.pathplanner.lib.path.IdealStartingState;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
-import com.pathplanner.lib.path.Waypoint;
-import com.pathplanner.lib.trajectory.PathPlannerTrajectory;
-import com.pathplanner.lib.trajectory.PathPlannerTrajectoryState;
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 
@@ -108,16 +88,13 @@ public class Drive extends SubsystemBase {
     private GenericEntry sb_speedR;
     private GenericEntry sb_robotTargetAngle;
     private GenericEntry sb_speedTargetR;
-    private GenericEntry sb_linearCommand;
     private GenericEntry sb_driveCommand;
-    private GenericEntry sb_rotationCommand;
     private GenericEntry sb_batteryVoltage;
 
     private ComplexWidget sb_field2d;
     private Pose2d nearestReefFace;
 
     private Field2d field2d;
-    private FieldObject2d fieldTargetPoint;
 
     // PathPlanner
     public RobotConfig config;
@@ -126,392 +103,6 @@ public class Drive extends SubsystemBase {
     // AdvantageScope
     private StructArrayPublisher<SwerveModuleState> as_swerveModules;
     private StructPublisher<Pose2d> as_currentPose;
-
-    /**
-     * Subsystem to handle linear motion commands
-     */
-    public class LinearDriveCommands extends SubsystemBase {
-        /**
-         * Command for rate based control
-         */
-
-        public class DriveRateCommand extends Command {
-            double xSpeed;      /**< Desired X axis rate */
-            double ySpeed;      /**< Desired Y axis rate */
-
-            /**
-             * Constructor
-             * @param xSpeed    Desired X axis rate
-             * @param ySpeed    Desired Y axis rate
-             */
-            public DriveRateCommand(double xSpeed, double ySpeed) {
-                this.xSpeed = xSpeed;
-                this.ySpeed = ySpeed;
-                addRequirements(LinearDriveCommands.this);
-            }
-
-
-            /**
-             * Sets the desired speeds
-             * @param xSpeed    Desired X axis rate
-             * @param ySpeed    Desired Y axis rate
-             */
-            public void setSpeeds(double xSpeed, double ySpeed) {
-                this.xSpeed = xSpeed;
-                this.ySpeed = ySpeed;
-            }
-
-            /**
-             * Updates X and Y axis rates
-             */
-            @Override
-            public void execute() {
-                updateKinematics(xSpeed, ySpeed);
-            }
-
-            //HACK this is a temporary solution to finish the drive rate command
-            //You get updates from the OperatorInterface using the setLinearManualDrive method
-            @Override
-            public boolean isFinished(){
-                return !isLinearManualDrive;
-            }
-
-        }
-
-        
-        public class LinearGoToReefCommand extends Command{
-            Translation2d offset;
-
-            public LinearGoToReefCommand(Translation2d offset){
-                this.offset = offset;
-                addRequirements(LinearDriveCommands.this);
-            }
-
-            public void setOffset(Translation2d offset){
-                this.offset = offset;
-            }
-
-            @Override
-            public void execute(){
-                linearGoToReef(offset);
-            }
-
-            @Override
-            public boolean isFinished(){
-                return PhotonUtils.getDistanceToPose(getEstimatedPos(), getReefFace(offset)) <= Constants.alignLinearTolerance;
-            }   
-        }
-
-        // public class AutonLinearGoToReefCommand extends Command{
-        //     Translation2d offset;
-
-        //     public AutonLinearGoToReefCommand(Translation2d offset){
-        //         this.offset = offset;
-        //         addRequirements(LinearDriveCommands.this);
-        //     }
-
-        //     public void setOffset(Translation2d offset){
-        //         this.offset = offset;
-        //     }
-
-
-        //     @Override
-        //     public void initialize(){
-        //         PPHolonomicDriveController.overrideXFeedback(() -> 
-        //             drive.getCalcToPoint(
-        //                 drive.calcGoToReef(
-        //                     new Pose2d(Constants.rightBranchOffset, 
-        //                     Rotation2d.fromDegrees(0))).getTranslation()).get(1));
-                
-        //         PPHolonomicDriveController.overrideYFeedback(() -> 
-        //             drive.getCalcToPoint(
-        //                 drive.calcGoToReef(
-        //                     new Pose2d(Constants.rightBranchOffset, 
-        //                     Rotation2d.fromDegrees(0))).getTranslation()).get(2));
-        //     }
-
-        //     @Override
-        //     public boolean isFinished(){
-        //         return PhotonUtils.getDistanceToPose(getEstimatedPos(), getReefFace(offset)) <= Constants.alignLinearTolerance;
-        //     }   
-
-        //     @Override
-        //     public void end(boolean interrupt){
-        //         PPHolonomicDriveController.clearXYFeedbackOverride();
-        //     }
-        // }
-
-        public class LinearDoNothingCommand extends Command{
-
-            public LinearDoNothingCommand(){
-                addRequirements(LinearDriveCommands.this);
-            }
-
-            @Override
-            public void execute(){
-                updateKinematics(0, 0);
-            }
-        }
-
-        private final DriveRateCommand driveRateCommand;    /**< Internal instance of Drive Rate command */
-        private final LinearGoToReefCommand linearGoToReefCommand;
-        private final LinearDoNothingCommand doNothingCommand;
-
-
-        /**
-         * Constructor
-         */
-        public LinearDriveCommands() {
-            driveRateCommand = new DriveRateCommand(0, 0);
-            linearGoToReefCommand = new LinearGoToReefCommand(new Translation2d());
-            doNothingCommand = new LinearDoNothingCommand();
-            setDefaultCommand(doNothingCommand);
-        }
-    }
-
-    /**
-     * Subsystem for controlling rotation of the robot
-     */
-    public class RotationDriveCommands extends SubsystemBase {
-        /**
-         * Command for controlling the angle rate
-         */
-        public class RotationRateCommand extends Command {
-            double rSpeed;  /**< Target angle rate */
-
-            /**
-             * Constructor
-             * @param rSpeed    Target angle rate
-             */
-            public RotationRateCommand(double rSpeed) {
-                this.rSpeed = rSpeed;
-                addRequirements(RotationDriveCommands.this);
-            }
-
-
-            /**
-             * Set the target angle rate
-             * @param rSpeed    Target angle rate
-             */
-            public void setRotationRate(double rSpeed) {
-                this.rSpeed = rSpeed;
-            }
-
-            /**
-             * Update the robots target angle rate
-             */
-            @Override
-            public void execute() {
-                setAngleRate(rSpeed);
-            }
-
-            //HACK this is a temporary solution to finish the drive rate command
-            //You get updates from the OperatorInterface using the setRotManualDrive method
-            @Override
-            public boolean isFinished(){
-                return !isRotManualDrive;
-            }
-        }
-
-        /**
-         * Command to align to an angle relative to the field
-         */
-        public class AngleAlignCommand extends Command {
-            Rotation2d angle;   /**< Target angle */
-
-            /**
-             * Constructor
-             * @param angle     Target angle
-             */
-            public AngleAlignCommand(Rotation2d angle) {
-                this.angle = angle;
-                addRequirements(RotationDriveCommands.this);
-            }
-
-            /**
-             * Set the target angle
-             * @param angle     Target angle
-             */
-            public void setAngle(Rotation2d angle) {
-                this.angle = angle;
-            }
-
-            /**
-             * Updates the target angle
-             */
-            @Override
-            public void execute() {
-                calcRateToAngle(angle);
-            }
-        }
-
-        /**
-         * Command for aligning the robot to a point on the field
-         */
-        public class PointAlignCommand extends Command {
-            Translation2d point;        /**< Target point */
-            Rotation2d rotationOffset;  /**< Offset rotation */
-
-            /**
-             * Constructor
-             * @param point             Target point
-             * @param rotationOffset    Offset rotation
-             */
-            public PointAlignCommand(Translation2d point, Rotation2d rotationOffset) {
-                this.point = point;
-                this.rotationOffset = rotationOffset;
-                addRequirements(RotationDriveCommands.this);
-            }
-
-            /**
-             * Set the target point
-             * @param point             Target point
-             */
-            public void setPoint(Translation2d point) {
-                this.point = point;
-            }
-
-            /**
-             * Set the offset rotation
-             * @param rotationOffset    Offset rotation
-             */
-            public void setOffset(Rotation2d rotationOffset) {
-                this.rotationOffset = rotationOffset;
-            }
-            
-            /**
-             * Update the robot's angle
-             */
-            @Override
-            public void execute() {
-                calcRateToPoint(targetPoint, rotationOffset);
-            }
-        }
-
-        /**
-         * Command to align to the center of the reef
-         */
-        public class ReefAlignCommand extends Command {
-            Rotation2d offset;  /**< Offset angle */
-
-            /**
-             * Constructor
-             * @param offset    Offset angle
-             */
-            public ReefAlignCommand(Rotation2d offset) {
-                this.offset = offset;
-                addRequirements(RotationDriveCommands.this);
-            }
-
-            /**
-             * Set the offset angle
-             * @param offset    Offset angle
-             */
-            public void setOffset(Rotation2d offset) {
-                this.offset = offset;
-            }
-
-            /**
-             * Update the robot's angle
-             */
-            @Override
-            public void execute() {
-                reefAngleCalc(offset);
-            }
-
-            @Override
-            public boolean isFinished(){
-                return getReefFace(new Translation2d()).getRotation().minus(getEstimatedPos().getRotation()).getDegrees() <= 2;
-            }
-
-            
-        }
-
-        public class RotGoToReefCommand extends Command{
-            Rotation2d offset;
-
-            public RotGoToReefCommand(Rotation2d offset){
-                this.offset = offset;
-                addRequirements(RotationDriveCommands.this);
-            }
-
-            public void setOffset(Rotation2d offset){
-                this.offset = offset;
-            }
-
-            @Override
-            public void execute(){
-                rotGoToReef(offset);
-            }
-
-            @Override
-            public boolean isFinished(){
-                return Math.abs(getReefFace(new Translation2d()).getRotation().minus(getEstimatedPos().getRotation()).getDegrees()) <= 2;
-            }
-        }
-
-        // public class AutonRotGoToReefCommand extends Command{
-        //     Rotation2d offset;
-
-        //     public AutonRotGoToReefCommand(Rotation2d offset){
-        //         this.offset = offset;
-        //         addRequirements(RotationDriveCommands.this);
-        //     }
-
-        //     public void setOffset(Rotation2d offset){
-        //         this.offset = offset;
-        //     }
-
-        //     @Override
-        //     public void initialize(){
-        //         PPHolonomicDriveController.overrideRotationFeedback(() -> 
-        //             getCalcRateToAngle(
-        //                 calcGoToReef(new Pose2d(new Translation2d(), offset)).getRotation())
-        //         );
-        //     }
-
-        //     @Override
-        //     public boolean isFinished(){
-        //         return getReefFace(new Translation2d()).getRotation().minus(getEstimatedPos().getRotation()).getDegrees() <= 2;
-        //     }
-
-        //     @Override
-        //     public void end(boolean interrupt){
-        //         PPHolonomicDriveController.clearRotationFeedbackOverride();
-        //     }
-        // }
-
-        public class RotDoNothingCommand extends Command{
-            public RotDoNothingCommand(){
-                addRequirements(RotationDriveCommands.this);
-            }
-
-            @Override
-            public void execute(){
-                setAngleRate(0);
-            }
-        }
-
-        private final RotationRateCommand rotationRateCommand;  /**< Internal rate control command instance */
-        private final AngleAlignCommand angleAlignCommand;      /**< Internal angle align command instance */
-        private final PointAlignCommand pointAlignCommand;      /**< Internal point align command instance */
-        private final ReefAlignCommand reefAlignCommand;        /**< Internal reef align command instance */
-        private final RotGoToReefCommand rotGoToReefCommand;
-        private final RotDoNothingCommand rotDoNothingCommand;
-
-        /**
-         * Constructor
-         */
-        public RotationDriveCommands() {
-            angleAlignCommand = new AngleAlignCommand(new Rotation2d());
-            pointAlignCommand = new PointAlignCommand(new Translation2d(0, 0), new Rotation2d());
-            rotationRateCommand = new RotationRateCommand(0);
-            reefAlignCommand = new ReefAlignCommand(new Rotation2d());
-            rotGoToReefCommand = new RotGoToReefCommand(new Rotation2d());
-            rotDoNothingCommand = new RotDoNothingCommand();
-            setDefaultCommand(rotDoNothingCommand);
-        }
-    }
 
     public class AutonReefAlign extends Command{
         Pose2d offset;
@@ -528,6 +119,32 @@ public class Drive extends SubsystemBase {
         @Override
         public void execute(){
             autonCalcGoToReef(offset);
+        }
+
+        @Override
+        public boolean isFinished(){
+            //TODO Uncomment this part as soon as you're done testing
+            return Math.abs(getReefFace(new Translation2d()).getRotation().minus(getEstimatedPos().getRotation()).getDegrees()) <= Constants.alignRotTolerance.getDegrees()
+              && PhotonUtils.getDistanceToPose(getEstimatedPos(), getReefFace(offset.getTranslation())) <= Constants.alignLinearTolerance;
+        }
+    }
+
+    public class GoToReefCommand extends Command{
+        Pose2d offset;
+
+        public GoToReefCommand(Pose2d offset){
+            this.offset = offset;
+            addRequirements(Drive.this);
+        }
+
+        public void setOffset(Pose2d offset){
+            this.offset = offset;
+        }
+
+        @Override
+        public void execute(){
+            linearGoToReef(offset.getTranslation());
+            rotGoToReef(offset.getRotation());
         }
 
         @Override
@@ -560,10 +177,105 @@ public class Drive extends SubsystemBase {
         }
     }
 
+    public class RateCommand extends Command{
+        double xSpeed;      /**< Desired X axis rate */
+        double ySpeed;      /**< Desired Y axis rate */
+        double rSpeed;
+
+            /**
+             * Constructor
+             * @param xSpeed    Desired X axis rate
+             * @param ySpeed    Desired Y axis rate
+             */
+            public RateCommand(double xSpeed, double ySpeed, double rSpeed) {
+                this.xSpeed = xSpeed;
+                this.ySpeed = ySpeed;
+                this.rSpeed = rSpeed;
+                addRequirements(Drive.this);
+            }
+
+
+            /**
+             * Sets the desired speeds
+             * @param xSpeed    Desired X axis rate
+             * @param ySpeed    Desired Y axis rate
+             */
+            public void setSpeeds(double xSpeed, double ySpeed, double rSpeed) {
+                this.xSpeed = xSpeed;
+                this.ySpeed = ySpeed;
+                this.rSpeed = rSpeed;
+            }
+
+            /**
+             * Updates X and Y axis rates
+             */
+            @Override
+            public void execute() {
+                updateKinematics(xSpeed, ySpeed,true );
+                setAngleRate(rSpeed);
+            }
+
+            //HACK this is a temporary solution to finish the drive rate command
+            //You get updates from the OperatorInterface using the setLinearManualDrive method
+            @Override
+            public boolean isFinished(){
+                return !isLinearManualDrive && !isRotManualDrive;
+            }
+    }
+
+    public class AngleAlignManualCommand extends Command{
+        double xSpeed;
+        double ySpeed;
+        Rotation2d angle;   /**< Target angle */
+
+        /**
+         * Constructor
+         * @param angle     Target angle
+         */
+        public AngleAlignManualCommand(double xSpeed, double ySpeed, Rotation2d angle) {
+            this.xSpeed = xSpeed;
+            this.ySpeed = ySpeed;
+            this.angle = angle;
+            addRequirements(Drive.this);
+        }
+
+        /**
+         * Set the target angle
+         * @param angle     Target angle
+         */
+        public void setAngle(double xSpeed, double ySpeed, Rotation2d angle) {
+            this.xSpeed = xSpeed;
+            this.ySpeed = ySpeed;
+            this.angle = angle;
+        }
+
+        /**
+         * Updates the target angle
+         */
+        @Override
+        public void execute() {
+            calcRateToAngle(angle);
+            updateKinematics(xSpeed, ySpeed, true);
+        }
+    }
+
+    public class DoNothingCommand extends Command{
+        public DoNothingCommand(){
+            addRequirements(Drive.this);
+        }
+
+        @Override
+        public void execute(){
+            updateKinematics(0, 0, true);
+            setAngleRate(0);
+        }
+    }
+
     // Command classes
-    public final LinearDriveCommands linearDriveCommands;      /**< Linear motion control subsytem */
-    public final RotationDriveCommands rotationDriveCommands;  /**< Rotation motion control subsystem */
+    // public final LinearDriveCommands linearDriveCommands;      /**< Linear motion control subsytem */
+    // public final RotationDriveCommands rotationDriveCommands;  /**< Rotation motion control subsystem */
     public final PresetPoseCommand presetPoseCommand;
+    public final RateCommand rateCommand;
 
     /**
      * Constructor
@@ -635,17 +347,20 @@ public class Drive extends SubsystemBase {
         }
 
         // Make instance of Command Classes
-        linearDriveCommands = new LinearDriveCommands();
-        rotationDriveCommands = new RotationDriveCommands();
+        // linearDriveCommands = new LinearDriveCommands();
+        // rotationDriveCommands = new RotationDriveCommands();
+
+        rateCommand = new RateCommand(0, 0, 0);
 
         presetPoseCommand = new PresetPoseCommand(new Pose2d());
+        //setDefaultCommand(new DoNothingCommand());
 
         autoBuilder = new AutoBuilder();
         AutoBuilder.configure(
                 this::getEstimatedPos,
                 this::presetPosition,
                 this::getChassisSpeeds,
-                (speeds, feedforwards) -> pathPlannerKinematics(speeds),
+                (speeds, feedforwards) -> setChassisSpeeds(speeds, false),
                 new PPHolonomicDriveController(
                         new PIDConstants(7, 0, 0),
                         new PIDConstants(7, 0, 0)),
@@ -653,7 +368,7 @@ public class Drive extends SubsystemBase {
                 this::isRedAlliance,
                 // linearDriveCommands,
                 // rotationDriveCommands,
-                this
+                Drive.this
         );
 
         // Call method to initialize shuffleboard
@@ -686,9 +401,7 @@ public class Drive extends SubsystemBase {
         sb_speedR = pose_layout.add("Speed R", 0).getEntry();
         targetAngle = new Rotation2d();
         sb_robotTargetAngle = pose_layout.add("Robot Target Angle", 0).getEntry();
-
-        sb_linearCommand = pose_layout.add("Linear Current Command", "---").getEntry();
-        sb_rotationCommand = pose_layout.add("Rotation Current Command", "---").getEntry();
+        
         sb_driveCommand = pose_layout.add("Drive Current Command", "---").getEntry();
 
         sb_speedTargetR = pose_layout.add("Target Speed R", 0).getEntry();
@@ -717,7 +430,12 @@ public class Drive extends SubsystemBase {
      * @param ySpeed speed of along the y-axis
      */
     public void setSpeed(double xSpeed, double ySpeed) {
-        updateKinematics(xSpeed, ySpeed);
+        updateKinematics(xSpeed, ySpeed, true);
+    }
+
+    public void setChassisSpeeds(ChassisSpeeds chassisSpeeds, boolean isFieldRelative){
+        updateKinematics(chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond, isFieldRelative);
+        setAngleRate(chassisSpeeds.omegaRadiansPerSecond);
     }
 
     /**
@@ -773,16 +491,16 @@ public class Drive extends SubsystemBase {
     /**
      * Updates the robot swerve kinematics
      */
-    private void updateKinematics(double xSpeed, double ySpeed) {
+    private void updateKinematics(double xSpeed, double ySpeed, boolean isFieldRelative) {
         ChassisSpeeds speeds;
 
-        if (fieldRelative) {
+        if (isFieldRelative) {
             Pose2d robot_pose = getEstimatedPos();
             Rotation2d fieldAngle = robot_pose.getRotation();
-            speeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rSpeed, fieldAngle);
+            speeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, this.rSpeed, fieldAngle);
         } else {
             // TODO Replace deprecated method
-            speeds = chassisSpeeds;
+            speeds = new ChassisSpeeds(xSpeed, ySpeed, this.rSpeed);
         }
 
         speeds = ChassisSpeeds.discretize(speeds, Constants.updatePeriod);
@@ -908,7 +626,7 @@ public class Drive extends SubsystemBase {
         double xSpeed = angleError.getCos() * targetSpeed;
         double ySpeed = angleError.getSin() * targetSpeed;
         
-        updateKinematics(xSpeed, ySpeed);
+        updateKinematics(xSpeed, ySpeed, true);
     }
 
     public Vector<N2> getCalcToPoint(Translation2d point){
@@ -934,9 +652,6 @@ public class Drive extends SubsystemBase {
         //Calculates the X and Y Speeds by multiplying the distance between the two points by the angle components
         double xSpeed = angleError.getCos() * targetSpeed;
         double ySpeed = angleError.getSin() * targetSpeed;
-
-        SmartDashboard.putNumber("Align Linear Error", linearError);
-        SmartDashboard.putNumber("Align Rotation Error", Math.abs(getReefFace(new Translation2d()).getRotation().minus(getEstimatedPos().getRotation()).getDegrees()));
 
         return VecBuilder.fill(xSpeed, ySpeed);
 
@@ -1082,19 +797,19 @@ public class Drive extends SubsystemBase {
 
         sb_batteryVoltage.setDouble(RobotController.getBatteryVoltage());
 
-        var currentCommand = Drive.getInstance().rotationDriveCommands.getCurrentCommand();
+        var currentCommand = Drive.getInstance().getCurrentCommand();
         String curCommandName = "null";
 
-        if (currentCommand != null)
-            curCommandName = currentCommand.getName();
-        sb_rotationCommand.setString(curCommandName);
+        // if (currentCommand != null)
+        //     curCommandName = currentCommand.getName();
+        // sb_rotationCommand.setString(curCommandName);
 
-        currentCommand = Drive.getInstance().linearDriveCommands.getCurrentCommand();
-        curCommandName = "null";
+        // currentCommand = Drive.getInstance().linearDriveCommands.getCurrentCommand();
+        // curCommandName = "null";
 
-        if (currentCommand != null)
-            curCommandName = currentCommand.getName();
-        sb_linearCommand.setString(curCommandName);
+        // if (currentCommand != null)
+        //     curCommandName = currentCommand.getName();
+        // sb_linearCommand.setString(curCommandName);
 
         currentCommand = Drive.getInstance().getCurrentCommand();
         curCommandName = "null";
@@ -1182,7 +897,7 @@ public class Drive extends SubsystemBase {
             pathFindCommand =  AutoBuilder.pathfindToPoseFlipped(pose, pathConstraints, goalVelocity);
         }
 
-        pathFindCommand.addRequirements(linearDriveCommands, rotationDriveCommands);
+        pathFindCommand.addRequirements(Drive.this);
         
         return pathFindCommand;
     }
@@ -1195,17 +910,16 @@ public class Drive extends SubsystemBase {
             pathFindCommand =  AutoBuilder.pathfindToPoseFlipped(pose, pathConstraints, goalVelocity);
         }
 
-        pathFindCommand.addRequirements(linearDriveCommands, rotationDriveCommands);
-        
-        pathFindCommand.schedule();
+        pathFindCommand.addRequirements(Drive.this);
+
+        if (getCurrentCommand() != pathFindCommand) pathFindCommand.schedule();
     }
 
     public Command getPathFindtoPath(PathPlannerPath path, PathConstraints pathConstraints){
         if (isRedAlliance()) path.flipPath();
 
         Command pathFindCommand = AutoBuilder.pathfindThenFollowPath(path, pathConstraints);
-
-        pathFindCommand.addRequirements(linearDriveCommands, rotationDriveCommands);
+        pathFindCommand.addRequirements(Drive.this);
 
         return pathFindCommand;
     }
@@ -1215,77 +929,82 @@ public class Drive extends SubsystemBase {
 
         Command pathFindCommand = AutoBuilder.pathfindThenFollowPath(path, pathConstraints);
 
-        pathFindCommand.addRequirements(linearDriveCommands, rotationDriveCommands);
-
-        pathFindCommand.schedule();
+        pathFindCommand.addRequirements(Drive.this);
+        
+        if (getCurrentCommand() != pathFindCommand) pathFindCommand.schedule();
     }
 
     
-    /**
-     * Sets the target linear rate
-     * @param xSpeed    Target X rate
-     * @param ySpeed    Target Y rate
-     */
-    public void setDriveRate(double xSpeed, double ySpeed) {
-        DriveRateCommand driveRate = linearDriveCommands.driveRateCommand;
-        driveRate.setSpeeds(xSpeed, ySpeed);
+    // /**
+    //  * Sets the target linear rate
+    //  * @param xSpeed    Target X rate
+    //  * @param ySpeed    Target Y rate
+    //  */
+    // public void setDriveRate(double xSpeed, double ySpeed) {
+    //     DriveRateCommand driveRate = linearDriveCommands.driveRateCommand;
+    //     driveRate.setSpeeds(xSpeed, ySpeed);
         
-        if (linearDriveCommands.getCurrentCommand() != driveRate) driveRate.schedule();
-    }
+    //     if (linearDriveCommands.getCurrentCommand() != driveRate) driveRate.schedule();
+    // }
 
-    /**
-     * Sets the target angle rate
-     * @param rSpeed    Target angle rate
-     */
-    public void setRotationRate(double rSpeed) {
-        RotationRateCommand rotationRate = rotationDriveCommands.rotationRateCommand;
-        rotationRate.setRotationRate(rSpeed);
+    // /**
+    //  * Sets the target angle rate
+    //  * @param rSpeed    Target angle rate
+    //  */
+    // public void setRotationRate(double rSpeed) {
+    //     RotationRateCommand rotationRate = rotationDriveCommands.rotationRateCommand;
+    //     rotationRate.setRotationRate(rSpeed);
 
-        if (rotationDriveCommands.getCurrentCommand() != rotationRate)
-            rotationRate.schedule();
-    }
+    //     if (rotationDriveCommands.getCurrentCommand() != rotationRate)
+    //         rotationRate.schedule();
+    // }
 
-    /**
-     * Sets the robot to align to an angle
-     * @param targetAngle   target angle
-     */
-    public void setAngleAlign(Rotation2d targetAngle) {
-        AngleAlignCommand rotationCommand = rotationDriveCommands.angleAlignCommand;
-        rotationCommand.setAngle(targetAngle);
-        if (rotationDriveCommands.getCurrentCommand() != rotationCommand)
-            rotationCommand.schedule();
-    }
+    // /**
+    //  * Sets the robot to align to an angle
+    //  * @param targetAngle   target angle
+    //  */
+    // public void setAngleAlign(Rotation2d targetAngle) {
+    //     AngleAlignCommand rotationCommand = rotationDriveCommands.angleAlignCommand;
+    //     rotationCommand.setAngle(targetAngle);
+    //     if (rotationDriveCommands.getCurrentCommand() != rotationCommand)
+    //         rotationCommand.schedule();
+    // }
 
-    /**
-     * Sets the robot to align to a point
-     * @param targetPoint       target point
-     * @param rotationOffset    offset angle
-     */
-    public void setPointAlign(Translation2d targetPoint, Rotation2d rotationOffset) {
-        PointAlignCommand pointAlign = rotationDriveCommands.pointAlignCommand;
+    // /**
+    //  * Sets the robot to align to a point
+    //  * @param targetPoint       target point
+    //  * @param rotationOffset    offset angle
+    //  */
+    // public void setPointAlign(Translation2d targetPoint, Rotation2d rotationOffset) {
+    //     PointAlignCommand pointAlign = rotationDriveCommands.pointAlignCommand;
 
-        pointAlign.setPoint(targetPoint);
-        pointAlign.setOffset(rotationOffset);
+    //     pointAlign.setPoint(targetPoint);
+    //     pointAlign.setOffset(rotationOffset);
 
-        if (rotationDriveCommands.getCurrentCommand() != pointAlign)
-            pointAlign.schedule();
-    }
+    //     if (rotationDriveCommands.getCurrentCommand() != pointAlign)
+    //         pointAlign.schedule();
+    // }
 
-    /**
-     * Aligns to the reef
-     * @param offset    offset angle
-     */
-    public void setReefAlign(Rotation2d offset) {
-        ReefAlignCommand reefAlignCommand = rotationDriveCommands.reefAlignCommand;
-        reefAlignCommand.setOffset(offset);
-        if (rotationDriveCommands.getCurrentCommand() != reefAlignCommand)
-            reefAlignCommand.schedule();
-    }
+    // /**
+    //  * Aligns to the reef
+    //  * @param offset    offset angle
+    //  */
+    // public void setReefAlign(Rotation2d offset) {
+    //     ReefAlignCommand reefAlignCommand = rotationDriveCommands.reefAlignCommand;
+    //     reefAlignCommand.setOffset(offset);
+    //     if (rotationDriveCommands.getCurrentCommand() != reefAlignCommand)
+    //         reefAlignCommand.schedule();
+    // }
 
-    public void setRotGoToReef(Rotation2d offset){
-        frc.robot.subsystems.Drive.RotationDriveCommands.RotGoToReefCommand rotGoToReefCommand = rotationDriveCommands.rotGoToReefCommand;
-        rotGoToReefCommand.setOffset(offset);
-        if(rotGoToReefCommand != rotationDriveCommands.getCurrentCommand()) rotGoToReefCommand.schedule();
+    // public void setRotGoToReef(Rotation2d offset){
+    //     frc.robot.subsystems.Drive.RotationDriveCommands.RotGoToReefCommand rotGoToReefCommand = rotationDriveCommands.rotGoToReefCommand;
+    //     rotGoToReefCommand.setOffset(offset);
+    //     if(rotGoToReefCommand != rotationDriveCommands.getCurrentCommand()) rotGoToReefCommand.schedule();
+    // }
+
+    public void setRate(double xSpeed, double ySpeed, double rSpeed){
+        rateCommand.setSpeeds(xSpeed, ySpeed, rSpeed);
+        if(getCurrentCommand() != rateCommand) rateCommand.schedule();
     }
 
 

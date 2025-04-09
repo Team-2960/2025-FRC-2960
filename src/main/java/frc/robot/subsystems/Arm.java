@@ -19,7 +19,6 @@ import edu.wpi.first.units.measure.MutAngularVelocity;
 import edu.wpi.first.units.measure.MutCurrent;
 import edu.wpi.first.units.measure.MutVoltage;
 import edu.wpi.first.units.measure.Voltage;
-import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
@@ -44,9 +43,6 @@ public class Arm extends SubsystemBase {
     private PIDController armPID;
 
     private ArmFeedforward armFF;
-
-    private SendableBuilder pidTestDisplay;
-    private double pidTestValue = 0;
 
     private double armVolt;
     private double armRate;
