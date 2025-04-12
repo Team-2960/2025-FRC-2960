@@ -353,7 +353,7 @@ public class Drive extends SubsystemBase {
         rateCommand = new RateCommand(0, 0, 0);
 
         presetPoseCommand = new PresetPoseCommand(new Pose2d());
-        //setDefaultCommand(new DoNothingCommand());
+        setDefaultCommand(new DoNothingCommand());
 
         autoBuilder = new AutoBuilder();
         AutoBuilder.configure(

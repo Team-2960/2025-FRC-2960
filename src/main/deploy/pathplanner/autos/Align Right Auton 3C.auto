@@ -113,6 +113,12 @@
                 "data": {
                   "name": "elevIntakeCommand"
                 }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "driveDoNothing"
+                }
               }
             ]
           }
@@ -269,6 +275,12 @@
                 "type": "named",
                 "data": {
                   "name": "elevIntakeCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "driveDoNothing"
                 }
               }
             ]

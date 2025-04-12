@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.Constants;
+import frc.robot.subsystems.Drive;
 
 public class FieldLayout {
     private static FieldLayout fieldLayout = null;
@@ -234,6 +235,23 @@ public class FieldLayout {
             targetAngle = getReef(ReefFace.THREEHUNDRED).getRotation();
         }
         return targetAngle;
+    }
+
+    public static Pose2d getReefFaceOffset(Pose2d offset, Pose2d reefFace){
+        Rotation2d rotOffset = Rotation2d.fromDegrees(0);
+        if (Drive.getInstance().isRedAlliance()) {
+            offset = new Pose2d(-offset.getX(), -offset.getY(), offset.getRotation());
+            rotOffset = Rotation2d.fromDegrees(180);
+        }
+
+        Rotation2d reefFaceRotation = reefFace.getRotation();
+        Pose2d zeroFace = FieldLayout.getReef(ReefFace.ZERO);
+        Translation2d poseOffset = new Translation2d(zeroFace.getX() + offset.getX(), zeroFace.getY() + offset.getY())
+                .rotateAround(FieldLayout.getReef(ReefFace.CENTER).getTranslation(),
+                        reefFaceRotation);
+        Pose2d finalReefFace = new Pose2d(poseOffset, reefFaceRotation.rotateBy(rotOffset));
+        
+        return finalReefFace;
     }
 
     public static Translation2d getNoteOffset(AlgaeType algaeType, double x, double y){

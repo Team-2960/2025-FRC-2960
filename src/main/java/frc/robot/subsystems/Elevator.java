@@ -415,7 +415,7 @@ public class Elevator extends SubsystemBase {
         double maxPosRate = Constants.maxElevatorAutoSpeed;
         double posError = targetPos - currentPos;
 
-        double targetSpeed = maxPosRate * (posError > 0 ? 1 : +-1);
+        double targetSpeed = maxPosRate * (posError > 0 ? 1 : -1);
         double rampDownSpeed = posError / Constants.elevatorRampDownDist * maxPosRate;
 
         if (Math.abs(rampDownSpeed) < Math.abs(targetSpeed))

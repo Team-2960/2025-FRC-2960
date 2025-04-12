@@ -10,8 +10,6 @@ import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.ElevArmControl;
 import frc.robot.subsystems.EndEffector;
 
-import java.util.Set;
-
 import com.pathplanner.lib.path.PathConstraints;
 
 import edu.wpi.first.math.MathUtil;
@@ -23,9 +21,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
@@ -85,7 +80,6 @@ public class OperatorInterface extends SubsystemBase {
 
     private void driveTriggers(){
         Drive drive = Drive.getInstance();
-
         
         driverController.y()
             .onTrue(drive.new GoToReefCommand(new Pose2d(Constants.centerOffset, new Rotation2d())));
@@ -114,10 +108,18 @@ public class OperatorInterface extends SubsystemBase {
         //         .new RotGoToReefCommand(Rotation2d.fromDegrees(0))
         // );
 
+
+
         driverController.b()
             .onTrue(
                 drive.getPathFindtoPath(drive.getPath("Right HP Teleop"), 
-                    new PathConstraints(4.5, 7, 9.42478, 12.5664, 12))
+                    new PathConstraints(5, 11, 9.42478, 12.5664, 12))
+            );
+
+        driverController.x()
+            .onTrue(
+                drive.getPathFindtoPath(drive.getPath("Left HP Teleop"), 
+                    new PathConstraints(5, 11, 9.42478, 12.5664, 12))
             );
     }
 
