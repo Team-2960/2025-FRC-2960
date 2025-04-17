@@ -172,9 +172,9 @@ public class OperatorInterface extends SubsystemBase {
         var alliance = DriverStation.getAlliance();
         double alliance_dir = alliance.isPresent() && alliance.get() == Alliance.Red ? 1 : -1;
 
-        double xAxis = MathUtil.applyDeadband(driverController.getRawAxis(1), 0.06);
-        double yAxis = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.06);
-        double rAxis = MathUtil.applyDeadband(driverController.getRawAxis(4), 0.03);
+        double xAxis = MathUtil.applyDeadband(driverController.getRawAxis(1), 0.07);
+        double yAxis = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.07);
+        double rAxis = MathUtil.applyDeadband(driverController.getRawAxis(4), 0.06);
 
         double xSpeed = xAxis * maxSpeed * alliance_dir;
         double ySpeed = yAxis * maxSpeed * alliance_dir;
@@ -215,11 +215,6 @@ public class OperatorInterface extends SubsystemBase {
         if(driverController.getHID().getPOV() == 0 && driverController.getHID().getStartButton()){
             drive.setPresetPose(
                 FieldLayout.getReef(ReefFace.ZERO).plus(new Transform2d(Constants.robotLength/2 * -presetMirror, 0, rotationMirror)));
-        }
-
-        if(driverController.getHID().getBButton()){
-            drive.pathFindtoPath(drive.getPath("Right HP Teleop"), 
-            new PathConstraints(4.5, 7, 9.42478, 12.5664, 12));
         }
 
         // Update Shuffleboard

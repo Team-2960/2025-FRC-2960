@@ -54,6 +54,8 @@ public class RobotContainer {
     NamedCommands.registerCommand("elevIntakePos", elevIntakeCommand);
     NamedCommands.registerCommand("elevL4Pos", elevL4PosCommand);
     NamedCommands.registerCommand("driveDoNothing", new RunCommand(() -> drive.setChassisSpeeds(new ChassisSpeeds(0,0,0), false), drive));
+    NamedCommands.registerCommand("leftBranchNoFinish", drive.new GoToReefCommand(new Pose2d(Constants.leftBranchOffset, new Rotation2d())));
+    NamedCommands.registerCommand("rightBranchNoFinish", drive.new GoToReefCommand(new Pose2d(Constants.rightBranchOffset, new Rotation2d())));
 
     autoChooser = AutoBuilder.buildAutoChooser();
     

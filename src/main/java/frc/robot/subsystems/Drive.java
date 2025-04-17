@@ -80,6 +80,9 @@ public class Drive extends SubsystemBase {
     private boolean isLinearManualDrive = true;
     private boolean isRotManualDrive = true;
 
+    private boolean inLinearTol = false;
+    private boolean inRotTol = false;
+
     // Shuffleboard
     private GenericEntry sb_posEstX;
     private GenericEntry sb_posEstY;
@@ -120,11 +123,15 @@ public class Drive extends SubsystemBase {
 
         @Override
         public void execute(){
-            autonCalcGoToReef(offset);
+            linearGoToReef(offset.getTranslation());
+            rotGoToReef(offset.getRotation());
         }
 
         @Override
         public boolean isFinished(){
+            inLinearTol = Math.abs(PhotonUtils.getDistanceToPose(getEstimatedPos(), getReefFace(offset.getTranslation()))) <= Constants.alignLinearTolerance;
+            inRotTol = Math.abs(getReefFace(new Translation2d()).getRotation().minus(getEstimatedPos().getRotation()).getDegrees()) <= Constants.alignRotTolerance.getDegrees();
+
             //TODO Uncomment this part as soon as you're done testing
             return Math.abs(getReefFace(new Translation2d()).getRotation().minus(getEstimatedPos().getRotation()).getDegrees()) <= Constants.alignRotTolerance.getDegrees()
               && Math.abs(PhotonUtils.getDistanceToPose(getEstimatedPos(), getReefFace(offset.getTranslation()))) <= Constants.alignLinearTolerance;
@@ -828,6 +835,9 @@ public class Drive extends SubsystemBase {
         });
 
         as_currentPose.set(getEstimatedPos());
+
+        SmartDashboard.putBoolean("In Linear Tol", inLinearTol);
+        SmartDashboard.putBoolean("In Rot Tol", inRotTol);
     }
 
     /**
