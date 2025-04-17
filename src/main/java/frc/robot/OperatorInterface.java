@@ -82,33 +82,16 @@ public class OperatorInterface extends SubsystemBase {
         Drive drive = Drive.getInstance();
         
         driverController.y()
-            .onTrue(drive.new GoToReefCommand(new Pose2d(Constants.centerOffset, new Rotation2d())));
+            .onTrue(drive.new GoToReefCommand(new Pose2d(Constants.centerOffset, new Rotation2d()))
+            );
 
         driverController.y().and(driverController.rightBumper())
-            .onTrue(drive.new GoToReefCommand(new Pose2d(Constants.rightBranchOffset, new Rotation2d())));
+            .onTrue(drive.new GoToReefCommand(new Pose2d(Constants.rightBranchOffset, new Rotation2d()))
+            );
 
         driverController.y().and(driverController.leftBumper())
-            .onTrue(drive.new GoToReefCommand(new Pose2d(Constants.leftBranchOffset, new Rotation2d())));
-
-        // driverController.y().and(driverController.rightBumper())
-        //     .whileTrue(
-        //         drive.linearDriveCommands
-        //         .new LinearGoToReefCommand(
-        //             Constants.rightBranchOffset))
-        //     .whileTrue(drive.rotationDriveCommands
-        //         .new RotGoToReefCommand(Rotation2d.fromDegrees(0))
-        // );
-        
-        // driverController.y().and(driverController.leftBumper())
-        //     .whileTrue(
-        //         drive.linearDriveCommands
-        //         .new LinearGoToReefCommand(
-        //             Constants.leftBranchOffset))
-        //     .whileTrue(drive.rotationDriveCommands
-        //         .new RotGoToReefCommand(Rotation2d.fromDegrees(0))
-        // );
-
-
+            .onTrue(drive.new GoToReefCommand(new Pose2d(Constants.leftBranchOffset, new Rotation2d()))
+            );
 
         driverController.b()
             .onTrue(
@@ -189,9 +172,9 @@ public class OperatorInterface extends SubsystemBase {
         var alliance = DriverStation.getAlliance();
         double alliance_dir = alliance.isPresent() && alliance.get() == Alliance.Red ? 1 : -1;
 
-        double xAxis = MathUtil.applyDeadband(driverController.getRawAxis(1), 0.05);
-        double yAxis = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.05);
-        double rAxis = MathUtil.applyDeadband(driverController.getRawAxis(4), 0.1);
+        double xAxis = MathUtil.applyDeadband(driverController.getRawAxis(1), 0.06);
+        double yAxis = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.06);
+        double rAxis = MathUtil.applyDeadband(driverController.getRawAxis(4), 0.03);
 
         double xSpeed = xAxis * maxSpeed * alliance_dir;
         double ySpeed = yAxis * maxSpeed * alliance_dir;

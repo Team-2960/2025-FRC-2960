@@ -36,6 +36,8 @@ import edu.wpi.first.wpilibj.shuffleboard.ComplexWidget;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 import org.photonvision.PhotonUtils;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -125,7 +127,7 @@ public class Drive extends SubsystemBase {
         public boolean isFinished(){
             //TODO Uncomment this part as soon as you're done testing
             return Math.abs(getReefFace(new Translation2d()).getRotation().minus(getEstimatedPos().getRotation()).getDegrees()) <= Constants.alignRotTolerance.getDegrees()
-              && PhotonUtils.getDistanceToPose(getEstimatedPos(), getReefFace(offset.getTranslation())) <= Constants.alignLinearTolerance;
+              && Math.abs(PhotonUtils.getDistanceToPose(getEstimatedPos(), getReefFace(offset.getTranslation()))) <= Constants.alignLinearTolerance;
         }
     }
 
@@ -147,12 +149,12 @@ public class Drive extends SubsystemBase {
             rotGoToReef(offset.getRotation());
         }
 
-        @Override
-        public boolean isFinished(){
-            //TODO Uncomment this part as soon as you're done testing
-            return Math.abs(getReefFace(new Translation2d()).getRotation().minus(getEstimatedPos().getRotation()).getDegrees()) <= Constants.alignRotTolerance.getDegrees()
-              && PhotonUtils.getDistanceToPose(getEstimatedPos(), getReefFace(offset.getTranslation())) <= Constants.alignLinearTolerance;
-        }
+        // @Override
+        // public boolean isFinished(){
+        //     //TODO Uncomment this part as soon as you're done testing
+        //     return Math.abs(getReefFace(new Translation2d()).getRotation().minus(getEstimatedPos().getRotation()).getDegrees()) <= Constants.alignRotTolerance.getDegrees()
+        //       && PhotonUtils.getDistanceToPose(getEstimatedPos(), getReefFace(offset.getTranslation())) <= Constants.alignLinearTolerance;
+        // }
     }
 
     public class PresetPoseCommand extends Command{
