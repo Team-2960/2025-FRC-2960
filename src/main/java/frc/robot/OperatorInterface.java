@@ -21,6 +21,8 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
@@ -34,9 +36,15 @@ public class OperatorInterface extends SubsystemBase {
 
 
     //Manual Control Class Variables
-    double xSpeed;
-    double ySpeed;
-    double rSpeed;
+    private double xSpeed;
+    private double ySpeed;
+    private double rSpeed;
+
+    private double xAxis;
+    private double yAxis;
+    private double rAxis;
+
+
     
     // Shuffleboard Entries
     private GenericEntry sb_driveX;
@@ -104,6 +112,12 @@ public class OperatorInterface extends SubsystemBase {
                 drive.getPathFindtoPath(drive.getPath("Left HP Teleop"), 
                     new PathConstraints(5, 11, 9.42478, 12.5664, 12))
             );
+
+        driverController.axisMagnitudeGreaterThan(0, 0.06)
+            .or(driverController.axisGreaterThan(1, 0.06))
+            .or(driverController.axisGreaterThan(4, 0.06))
+                .onTrue(new RunCommand(() -> drive.setRate(xSpeed, ySpeed, rSpeed), drive));
+            
     }
 
     private void coralPlacementTriggers(){
@@ -188,29 +202,19 @@ public class OperatorInterface extends SubsystemBase {
         this.ySpeed = ySpeed;
         this.rSpeed = rSpeed;
 
+        this.xAxis = xAxis;
+        this.yAxis = yAxis;
+        this.rAxis = rAxis;
 
-        // if (Math.abs(xAxis) > 0 || Math.abs(yAxis) > 0){
-        //     drive.setDriveRate(xSpeed, ySpeed);
+
+        // if (Math.abs(xAxis) > 0 || Math.abs(yAxis) > 0 || Math.abs(rAxis) > 0){
+        //     drive.setRate(xSpeed, ySpeed, rSpeed);
         //     drive.setLinearManualDrive(true);
-        // }else{
-        //     drive.setLinearManualDrive(false);
-        // }
-
-        // if (Math.abs(rAxis) > 0){
-        //     drive.setRotationRate(rSpeed);
         //     drive.setRotManualDrive(true);
         // }else{
+        //     drive.setLinearManualDrive(false);
         //     drive.setRotManualDrive(false);
         // }
-
-        if (Math.abs(xAxis) > 0 || Math.abs(yAxis) > 0 || Math.abs(rAxis) > 0){
-            drive.setRate(xSpeed, ySpeed, rSpeed);
-            drive.setLinearManualDrive(true);
-            drive.setRotManualDrive(true);
-        }else{
-            drive.setLinearManualDrive(false);
-            drive.setRotManualDrive(false);
-        }
 
         if(driverController.getHID().getPOV() == 0 && driverController.getHID().getStartButton()){
             drive.setPresetPose(

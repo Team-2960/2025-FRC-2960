@@ -1015,8 +1015,8 @@ public class Drive extends SubsystemBase {
     // }
 
     public void setRate(double xSpeed, double ySpeed, double rSpeed){
-        rateCommand.setSpeeds(xSpeed, ySpeed, rSpeed);
-        if(getCurrentCommand() != rateCommand) rateCommand.schedule();
+        updateKinematics(xSpeed, ySpeed, true);
+        setAngleRate(rSpeed);
     }
 
 
