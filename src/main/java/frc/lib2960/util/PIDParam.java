@@ -1,4 +1,4 @@
-package frc.robot.Util;
+package frc.lib2960.util;
 
 public class PIDParam {
     public double kP;

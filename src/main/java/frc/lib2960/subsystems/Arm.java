@@ -1,7 +1,7 @@
-package frc.robot.subsystems;
+package frc.lib2960.subsystems;
 
 import frc.robot.Constants;
-import frc.robot.subsystems.Arm.SoftLimCheckCommand.SoftLimDirection;
+import frc.lib2960.subsystems.Arm.SoftLimCheckCommand.SoftLimDirection;
 
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkAbsoluteEncoder;

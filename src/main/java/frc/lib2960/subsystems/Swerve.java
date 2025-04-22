@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.lib2960.subsystems;
 
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkAbsoluteEncoder;

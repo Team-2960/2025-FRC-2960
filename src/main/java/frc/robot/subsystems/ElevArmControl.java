@@ -7,6 +7,9 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
+import frc.lib2960.subsystems.Arm;
+import frc.lib2960.subsystems.Elevator;
+
 public class ElevArmControl extends SubsystemBase{
     private static ElevArmControl instance = null;
 

@@ -10,7 +10,8 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Util.AprilTagPipelineSettings;
+import frc.lib2960.subsystems.AprilTagPipeline;
+import frc.lib2960.subsystems.AprilTagPipelineSettings;
 
 public class Cameras extends SubsystemBase{
     private AprilTagPipelineSettings frontPipeline;
