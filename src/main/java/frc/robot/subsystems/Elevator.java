@@ -21,7 +21,6 @@ import edu.wpi.first.units.measure.MutVoltage;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
@@ -55,6 +54,8 @@ public class Elevator extends SubsystemBase {
 
     private double elevatorVolt;
     private double elevatorRate;
+
+    private double elevatorLastPos = 0;
 
     private GenericEntry sb_elevatorCmd;
     private GenericEntry sb_posPosCurrent;
@@ -146,13 +147,13 @@ public class Elevator extends SubsystemBase {
         private double target;
 
         public ElevatorHoldCommand(){
-            target = 0;
+            target = elevatorLastPos;
             addRequirements(Elevator.this);
         }
 
         @Override
         public void initialize(){
-            target = getElevatorPos();
+            target = elevatorLastPos;
         }
 
         @Override
@@ -181,6 +182,11 @@ public class Elevator extends SubsystemBase {
         @Override
         public boolean isFinished(){
             return atPos(elevatorPos, Constants.elevatorPosTol);
+        }
+
+        @Override
+        public void end(boolean interrupt){
+            Elevator.this.elevatorLastPos = elevatorPos;
         }
     }
 
@@ -402,14 +408,14 @@ public class Elevator extends SubsystemBase {
      * 
      * @return target elevator control rate
      */
-    private void setElevatorPos(double targetPos) {
+    public void setElevatorPos(double targetPos) {
         
         // Calculate trapezoidal profile
         double currentPos = getElevatorPos();
         double maxPosRate = Constants.maxElevatorAutoSpeed;
         double posError = targetPos - currentPos;
 
-        double targetSpeed = maxPosRate * (posError > 0 ? 1 : +-1);
+        double targetSpeed = maxPosRate * (posError > 0 ? 1 : -1);
         double rampDownSpeed = posError / Constants.elevatorRampDownDist * maxPosRate;
 
         if (Math.abs(rampDownSpeed) < Math.abs(targetSpeed))
@@ -573,11 +579,7 @@ public class Elevator extends SubsystemBase {
     @Override
     public void periodic() {
         updateUI(elevatorRate, elevatorVolt);
-        var currentCommand = getCurrentCommand();
-        String curCommandName = "null";
-        if (currentCommand != null) curCommandName = currentCommand.getName();
         
-        SmartDashboard.putString("Current Command", curCommandName);
     }
 
 

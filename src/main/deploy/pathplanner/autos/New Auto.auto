@@ -5,13 +5,19 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "goToL4Command"
+          }
+        },
+        {
           "type": "parallel",
           "data": {
             "commands": [
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Copy of MA 1"
+                  "pathName": "Align LA HP Station 1"
                 }
               },
               {
@@ -28,21 +34,21 @@
           "data": {
             "commands": [
               {
-                "type": "wait",
+                "type": "named",
                 "data": {
-                  "waitTime": 1.5
+                  "name": "coralPresentCommand"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "leftBranchAlign"
+                  "name": "armIntakeAngle"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "goToL4Command"
+                  "name": "elevIntakeCommand"
                 }
               }
             ]
@@ -53,24 +59,30 @@
           "data": {
             "commands": [
               {
-                "type": "wait",
+                "type": "named",
                 "data": {
-                  "waitTime": 0.25
+                  "name": "coralNotPresentCommand"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "ejectCommand"
+                  "name": "armIntakeAngle"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "elevIntakeCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "intakeCommand"
                 }
               }
             ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "goToIntakeCommand"
           }
         }
       ]

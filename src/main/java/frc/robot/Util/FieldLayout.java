@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.Constants;
+import frc.robot.subsystems.Drive;
 
 public class FieldLayout {
     private static FieldLayout fieldLayout = null;
@@ -49,8 +50,8 @@ public class FieldLayout {
     public static final Pose2d bHPRight = new Pose2d(0.838, 0.657, Rotation2d.fromDegrees(54));
     public static final Pose2d bHPLeft = new Pose2d(0.838, 7.395, Rotation2d.fromDegrees(-54));
     
-    public static final Pose2d bReefCenter = new Pose2d(4.475, 4.026, Rotation2d.fromDegrees(0));
-    public static final Pose2d bReef0 = new Pose2d(3.643, 4.026, Rotation2d.fromDegrees(0));
+    public static final Pose2d bReefCenter = new Pose2d(4.489, 4.026, Rotation2d.fromDegrees(0));
+    public static final Pose2d bReef0 = new Pose2d(3.658, 4.026, Rotation2d.fromDegrees(0));
     public static final Pose2d bReef60 = new Pose2d(4.059, 3.306, Rotation2d.fromDegrees(60));
     public static final Pose2d bReef120 = new Pose2d(4.891, 3.306, Rotation2d.fromDegrees(120));
     public static final Pose2d bReef180 = new Pose2d(5.662, 4.026, Rotation2d.fromDegrees(180));
@@ -234,6 +235,23 @@ public class FieldLayout {
             targetAngle = getReef(ReefFace.THREEHUNDRED).getRotation();
         }
         return targetAngle;
+    }
+
+    public static Pose2d getReefFaceOffset(Pose2d offset, Pose2d reefFace){
+        Rotation2d rotOffset = Rotation2d.fromDegrees(0);
+        if (Drive.getInstance().isRedAlliance()) {
+            offset = new Pose2d(-offset.getX(), -offset.getY(), offset.getRotation());
+            rotOffset = Rotation2d.fromDegrees(180);
+        }
+
+        Rotation2d reefFaceRotation = reefFace.getRotation();
+        Pose2d zeroFace = FieldLayout.getReef(ReefFace.ZERO);
+        Translation2d poseOffset = new Translation2d(zeroFace.getX() + offset.getX(), zeroFace.getY() + offset.getY())
+                .rotateAround(FieldLayout.getReef(ReefFace.CENTER).getTranslation(),
+                        reefFaceRotation);
+        Pose2d finalReefFace = new Pose2d(poseOffset, reefFaceRotation.rotateBy(rotOffset));
+        
+        return finalReefFace;
     }
 
     public static Translation2d getNoteOffset(AlgaeType algaeType, double x, double y){

@@ -3,40 +3,40 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.1834703947368421,
-        "y": 6.998108552631579
+        "x": 1.1642269736842104,
+        "y": 1.128865131578948
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.110050771731346,
-        "y": 6.404276734888951
+        "x": 2.12295008805042,
+        "y": 1.0418224148196022
       },
       "isLocked": false,
-      "linkedName": "LA HP Station End"
+      "linkedName": "RA HP Station End"
     },
     {
       "anchor": {
-        "x": 3.5215460526315785,
-        "y": 5.679934210526316
+        "x": 3.722677888756182,
+        "y": 1.6138778442090314
       },
       "prevControl": {
-        "x": 2.7614309210526313,
-        "y": 6.112911184210526
+        "x": 3.4830592105263154,
+        "y": 0.9171874999999999
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Right Front Set Up"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 0.55,
+      "minWaypointRelativePos": 0.5088495575221238,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
-        "maxVelocity": 2.0,
-        "maxAcceleration": 5.0,
+        "maxVelocity": 1.5,
+        "maxAcceleration": 7.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
         "nominalVoltage": 12.0,
@@ -47,22 +47,22 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.0,
-    "maxAcceleration": 5.0,
+    "maxVelocity": 4.5,
+    "maxAcceleration": 7.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0,
-    "rotation": -59.99999999999999
+    "velocity": 1.25,
+    "rotation": 59.99999999999999
   },
   "reversed": false,
-  "folder": "Left Auton",
+  "folder": "Right Auton",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -54.0
+    "rotation": 54.0
   },
   "useDefaultConstraints": true
 }

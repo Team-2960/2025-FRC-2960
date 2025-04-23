@@ -3,45 +3,40 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.1834703947368421,
-        "y": 6.998108552631579
+        "x": 3.9256578947368417,
+        "y": 2.8415296052631582
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.8686836958349446,
-        "y": 6.066867541481455
+        "x": 3.450377065893799,
+        "y": 2.6042913778780865
       },
       "isLocked": false,
-      "linkedName": "LA HP Station End"
+      "linkedName": "RA 2nd Coral End"
     },
     {
       "anchor": {
-        "x": 3.550411184210526,
-        "y": 5.689555921052631
+        "x": 1.1642269736842104,
+        "y": 1.128865131578948
       },
       "prevControl": {
-        "x": 2.631376817778803,
-        "y": 6.186998808034336
+        "x": 1.387689317973861,
+        "y": 1.2409569719803515
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "RA HP Station End"
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0.5,
-      "rotationDegrees": -59.99999999999999
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 0.5254010695187157,
+      "minWaypointRelativePos": 0.6696696696696701,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
-        "maxVelocity": 2.0,
-        "maxAcceleration": 5.0,
+        "maxVelocity": 1.25,
+        "maxAcceleration": 7.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
         "nominalVoltage": 12.0,
@@ -52,8 +47,8 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.0,
-    "maxAcceleration": 5.0,
+    "maxVelocity": 4.5,
+    "maxAcceleration": 7.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
@@ -61,13 +56,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -59.99999999999999
+    "rotation": 54.0
   },
   "reversed": false,
-  "folder": "Left Auton",
+  "folder": "Right Auton",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -54.0
+    "rotation": 59.99999999999999
   },
   "useDefaultConstraints": true
 }

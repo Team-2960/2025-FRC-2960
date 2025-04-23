@@ -11,7 +11,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Copy of LA 1st Coral"
+                  "pathName": "Align LA 1st Coral"
                 }
               },
               {
@@ -30,7 +30,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 2.0
+                  "waitTime": 1.5
                 }
               },
               {
@@ -55,7 +55,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 1.0
+                  "waitTime": 0.35
                 }
               },
               {
@@ -67,7 +67,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "goToL4Command"
+                  "name": "elevL4Pos"
                 }
               }
             ]
@@ -80,7 +80,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "LA HP Station 1"
+                  "pathName": "Align LA HP Station 1"
                 }
               },
               {
@@ -105,7 +105,19 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "goToIntakeCommand"
+                  "name": "armIntakeAngle"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "elevIntakeCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "driveDoNothing"
                 }
               }
             ]
@@ -116,21 +128,40 @@
           "data": {
             "commands": [
               {
-                "type": "named",
+                "type": "parallel",
                 "data": {
-                  "name": "coralNotPresentCommand"
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "coralNotPresentCommand"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "coralInEndEffector"
+                      }
+                    }
+                  ]
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "goToIntakeCommand"
+                  "name": "armIntakeAngle"
                 }
               },
               {
                 "type": "named",
                 "data": {
                   "name": "intakeCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "elevIntakeCommand"
                 }
               }
             ]
@@ -143,7 +174,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Copy of LA 2nd Coral"
+                  "pathName": "Align LA 2nd Coral"
                 }
               },
               {
@@ -156,9 +187,15 @@
           }
         },
         {
-          "type": "parallel",
+          "type": "deadline",
           "data": {
             "commands": [
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 1.5
+                }
+              },
               {
                 "type": "named",
                 "data": {
@@ -181,7 +218,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 1.0
+                  "waitTime": 0.35
                 }
               },
               {
@@ -206,7 +243,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "LA HP Station 2"
+                  "pathName": "Align LA HP Station 2"
                 }
               },
               {
@@ -231,7 +268,19 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "goToIntakeCommand"
+                  "name": "armIntakeAngle"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "elevIntakeCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "driveDoNothing"
                 }
               }
             ]
@@ -242,21 +291,40 @@
           "data": {
             "commands": [
               {
-                "type": "named",
+                "type": "parallel",
                 "data": {
-                  "name": "coralNotPresentCommand"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "goToIntakeCommand"
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "coralNotPresentCommand"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "coralInEndEffector"
+                      }
+                    }
+                  ]
                 }
               },
               {
                 "type": "named",
                 "data": {
                   "name": "intakeCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "armIntakeAngle"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "elevIntakeCommand"
                 }
               }
             ]
@@ -269,7 +337,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Copy of LA 2nd Coral"
+                  "pathName": "Align LA 3rd Coral"
                 }
               },
               {
@@ -282,9 +350,15 @@
           }
         },
         {
-          "type": "parallel",
+          "type": "deadline",
           "data": {
             "commands": [
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 1.5
+                }
+              },
               {
                 "type": "named",
                 "data": {
@@ -307,7 +381,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 1.0
+                  "waitTime": 0.35
                 }
               },
               {

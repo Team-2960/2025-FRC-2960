@@ -3,39 +3,44 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.1642269736842104,
-        "y": 1.128865131578948
+        "x": 7.283634868421052,
+        "y": 6.613240131578947
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.159845321584367,
-        "y": 1.6340119952049377
+        "x": 6.052055921052631,
+        "y": 6.7094572368421055
       },
       "isLocked": false,
-      "linkedName": "RA HP Station End"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 3.9256578947368417,
-        "y": 2.8415296052631582
+        "x": 5.4458881578947365,
+        "y": 5.699177631578947
       },
       "prevControl": {
-        "x": 3.223254561541954,
-        "y": 2.4858058525262217
+        "x": 5.715296052631578,
+        "y": 6.161019736842106
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "RA 2nd Coral End"
+      "linkedName": null
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.5,
+      "rotationDegrees": -119.99999999999999
+    }
+  ],
   "constraintZones": [
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 0.46256684491978617,
-      "maxWaypointRelativePos": 1.0,
+      "minWaypointRelativePos": 0.46996996996997004,
+      "maxWaypointRelativePos": 0.9399399399399397,
       "constraints": {
-        "maxVelocity": 2.0,
+        "maxVelocity": 1.0,
         "maxAcceleration": 5.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
@@ -55,14 +60,14 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0,
-    "rotation": 59.99999999999999
+    "velocity": 1.0,
+    "rotation": -119.99999999999999
   },
   "reversed": false,
-  "folder": "RA Obselete",
+  "folder": "Left Auton",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 54.0
+    "rotation": 180.0
   },
   "useDefaultConstraints": true
 }

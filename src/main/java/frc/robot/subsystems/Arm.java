@@ -19,7 +19,6 @@ import edu.wpi.first.units.measure.MutAngularVelocity;
 import edu.wpi.first.units.measure.MutCurrent;
 import edu.wpi.first.units.measure.MutVoltage;
 import edu.wpi.first.units.measure.Voltage;
-import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
@@ -44,9 +43,6 @@ public class Arm extends SubsystemBase {
     private PIDController armPID;
 
     private ArmFeedforward armFF;
-
-    private SendableBuilder pidTestDisplay;
-    private double pidTestValue = 0;
 
     private double armVolt;
     private double armRate;
@@ -261,7 +257,7 @@ public class Arm extends SubsystemBase {
         armAngleCommand = new ArmAngleCommand(Rotation2d.fromDegrees(0));
         armHoldCommand = new ArmHoldCommand();
 
-        setDefaultCommand(armHoldCommand);
+        setDefaultCommand(new ArmHoldCommand());
 
         //System Identification
         sysIdRoutine = new SysIdRoutine(
@@ -367,7 +363,7 @@ public class Arm extends SubsystemBase {
      * 
      * @return target arm control rate
      */
-    private void setArmAngle(Rotation2d targetAngle) {
+    public void setArmAngle(Rotation2d targetAngle) {
         
         // Calculate trapezoidal profile
         Rotation2d currentAngle = getArmAngle();

@@ -4,25 +4,20 @@ package frc.robot.subsystems;
 
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkFlex;
-import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkLimitSwitch;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig;
-import com.revrobotics.spark.config.SparkFlexConfig;
-
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
-import frc.robot.subsystems.Drive.AutonReefAlign;
 
 /**
  * Manages coral end effector
@@ -36,6 +31,7 @@ public class EndEffector extends SubsystemBase{
     private static EndEffector instance = null;
     
     private DigitalInput coralPresentPE;//Photoeye coral detector
+    private SparkLimitSwitch coralInPE;
     private SparkFlex coralDrive;
     private RelativeEncoder coralEncoder;
     private PIDController coralPID;
@@ -62,7 +58,7 @@ public class EndEffector extends SubsystemBase{
         }
 
         @Override
-        public void initialize(){
+        public void execute(){
             setEject();
         }
 
@@ -107,7 +103,7 @@ public class EndEffector extends SubsystemBase{
         }
 
         @Override
-        public void initialize(){
+        public void execute(){
             setIntake();
         }
 
@@ -141,7 +137,7 @@ public class EndEffector extends SubsystemBase{
         }
 
         @Override
-        public void initialize(){
+        public void execute(){
             setReverse();
         }
 
@@ -177,6 +173,13 @@ public class EndEffector extends SubsystemBase{
         }
     }
 
+    public class CoralInEndEffectorCommand extends Command{
+        @Override
+        public boolean isFinished(){
+            return isCoralInEndEffector();
+        }
+    }
+
     public class CoralHoldCommand extends Command{
         double startPos = 0;
 
@@ -202,9 +205,10 @@ public class EndEffector extends SubsystemBase{
         coralDrive = new SparkFlex(Constants.coralMotor, MotorType.kBrushless);
         coralEncoder = coralDrive.getEncoder();
         coralPresentPE = new DigitalInput(Constants.coralPresentPE);
+        coralInPE = coralDrive.getForwardLimitSwitch();
         //coralDrive.configure(new SparkFlexConfig().inverted(true), com.revrobotics.spark.SparkBase.ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-        coralPID = new PIDController(2, 0, 0);
+        coralPID = new PIDController(3, 0, 0);
 
         ejectCmd = new EjectCmd();
         timedEjectCmd = new TimedEjectCmd();
@@ -213,7 +217,7 @@ public class EndEffector extends SubsystemBase{
 
 
         intakeTrigger = new Trigger(() -> isCoralPresentTeleop());
-        //intakeTrigger.whileFalse(intakeCmd);
+        intakeTrigger.whileTrue(intakeCmd);
 
         setDefaultCommand(coralHoldCommand);
         
@@ -279,7 +283,11 @@ public class EndEffector extends SubsystemBase{
      * set motor voltage for intake
      */
     public void setIntake(){
-        setMotorVolt(Constants.coralIntakeVolt);
+        if(isCoralInEndEffector()){
+            setMotorVolt(Constants.coralSlowIntakeVolt);
+        }else{
+            setMotorVolt(Constants.coralIntakeVolt);
+        }
     }
 
     /**
@@ -295,6 +303,10 @@ public class EndEffector extends SubsystemBase{
 
     public boolean isCoralPresent(){
         return !coralPresentPE.get();
+    }
+
+    public boolean isCoralInEndEffector(){
+        return coralInPE.isPressed();
     }
 
     public boolean isCoralPresentTeleop(){
@@ -331,8 +343,9 @@ public class EndEffector extends SubsystemBase{
 
         sb_currentCmd.setString(commandName);
         sb_motorVoltage.setDouble(coralDrive.getBusVoltage() * coralDrive.getAppliedOutput());
-        sb_photoeyeState.setBoolean(coralPresentPE.get());
+        sb_photoeyeState.setBoolean(isCoralPresent());
         sb_coralPosition.setDouble(getPos());
+
     }
 
      /**

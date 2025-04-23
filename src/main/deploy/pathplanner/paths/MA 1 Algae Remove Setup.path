@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.8294407894736837,
-        "y": 5.1411184210526315
+        "x": 5.801891447368421,
+        "y": 4.121217105263158
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.11786641204252,
-        "y": 5.0470309140128755
+        "x": 5.78330475670523,
+        "y": 3.8719089928195576
       },
       "isLocked": false,
-      "linkedName": "Test Reef"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 1.500986842105263,
-        "y": 7.257894736842105
+        "x": 5.801891447368421,
+        "y": 4.678617294520548
       },
       "prevControl": {
-        "x": 1.2372340280896648,
-        "y": 7.458597455014406
+        "x": 5.812255498907419,
+        "y": 5.038792102008633
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Test Human Player"
+      "linkedName": "MA Algae Remove Setup End"
     }
   ],
   "rotationTargets": [],
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -54.0
+    "rotation": 180.0
   },
   "reversed": false,
-  "folder": "LA Obselete",
+  "folder": "Middle Auton",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -59.99999999999999
+    "rotation": 180.0
   },
   "useDefaultConstraints": true
 }

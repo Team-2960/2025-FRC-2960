@@ -3,45 +3,40 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.437582236842105,
-        "y": 6.189884868421052
+        "x": 1.5954545454545452,
+        "y": 1.6966335227272737
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.910374896574843,
-        "y": 6.106385463859489
+        "x": 1.1077895849694233,
+        "y": 1.0655744938814222
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 5.468113715330024,
-        "y": 5.672343641993408
+        "x": 1.1642269736842104,
+        "y": 1.128865131578948
       },
       "prevControl": {
-        "x": 5.718113671785307,
-        "y": 5.672491196582376
+        "x": 1.5730471538419226,
+        "y": 1.6712864815077582
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "RA HP Station End"
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0.5,
-      "rotationDegrees": -119.99999999999999
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 0,
+      "minWaypointRelativePos": 0.0,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
-        "maxVelocity": 1.5,
-        "maxAcceleration": 5.0,
+        "maxVelocity": 2.0,
+        "maxAcceleration": 7.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
         "nominalVoltage": 12.0,
@@ -52,22 +47,22 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.0,
-    "maxAcceleration": 5.0,
+    "maxVelocity": 4.5,
+    "maxAcceleration": 7.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0.0,
-    "rotation": -119.99999999999999
+    "velocity": 0,
+    "rotation": 54.0
   },
   "reversed": false,
-  "folder": "Left Auton",
+  "folder": "Teleop Paths",
   "idealStartingState": {
-    "velocity": 0,
-    "rotation": 180.0
+    "velocity": 1.0,
+    "rotation": 54.0
   },
   "useDefaultConstraints": true
 }

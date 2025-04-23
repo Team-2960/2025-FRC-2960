@@ -10,10 +10,12 @@ import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.ElevArmControl;
 import frc.robot.subsystems.EndEffector;
 
+import com.pathplanner.lib.path.PathConstraints;
+
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -78,55 +80,30 @@ public class OperatorInterface extends SubsystemBase {
 
     private void driveTriggers(){
         Drive drive = Drive.getInstance();
-
         
         driverController.y()
-            .onTrue(drive.linearDriveCommands
-                .new LinearGoToReefCommand(
-                    Constants.centerOffset))
-            .onTrue(drive.rotationDriveCommands
-                .new RotGoToReefCommand(Rotation2d.fromDegrees(0))
-        );
+            .onTrue(drive.new GoToReefCommand(new Pose2d(Constants.centerOffset, new Rotation2d()))
+            );
 
         driverController.y().and(driverController.rightBumper())
-            .whileTrue(
-                drive.linearDriveCommands
-                .new LinearGoToReefCommand(
-                    Constants.leftBranchOffset))
-            .whileTrue(drive.rotationDriveCommands
-                .new RotGoToReefCommand(Rotation2d.fromDegrees(0))
-        );
-        
+            .onTrue(drive.new GoToReefCommand(new Pose2d(Constants.rightBranchOffset, new Rotation2d()))
+            );
+
         driverController.y().and(driverController.leftBumper())
-            .whileTrue(
-                drive.linearDriveCommands
-                .new LinearGoToReefCommand(
-                    Constants.rightBranchOffset))
-            .whileTrue(drive.rotationDriveCommands
-                .new RotGoToReefCommand(Rotation2d.fromDegrees(0))
-        );
+            .onTrue(drive.new GoToReefCommand(new Pose2d(Constants.leftBranchOffset, new Rotation2d()))
+            );
+
+        driverController.b()
+            .onTrue(
+                drive.getPathFindtoPath(drive.getPath("Right HP Teleop"), 
+                    new PathConstraints(5, 11, 9.42478, 12.5664, 12))
+            );
 
         driverController.x()
             .onTrue(
-                drive
-                .rotationDriveCommands
-                .new AngleAlignCommand(Rotation2d.fromDegrees(-54))
-        );
-        
-        driverController.b()
-            .onTrue(
-                drive
-                .rotationDriveCommands
-                .new AngleAlignCommand(Rotation2d.fromDegrees(54))
-        );
-
-        driverController.a()
-            .onTrue(
-                drive
-                .rotationDriveCommands
-                .new AngleAlignCommand(Rotation2d.fromDegrees(-90))
-        );
-
+                drive.getPathFindtoPath(drive.getPath("Left HP Teleop"), 
+                    new PathConstraints(5, 11, 9.42478, 12.5664, 12))
+            );
     }
 
     private void coralPlacementTriggers(){
@@ -195,9 +172,9 @@ public class OperatorInterface extends SubsystemBase {
         var alliance = DriverStation.getAlliance();
         double alliance_dir = alliance.isPresent() && alliance.get() == Alliance.Red ? 1 : -1;
 
-        double xAxis = MathUtil.applyDeadband(driverController.getRawAxis(1), 0.05);
-        double yAxis = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.05);
-        double rAxis = MathUtil.applyDeadband(driverController.getRawAxis(4), 0.1);
+        double xAxis = MathUtil.applyDeadband(driverController.getRawAxis(1), 0.06);
+        double yAxis = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.06);
+        double rAxis = MathUtil.applyDeadband(driverController.getRawAxis(4), 0.03);
 
         double xSpeed = xAxis * maxSpeed * alliance_dir;
         double ySpeed = yAxis * maxSpeed * alliance_dir;
@@ -212,23 +189,37 @@ public class OperatorInterface extends SubsystemBase {
         this.rSpeed = rSpeed;
 
 
-        if (Math.abs(xAxis) > 0 || Math.abs(yAxis) > 0){
-            drive.setDriveRate(xSpeed, ySpeed);
-            drive.setLinearManualDrive(true);
-        }else{
-            drive.setLinearManualDrive(false);
-        }
+        // if (Math.abs(xAxis) > 0 || Math.abs(yAxis) > 0){
+        //     drive.setDriveRate(xSpeed, ySpeed);
+        //     drive.setLinearManualDrive(true);
+        // }else{
+        //     drive.setLinearManualDrive(false);
+        // }
 
-        if (Math.abs(rAxis) > 0){
-            drive.setRotationRate(rSpeed);
+        // if (Math.abs(rAxis) > 0){
+        //     drive.setRotationRate(rSpeed);
+        //     drive.setRotManualDrive(true);
+        // }else{
+        //     drive.setRotManualDrive(false);
+        // }
+
+        if (Math.abs(xAxis) > 0 || Math.abs(yAxis) > 0 || Math.abs(rAxis) > 0){
+            drive.setRate(xSpeed, ySpeed, rSpeed);
+            drive.setLinearManualDrive(true);
             drive.setRotManualDrive(true);
         }else{
+            drive.setLinearManualDrive(false);
             drive.setRotManualDrive(false);
         }
 
-        if(driverController.getHID().getPOV() == 0){
+        if(driverController.getHID().getPOV() == 0 && driverController.getHID().getStartButton()){
             drive.setPresetPose(
                 FieldLayout.getReef(ReefFace.ZERO).plus(new Transform2d(Constants.robotLength/2 * -presetMirror, 0, rotationMirror)));
+        }
+
+        if(driverController.getHID().getBButton()){
+            drive.pathFindtoPath(drive.getPath("Right HP Teleop"), 
+            new PathConstraints(4.5, 7, 9.42478, 12.5664, 12));
         }
 
         // Update Shuffleboard

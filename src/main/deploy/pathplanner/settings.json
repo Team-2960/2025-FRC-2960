@@ -3,20 +3,22 @@
   "robotLength": 0.914,
   "holonomicMode": true,
   "pathFolders": [
-    "Right Auton",
-    "Middle Auton",
+    "LA Obselete",
     "Left Auton",
-    "Test Paths"
+    "Middle Auton",
+    "Teleop Paths",
+    "RA Obselete",
+    "Right Auton"
   ],
   "autoFolders": [
     "New Folder"
   ],
-  "defaultMaxVel": 3.0,
-  "defaultMaxAccel": 5.0,
+  "defaultMaxVel": 4.5,
+  "defaultMaxAccel": 7.0,
   "defaultMaxAngVel": 540.0,
   "defaultMaxAngAccel": 720.0,
   "defaultNominalVoltage": 12.0,
-  "robotMass": 60.0,
+  "robotMass": 61.0,
   "robotMOI": 6.883,
   "robotTrackwidth": 0.546,
   "driveWheelRadius": 0.038,
@@ -36,6 +38,6 @@
   "bumperOffsetX": 0.0,
   "bumperOffsetY": 0.0,
   "robotFeatures": [
-    "{\"name\":\"Coral\",\"type\":\"circle\",\"data\":{\"center\":{\"x\":0.474,\"y\":0.275},\"radius\":0.093,\"strokeWidth\":0.006,\"filled\":false}}"
+    "{\"name\":\"Coral\",\"type\":\"circle\",\"data\":{\"center\":{\"x\":0.474,\"y\":0.275},\"radius\":0.093,\"strokeWidth\":0.01,\"filled\":false}}"
   ]
 }

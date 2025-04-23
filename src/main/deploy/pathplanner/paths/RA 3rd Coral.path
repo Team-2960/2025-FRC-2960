@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.0968749999999998,
-        "y": 1.071134868421053
+        "x": 1.1642269736842104,
+        "y": 1.128865131578948
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.6528821380541237,
-        "y": 1.420795230248201
+        "x": 1.7202341117383342,
+        "y": 1.4785254934060958
       },
       "isLocked": false,
       "linkedName": "RA HP Station End"
@@ -47,8 +47,8 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.0,
-    "maxAcceleration": 5.0,
+    "maxVelocity": 4.5,
+    "maxAcceleration": 7.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
@@ -59,7 +59,7 @@
     "rotation": 59.99999999999999
   },
   "reversed": false,
-  "folder": "Right Auton",
+  "folder": "RA Obselete",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 54.0
