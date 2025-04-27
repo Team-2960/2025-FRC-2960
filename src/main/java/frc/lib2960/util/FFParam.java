@@ -7,7 +7,7 @@ public class FFParam {
     public double kG;   /**< Gravity Gain in Volts * seconds / distance */
     public double kA;   /**< Acceleration Gain in Volts * seconds ^ 2 / distance */
 
-    private FFParam(double kS, double kV, double kG, double kA) {
+    public FFParam(double kS, double kV, double kG, double kA) {
         this.kS = kS;
         this.kV = kV;
         this.kG = kG;
