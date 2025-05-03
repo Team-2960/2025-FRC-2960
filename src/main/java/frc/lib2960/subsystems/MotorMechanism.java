@@ -131,7 +131,7 @@ public abstract class MotorMechanism extends SubsystemBase{
         }
     }
 
-    private void setRate(AngularVelocity rate){
+    public void setRate(AngularVelocity rate){
         setMotorVoltage(
             pidController.calculate(getRate().in(RotationsPerSecond), rate.in(RotationsPerSecond))
             +
@@ -139,7 +139,7 @@ public abstract class MotorMechanism extends SubsystemBase{
         );
     }
 
-    private void setPosition(Angle position){
+    public void setPosition(Angle position){
         AngularVelocity rate = RotationsPerSecond.of(
             new DistanceTrapezoidProfile(
                 settings.trapezoidalRampDistance, 
@@ -150,16 +150,10 @@ public abstract class MotorMechanism extends SubsystemBase{
         setRate(rate);
     }
 
-
-    
     
     public abstract Voltage getVoltage();
     public abstract AngularVelocity getRate();
     public abstract Angle getPosition();
     public abstract void setMotorVoltage(double voltage);
-
-
-    
-
 
 }
