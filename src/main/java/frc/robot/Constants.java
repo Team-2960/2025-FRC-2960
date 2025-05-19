@@ -165,7 +165,7 @@ public class Constants {
 
     //Algae Roller
     public static final PIDParam algaeAnglePID = new PIDParam(0.0, 0.0, 0.0);
-    public static final FFParam algaeAngleFF = FFParam.arm(0.15488, 5.0985, 0.64833, 0.48409);
+    public static final FFParam algaeAngleFF = FFParam.arm(0.15488, 3.8, 0.64833, 0.48409);
 
     
     public static final double maxAlgaeAutoSpeed = 1 * Math.PI;  //radians /s
