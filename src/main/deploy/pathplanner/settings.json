@@ -6,9 +6,10 @@
     "LA Obselete",
     "Left Auton",
     "Middle Auton",
-    "Teleop Paths",
+    "Learn Folder",
     "RA Obselete",
-    "Right Auton"
+    "Right Auton",
+    "Teleop Paths"
   ],
   "autoFolders": [
     "New Folder"
