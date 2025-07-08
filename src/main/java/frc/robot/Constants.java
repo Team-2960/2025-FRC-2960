@@ -127,7 +127,8 @@ public class Constants {
     public static final Rotation2d armIntakeAngle = Rotation2d.fromDegrees(85.5);
     public static final Rotation2d armTravelAngle = Rotation2d.fromDegrees(75.0);
     public static final Rotation2d armL1CoralScoreAngle = Rotation2d.fromDegrees(73);
-    public static final Rotation2d armCoralScoreAngle = Rotation2d.fromDegrees(60);
+    public static final Rotation2d 
+    armCoralScoreAngle = Rotation2d.fromDegrees(60);
     public static final Rotation2d armCoralL4Angle = Rotation2d.fromDegrees(60);
     public static final Rotation2d armAlgaeRemoveAngle = Rotation2d.fromDegrees(25);
 
@@ -171,7 +172,7 @@ public class Constants {
     public static final double maxAlgaeAutoSpeed = 1 * Math.PI;  //radians /s
     public static final Rotation2d algaeRampDownDist = Rotation2d.fromDegrees(30);
 
-    public static final double algaeEjectVolt = -1;
+    public static final double algaeEjectVolt = -1.7;
     public static final double algaeIntakeVolt = 3;
 
     public static final Rotation2d algaeTopLim = Rotation2d.fromDegrees(88);

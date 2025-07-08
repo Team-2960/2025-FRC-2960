@@ -216,6 +216,7 @@ public class OperatorInterface extends SubsystemBase {
         //     drive.setRotManualDrive(false);
         // }
 
+        
         if(driverController.getHID().getPOV() == 0 && driverController.getHID().getStartButton()){
             drive.setPresetPose(
                 FieldLayout.getReef(ReefFace.ZERO).plus(new Transform2d(Constants.robotLength/2 * -presetMirror, 0, rotationMirror)));
