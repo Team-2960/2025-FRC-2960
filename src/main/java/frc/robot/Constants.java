@@ -130,7 +130,7 @@ public class Constants {
     public static final Rotation2d 
     armCoralScoreAngle = Rotation2d.fromDegrees(60);
     public static final Rotation2d armCoralL4Angle = Rotation2d.fromDegrees(60);
-    public static final Rotation2d armAlgaeRemoveAngle = Rotation2d.fromDegrees(25);
+    public static final Rotation2d armAlgaeRemoveAngle = Rotation2d.fromDegrees(45);
 
     //Elevator
     public static PIDParam elevatorPIDS = new PIDParam(0.0, 0.0, 0.0); //0.02132 0.0017692
@@ -153,8 +153,8 @@ public class Constants {
     public static final double elevL2Pos = 14;           // in.
     public static final double elevL3Pos = 29.5;           // in.
     public static final double elevL4Pos = 54.5;           // in.
-    public static final double elevLowAlgaePos = 17.7;     // in.
-    public static final double elevHighAlgaePos = 36;    // in.
+    public static final double elevLowAlgaePos = 5.7;     // in.
+    public static final double elevHighAlgaePos = 20;    // in.
 
     //End Effector
     public static final double coralEjectVolt = -12;
