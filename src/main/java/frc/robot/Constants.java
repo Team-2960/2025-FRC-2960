@@ -159,7 +159,7 @@ public class Constants {
     //End Effector
     public static final double coralEjectVolt = -12;
     public static final double coralIntakeVolt = -4.5;
-    public static final double coralSlowIntakeVolt = -1;
+    public static final double coralSlowIntakeVolt = -1.5;
     public static final double algaeRemovalVolt = -5;
     public static final double coralEjectTime = -1;
     public static final double coralReverseVolt = 2;
