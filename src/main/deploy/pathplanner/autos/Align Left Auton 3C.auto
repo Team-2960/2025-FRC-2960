@@ -17,7 +17,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "goToIntakeCommand"
+                  "name": "goToL4Command"
                 }
               }
             ]
@@ -30,7 +30,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 1.5
+                  "waitTime": 1.0
                 }
               },
               {
@@ -180,7 +180,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "goToIntakeCommand"
+                  "name": "goToL4Command"
                 }
               }
             ]
@@ -193,7 +193,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 1.5
+                  "waitTime": 1.0
                 }
               },
               {
@@ -343,7 +343,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "goToIntakeCommand"
+                  "name": "goToL4Command"
                 }
               }
             ]
