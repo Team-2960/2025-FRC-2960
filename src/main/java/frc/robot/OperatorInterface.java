@@ -1,15 +1,5 @@
 package frc.robot;
 
-import frc.robot.Util.FieldLayout;
-import frc.robot.Util.FieldLayout.ReefFace;
-import frc.robot.subsystems.AlgaeAngle;
-import frc.robot.subsystems.AlgaeRoller;
-import frc.robot.subsystems.Arm;
-import frc.robot.subsystems.Climber;
-import frc.robot.subsystems.Drive;
-import frc.robot.subsystems.ElevArmControl;
-import frc.robot.subsystems.EndEffector;
-
 import com.pathplanner.lib.path.PathConstraints;
 
 import edu.wpi.first.math.MathUtil;
@@ -21,10 +11,18 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Util.FieldLayout;
+import frc.robot.Util.FieldLayout.ReefFace;
+import frc.robot.subsystems.AlgaeAngle;
+import frc.robot.subsystems.AlgaeRoller;
+import frc.robot.subsystems.Arm;
+import frc.robot.subsystems.Climber;
+import frc.robot.subsystems.Drive;
+import frc.robot.subsystems.ElevArmControl;
+import frc.robot.subsystems.EndEffector;
 
 public class OperatorInterface extends SubsystemBase {
     // INSTANCE
@@ -166,12 +164,15 @@ public class OperatorInterface extends SubsystemBase {
 
     private void climberTriggers(){
         Climber climber = Climber.getInstance();
-        driverController.pov(90).whileTrue(climber.new ExtendCmd());
-        driverController.pov(270).whileTrue(climber.new RetractCmd());
+        //driverController.pov(90).whileTrue(climber.new ExtendCmd());
+        //driverController.pov(270).whileTrue(climber.new RetractCmd());
+        driverController.start().whileTrue(climber.new SetExtPosCommand());
+
+        driverController.back().whileTrue(climber.new RetractCmd());
 
         operatorController.start().whileTrue(climber.new SetExtPosCommand());
 
-        operatorController.back().whileTrue(climber.new SetRetPosCommand());
+        operatorController.back().whileTrue(climber.new RetractCmd());
     }
     /**
      * Updates the controls for the drivetrain
