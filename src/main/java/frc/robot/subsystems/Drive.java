@@ -220,7 +220,7 @@ public class Drive extends SubsystemBase {
              */
             @Override
             public void execute() {
-                updateKinematics(xSpeed, ySpeed,true );
+                updateKinematics(xSpeed, ySpeed);
                 setAngleRate(rSpeed);
             }
 
@@ -277,6 +277,17 @@ public class Drive extends SubsystemBase {
         public void execute(){
             updateKinematics(0, 0, true);
             setAngleRate(0);
+        }
+    }
+
+    public class SetFieldRelativeCommand extends Command {
+        private boolean fieldRelative;
+        public SetFieldRelativeCommand(boolean fieldRelative) {
+            this.fieldRelative = fieldRelative;
+        }
+
+        public void initialize() {
+            setfieldRelative(this.fieldRelative);
         }
     }
 
@@ -495,6 +506,10 @@ public class Drive extends SubsystemBase {
                 backLeft.getState(),
                 backRight.getState()
         });
+    }
+
+    private void updateKinematics(double xSpeed, double ySpeed) {
+        updateKinematics(xSpeed, ySpeed, fieldRelative);
     }
 
     /**

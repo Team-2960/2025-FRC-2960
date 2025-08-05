@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.9256578947368417,
-        "y": 2.8415296052631582
+        "x": 4.143,
+        "y": 2.699
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.450377065893799,
-        "y": 2.6042913778780865
+        "x": 3.667719171156957,
+        "y": 2.461761772614928
       },
       "isLocked": false,
       "linkedName": "RA 2nd Coral End"
@@ -48,7 +48,7 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.5,
-    "maxAcceleration": 9.0,
+    "maxAcceleration": 11.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,

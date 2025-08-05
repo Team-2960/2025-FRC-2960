@@ -111,6 +111,10 @@ public class OperatorInterface extends SubsystemBase {
                     new PathConstraints(5, 11, 9.42478, 12.5664, 12))
             );
 
+        //driverController.a()
+        //    .onTrue(drive.new SetFieldRelativeCommand(false))
+        //    .onFalse(drive.new SetFieldRelativeCommand(true));
+
         driverController.axisMagnitudeGreaterThan(0, 0.06)
             .or(driverController.axisGreaterThan(1, 0.06))
             .or(driverController.axisGreaterThan(4, 0.06))

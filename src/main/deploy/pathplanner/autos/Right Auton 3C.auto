@@ -13,14 +13,14 @@
                 "data": {
                   "pathName": "RA 1st Coral"
                 }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "goToL4Command"
+                }
               }
             ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "goToL4Command"
           }
         },
         {
@@ -30,13 +30,19 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 1.0
+                  "waitTime": 0.35
                 }
               },
               {
                 "type": "named",
                 "data": {
                   "name": "ejectCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "elevL4Pos"
                 }
               }
             ]
@@ -62,7 +68,7 @@
           }
         },
         {
-          "type": "race",
+          "type": "deadline",
           "data": {
             "commands": [
               {
@@ -70,12 +76,74 @@
                 "data": {
                   "name": "coralPresentCommand"
                 }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "armIntakeAngle"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "elevIntakeCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "driveDoNothing"
+                }
               }
             ]
           }
         },
         {
-          "type": "parallel",
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "parallel",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "coralNotPresentCommand"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "coralInEndEffector"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "armIntakeAngle"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "intakeCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "elevIntakeCommand"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "deadline",
           "data": {
             "commands": [
               {
@@ -83,14 +151,14 @@
                 "data": {
                   "pathName": "RA 2nd Coral"
                 }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "goToL4Command"
+                }
               }
             ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "goToL4Command"
           }
         },
         {
@@ -100,7 +168,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 1.0
+                  "waitTime": 0.35
                 }
               },
               {
@@ -108,12 +176,18 @@
                 "data": {
                   "name": "ejectCommand"
                 }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "goToL4Command"
+                }
               }
             ]
           }
         },
         {
-          "type": "parallel",
+          "type": "deadline",
           "data": {
             "commands": [
               {
@@ -132,7 +206,7 @@
           }
         },
         {
-          "type": "race",
+          "type": "deadline",
           "data": {
             "commands": [
               {
@@ -140,12 +214,80 @@
                 "data": {
                   "name": "coralPresentCommand"
                 }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "armIntakeAngle"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "elevIntakeCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "driveDoNothing"
+                }
               }
             ]
           }
         },
         {
-          "type": "parallel",
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "parallel",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "coralNotPresentCommand"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "coralInEndEffector"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "coralNotPresentCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "intakeCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "armIntakeAngle"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "elevIntakeCommand"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "deadline",
           "data": {
             "commands": [
               {
@@ -157,22 +299,10 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "intakeCommand"
+                  "name": "goToL4Command"
                 }
               }
             ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "intakeCommand"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "goToL4Command"
           }
         },
         {
@@ -182,13 +312,19 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 1.0
+                  "waitTime": 0.35
                 }
               },
               {
                 "type": "named",
                 "data": {
                   "name": "ejectCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "goToL4Command"
                 }
               }
             ]
