@@ -8,20 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.8585230996654651,
-        "y": 6.495115684188931
+        "x": 1.8911677631578958,
+        "y": 7.110082236842104
       },
       "isLocked": false,
       "linkedName": "LA HP Station End"
     },
     {
       "anchor": {
-        "x": 3.425328947368421,
-        "y": 4.987171052631578
+        "x": 3.2617598684210525,
+        "y": 6.209128289473683
       },
       "prevControl": {
-        "x": 2.8043142603163904,
-        "y": 5.5068206654526195
+        "x": 2.2611019736842106,
+        "y": 6.940378289473683
       },
       "nextControl": null,
       "isLocked": false,
@@ -32,11 +32,11 @@
   "constraintZones": [
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 0.55,
+      "minWaypointRelativePos": 0.6306306306306301,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
-        "maxVelocity": 2.0,
-        "maxAcceleration": 5.0,
+        "maxVelocity": 1.5,
+        "maxAcceleration": 7.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
         "nominalVoltage": 12.0,
@@ -55,11 +55,11 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0,
+    "velocity": 1.25,
     "rotation": -59.99999999999999
   },
   "reversed": false,
-  "folder": "LA Obselete",
+  "folder": "Left Auton",
   "idealStartingState": {
     "velocity": 0,
     "rotation": -54.0
