@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.285,
-        "y": 6.985
+        "x": 1.31,
+        "y": 6.96
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.4999475804797,
-        "y": 6.3192331330806395
+        "x": 2.5249475804797,
+        "y": 6.294233133080639
       },
       "isLocked": false,
       "linkedName": "LA HP Station End"
@@ -53,7 +53,7 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.5,
-    "maxAcceleration": 11.0,
+    "maxAcceleration": 9.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
