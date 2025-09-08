@@ -803,6 +803,10 @@ public class Drive extends SubsystemBase {
         this.isRotManualDrive = isRotManualDrive;
     }
 
+    public void ballerinaSpin(){
+        setAngleRate(100000000);
+    }
+
     /**
      * Updates shuffleboard
      */
