@@ -65,7 +65,7 @@ public class Robot extends TimedRobot {
         //ledControl = LEDControl.getInstance();
         cameras = Cameras.getInstance();
 
-        CameraServer.startAutomaticCapture();
+        //CameraServer.startAutomaticCapture();
         robotContainer = RobotContainer.getInstance();
         FollowPathCommand.warmupCommand().schedule();
     }

@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.500986842105263,
-        "y": 7.257894736842105
+        "x": 7.043092105263157,
+        "y": 4.515707236842105
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.9309076721325997,
-        "y": 6.881849836641253
+        "x": 8.043092105263156,
+        "y": 4.515707236842105
       },
       "isLocked": false,
-      "linkedName": "Test Human Player"
+      "linkedName": "point"
     },
     {
       "anchor": {
-        "x": 3.8294407894736837,
-        "y": 5.1411184210526315
+        "x": 3.9449013157894735,
+        "y": 1.071134868421053
       },
       "prevControl": {
-        "x": 3.2639418915444285,
-        "y": 5.629179254290936
+        "x": 4.95518092105263,
+        "y": 0.8305921052631583
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Test Reef"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -59.99999999999999
+    "rotation": 0.0
   },
   "reversed": false,
-  "folder": "LA Obselete",
+  "folder": "Learn Folder",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -54.0
+    "rotation": 90.0
   },
   "useDefaultConstraints": true
 }

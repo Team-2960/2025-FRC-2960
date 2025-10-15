@@ -70,8 +70,8 @@ public class Constants {
     public static final Pose2d blueCenter = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
     public static final Pose2d blueAmpSide = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
 
-    public static final Translation2d leftBranchOffset = new Translation2d(-fullLength/2.0, -.1109 + (2 * .0254));
-    public static final Translation2d rightBranchOffset = new Translation2d(-fullLength/2.0, -0.441 - (2 * .0254));
+    public static final Translation2d leftBranchOffset = new Translation2d(-fullLength/2.0, -.1109);
+    public static final Translation2d rightBranchOffset = new Translation2d(-fullLength/2.0, -0.441 - (2.5 * .0254));
     public static final Translation2d centerOffset = new Translation2d(-fullLength/2.0, 0);
 
 
@@ -80,7 +80,7 @@ public class Constants {
     public static final double driveGearRatio = 5.08;
     public static final double wheelCirc = 2.9 * .0254 * Math.PI; // Meters
     public static final double driveRatio =  Constants.wheelCirc / Constants.driveGearRatio;   // Meters
-    public static final int driveCurrentLimit = 60;
+    public static final int driveCurrentLimit = 80;
 
     public static PIDParam drivePID = new PIDParam(1, 0.0, 0.0);  //.5
     public static FFParam driveFF = FFParam.simpleMotor(0.08, 2.5, 0.0);
@@ -127,9 +127,10 @@ public class Constants {
     public static final Rotation2d armIntakeAngle = Rotation2d.fromDegrees(85.5);
     public static final Rotation2d armTravelAngle = Rotation2d.fromDegrees(75.0);
     public static final Rotation2d armL1CoralScoreAngle = Rotation2d.fromDegrees(73);
-    public static final Rotation2d armCoralScoreAngle = Rotation2d.fromDegrees(60);
+    public static final Rotation2d 
+    armCoralScoreAngle = Rotation2d.fromDegrees(60);
     public static final Rotation2d armCoralL4Angle = Rotation2d.fromDegrees(60);
-    public static final Rotation2d armAlgaeRemoveAngle = Rotation2d.fromDegrees(25);
+    public static final Rotation2d armAlgaeRemoveAngle = Rotation2d.fromDegrees(45);
 
     //Elevator
     public static PIDParam elevatorPIDS = new PIDParam(0.0, 0.0, 0.0); //0.02132 0.0017692
@@ -152,26 +153,26 @@ public class Constants {
     public static final double elevL2Pos = 14;           // in.
     public static final double elevL3Pos = 29.5;           // in.
     public static final double elevL4Pos = 54.5;           // in.
-    public static final double elevLowAlgaePos = 17.7;     // in.
-    public static final double elevHighAlgaePos = 36;    // in.
+    public static final double elevLowAlgaePos = 5.7;     // in.
+    public static final double elevHighAlgaePos = 20;    // in.
 
     //End Effector
     public static final double coralEjectVolt = -12;
     public static final double coralIntakeVolt = -4.5;
-    public static final double coralSlowIntakeVolt = -1;
+    public static final double coralSlowIntakeVolt = -1.5;
     public static final double algaeRemovalVolt = -5;
     public static final double coralEjectTime = -1;
     public static final double coralReverseVolt = 2;
 
     //Algae Roller
     public static final PIDParam algaeAnglePID = new PIDParam(0.0, 0.0, 0.0);
-    public static final FFParam algaeAngleFF = FFParam.arm(0.15488, 5.0985, 0.64833, 0.48409);
+    public static final FFParam algaeAngleFF = FFParam.arm(0.15488, 3.8, 0.64833, 0.48409);
 
     
     public static final double maxAlgaeAutoSpeed = 1 * Math.PI;  //radians /s
     public static final Rotation2d algaeRampDownDist = Rotation2d.fromDegrees(30);
 
-    public static final double algaeEjectVolt = -1;
+    public static final double algaeEjectVolt = -1.7;
     public static final double algaeIntakeVolt = 3;
 
     public static final Rotation2d algaeTopLim = Rotation2d.fromDegrees(88);

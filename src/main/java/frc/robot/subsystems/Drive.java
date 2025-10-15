@@ -36,6 +36,8 @@ import edu.wpi.first.wpilibj.shuffleboard.ComplexWidget;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 import org.photonvision.PhotonUtils;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -78,6 +80,9 @@ public class Drive extends SubsystemBase {
     private boolean isLinearManualDrive = true;
     private boolean isRotManualDrive = true;
 
+    private boolean inLinearTol = false;
+    private boolean inRotTol = false;
+
     // Shuffleboard
     private GenericEntry sb_posEstX;
     private GenericEntry sb_posEstY;
@@ -118,14 +123,18 @@ public class Drive extends SubsystemBase {
 
         @Override
         public void execute(){
-            autonCalcGoToReef(offset);
+            linearGoToReef(offset.getTranslation());
+            rotGoToReef(offset.getRotation());
         }
 
         @Override
         public boolean isFinished(){
+            inLinearTol = Math.abs(PhotonUtils.getDistanceToPose(getEstimatedPos(), getReefFace(offset.getTranslation()))) <= Constants.alignLinearTolerance;
+            inRotTol = Math.abs(getReefFace(new Translation2d()).getRotation().minus(getEstimatedPos().getRotation()).getDegrees()) <= Constants.alignRotTolerance.getDegrees();
+
             //TODO Uncomment this part as soon as you're done testing
             return Math.abs(getReefFace(new Translation2d()).getRotation().minus(getEstimatedPos().getRotation()).getDegrees()) <= Constants.alignRotTolerance.getDegrees()
-              && PhotonUtils.getDistanceToPose(getEstimatedPos(), getReefFace(offset.getTranslation())) <= Constants.alignLinearTolerance;
+              && Math.abs(PhotonUtils.getDistanceToPose(getEstimatedPos(), getReefFace(offset.getTranslation()))) <= Constants.alignLinearTolerance;
         }
     }
 
@@ -147,12 +156,12 @@ public class Drive extends SubsystemBase {
             rotGoToReef(offset.getRotation());
         }
 
-        @Override
-        public boolean isFinished(){
-            //TODO Uncomment this part as soon as you're done testing
-            return Math.abs(getReefFace(new Translation2d()).getRotation().minus(getEstimatedPos().getRotation()).getDegrees()) <= Constants.alignRotTolerance.getDegrees()
-              && PhotonUtils.getDistanceToPose(getEstimatedPos(), getReefFace(offset.getTranslation())) <= Constants.alignLinearTolerance;
-        }
+        // @Override
+        // public boolean isFinished(){
+        //     //TODO Uncomment this part as soon as you're done testing
+        //     return Math.abs(getReefFace(new Translation2d()).getRotation().minus(getEstimatedPos().getRotation()).getDegrees()) <= Constants.alignRotTolerance.getDegrees()
+        //       && PhotonUtils.getDistanceToPose(getEstimatedPos(), getReefFace(offset.getTranslation())) <= Constants.alignLinearTolerance;
+        // }
     }
 
     public class PresetPoseCommand extends Command{
@@ -211,7 +220,7 @@ public class Drive extends SubsystemBase {
              */
             @Override
             public void execute() {
-                updateKinematics(xSpeed, ySpeed,true );
+                updateKinematics(xSpeed, ySpeed);
                 setAngleRate(rSpeed);
             }
 
@@ -268,6 +277,17 @@ public class Drive extends SubsystemBase {
         public void execute(){
             updateKinematics(0, 0, true);
             setAngleRate(0);
+        }
+    }
+
+    public class SetFieldRelativeCommand extends Command {
+        private boolean fieldRelative;
+        public SetFieldRelativeCommand(boolean fieldRelative) {
+            this.fieldRelative = fieldRelative;
+        }
+
+        public void initialize() {
+            setfieldRelative(this.fieldRelative);
         }
     }
 
@@ -486,6 +506,10 @@ public class Drive extends SubsystemBase {
                 backLeft.getState(),
                 backRight.getState()
         });
+    }
+
+    private void updateKinematics(double xSpeed, double ySpeed) {
+        updateKinematics(xSpeed, ySpeed, fieldRelative);
     }
 
     /**
@@ -779,6 +803,10 @@ public class Drive extends SubsystemBase {
         this.isRotManualDrive = isRotManualDrive;
     }
 
+    public void ballerinaSpin(){
+        setAngleRate(100000000);
+    }
+
     /**
      * Updates shuffleboard
      */
@@ -826,6 +854,9 @@ public class Drive extends SubsystemBase {
         });
 
         as_currentPose.set(getEstimatedPos());
+
+        SmartDashboard.putBoolean("In Linear Tol", inLinearTol);
+        SmartDashboard.putBoolean("In Rot Tol", inRotTol);
     }
 
     /**
@@ -1003,8 +1034,8 @@ public class Drive extends SubsystemBase {
     // }
 
     public void setRate(double xSpeed, double ySpeed, double rSpeed){
-        rateCommand.setSpeeds(xSpeed, ySpeed, rSpeed);
-        if(getCurrentCommand() != rateCommand) rateCommand.schedule();
+        updateKinematics(xSpeed, ySpeed, true);
+        setAngleRate(rSpeed);
     }
 
 

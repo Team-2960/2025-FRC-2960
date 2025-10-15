@@ -1,15 +1,5 @@
 package frc.robot;
 
-import frc.robot.Util.FieldLayout;
-import frc.robot.Util.FieldLayout.ReefFace;
-import frc.robot.subsystems.AlgaeAngle;
-import frc.robot.subsystems.AlgaeRoller;
-import frc.robot.subsystems.Arm;
-import frc.robot.subsystems.Climber;
-import frc.robot.subsystems.Drive;
-import frc.robot.subsystems.ElevArmControl;
-import frc.robot.subsystems.EndEffector;
-
 import com.pathplanner.lib.path.PathConstraints;
 
 import edu.wpi.first.math.MathUtil;
@@ -21,8 +11,18 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Util.FieldLayout;
+import frc.robot.Util.FieldLayout.ReefFace;
+import frc.robot.subsystems.AlgaeAngle;
+import frc.robot.subsystems.AlgaeRoller;
+import frc.robot.subsystems.Arm;
+import frc.robot.subsystems.Climber;
+import frc.robot.subsystems.Drive;
+import frc.robot.subsystems.ElevArmControl;
+import frc.robot.subsystems.EndEffector;
 
 public class OperatorInterface extends SubsystemBase {
     // INSTANCE
@@ -34,9 +34,15 @@ public class OperatorInterface extends SubsystemBase {
 
 
     //Manual Control Class Variables
-    double xSpeed;
-    double ySpeed;
-    double rSpeed;
+    private double xSpeed;
+    private double ySpeed;
+    private double rSpeed;
+
+    private double xAxis;
+    private double yAxis;
+    private double rAxis;
+
+
     
     // Shuffleboard Entries
     private GenericEntry sb_driveX;
@@ -82,33 +88,16 @@ public class OperatorInterface extends SubsystemBase {
         Drive drive = Drive.getInstance();
         
         driverController.y()
-            .onTrue(drive.new GoToReefCommand(new Pose2d(Constants.centerOffset, new Rotation2d())));
+            .onTrue(drive.new GoToReefCommand(new Pose2d(Constants.centerOffset, new Rotation2d()))
+            );
 
         driverController.y().and(driverController.rightBumper())
-            .onTrue(drive.new GoToReefCommand(new Pose2d(Constants.rightBranchOffset, new Rotation2d())));
+            .onTrue(drive.new GoToReefCommand(new Pose2d(Constants.rightBranchOffset, new Rotation2d()))
+            );
 
         driverController.y().and(driverController.leftBumper())
-            .onTrue(drive.new GoToReefCommand(new Pose2d(Constants.leftBranchOffset, new Rotation2d())));
-
-        // driverController.y().and(driverController.rightBumper())
-        //     .whileTrue(
-        //         drive.linearDriveCommands
-        //         .new LinearGoToReefCommand(
-        //             Constants.rightBranchOffset))
-        //     .whileTrue(drive.rotationDriveCommands
-        //         .new RotGoToReefCommand(Rotation2d.fromDegrees(0))
-        // );
-        
-        // driverController.y().and(driverController.leftBumper())
-        //     .whileTrue(
-        //         drive.linearDriveCommands
-        //         .new LinearGoToReefCommand(
-        //             Constants.leftBranchOffset))
-        //     .whileTrue(drive.rotationDriveCommands
-        //         .new RotGoToReefCommand(Rotation2d.fromDegrees(0))
-        // );
-
-
+            .onTrue(drive.new GoToReefCommand(new Pose2d(Constants.leftBranchOffset, new Rotation2d()))
+            );
 
         driverController.b()
             .onTrue(
@@ -121,6 +110,16 @@ public class OperatorInterface extends SubsystemBase {
                 drive.getPathFindtoPath(drive.getPath("Left HP Teleop"), 
                     new PathConstraints(5, 11, 9.42478, 12.5664, 12))
             );
+
+        //driverController.a()
+        //    .onTrue(drive.new SetFieldRelativeCommand(false))
+        //    .onFalse(drive.new SetFieldRelativeCommand(true));
+
+        driverController.axisMagnitudeGreaterThan(0, 0.06)
+            .or(driverController.axisGreaterThan(1, 0.06))
+            .or(driverController.axisGreaterThan(4, 0.06))
+                .onTrue(new RunCommand(() -> drive.setRate(xSpeed, ySpeed, rSpeed), drive));
+            
     }
 
     private void coralPlacementTriggers(){
@@ -169,12 +168,15 @@ public class OperatorInterface extends SubsystemBase {
 
     private void climberTriggers(){
         Climber climber = Climber.getInstance();
-        driverController.pov(90).whileTrue(climber.new ExtendCmd());
-        driverController.pov(270).whileTrue(climber.new RetractCmd());
+        //driverController.pov(90).whileTrue(climber.new ExtendCmd());
+        //driverController.pov(270).whileTrue(climber.new RetractCmd());
+        driverController.start().whileTrue(climber.new SetExtPosCommand());
+
+        driverController.back().whileTrue(climber.new RetractCmd());
 
         operatorController.start().whileTrue(climber.new SetExtPosCommand());
 
-        operatorController.back().whileTrue(climber.new SetRetPosCommand());
+        operatorController.back().whileTrue(climber.new RetractCmd());
     }
     /**
      * Updates the controls for the drivetrain
@@ -189,9 +191,9 @@ public class OperatorInterface extends SubsystemBase {
         var alliance = DriverStation.getAlliance();
         double alliance_dir = alliance.isPresent() && alliance.get() == Alliance.Red ? 1 : -1;
 
-        double xAxis = MathUtil.applyDeadband(driverController.getRawAxis(1), 0.05);
-        double yAxis = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.05);
-        double rAxis = MathUtil.applyDeadband(driverController.getRawAxis(4), 0.1);
+        double xAxis = MathUtil.applyDeadband(driverController.getRawAxis(1), 0.07);
+        double yAxis = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.07);
+        double rAxis = MathUtil.applyDeadband(driverController.getRawAxis(4), 0.06);
 
         double xSpeed = xAxis * maxSpeed * alliance_dir;
         double ySpeed = yAxis * maxSpeed * alliance_dir;
@@ -205,38 +207,24 @@ public class OperatorInterface extends SubsystemBase {
         this.ySpeed = ySpeed;
         this.rSpeed = rSpeed;
 
+        this.xAxis = xAxis;
+        this.yAxis = yAxis;
+        this.rAxis = rAxis;
 
-        // if (Math.abs(xAxis) > 0 || Math.abs(yAxis) > 0){
-        //     drive.setDriveRate(xSpeed, ySpeed);
+
+        // if (Math.abs(xAxis) > 0 || Math.abs(yAxis) > 0 || Math.abs(rAxis) > 0){
+        //     drive.setRate(xSpeed, ySpeed, rSpeed);
         //     drive.setLinearManualDrive(true);
-        // }else{
-        //     drive.setLinearManualDrive(false);
-        // }
-
-        // if (Math.abs(rAxis) > 0){
-        //     drive.setRotationRate(rSpeed);
         //     drive.setRotManualDrive(true);
         // }else{
+        //     drive.setLinearManualDrive(false);
         //     drive.setRotManualDrive(false);
         // }
 
-        if (Math.abs(xAxis) > 0 || Math.abs(yAxis) > 0 || Math.abs(rAxis) > 0){
-            drive.setRate(xSpeed, ySpeed, rSpeed);
-            drive.setLinearManualDrive(true);
-            drive.setRotManualDrive(true);
-        }else{
-            drive.setLinearManualDrive(false);
-            drive.setRotManualDrive(false);
-        }
-
+        
         if(driverController.getHID().getPOV() == 0 && driverController.getHID().getStartButton()){
             drive.setPresetPose(
                 FieldLayout.getReef(ReefFace.ZERO).plus(new Transform2d(Constants.robotLength/2 * -presetMirror, 0, rotationMirror)));
-        }
-
-        if(driverController.getHID().getBButton()){
-            drive.pathFindtoPath(drive.getPath("Right HP Teleop"), 
-            new PathConstraints(4.5, 7, 9.42478, 12.5664, 12));
         }
 
         // Update Shuffleboard

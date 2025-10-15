@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
@@ -23,6 +24,7 @@ import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.simulation.VisionTargetSim;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
 /**
  * Manages connection to a single PhotonVision AprilTag Pipeline
@@ -142,42 +144,40 @@ public class AprilTagPipeline extends SubsystemBase {
      * Updates camera pose estimation
      */
     private void updatePose() {
-        Optional<EstimatedRobotPose> visionEst = Optional.empty();
+        List<PhotonTrackedTarget> visionEst = List.of();
         Drive drive = Drive.getInstance();
         var unreadResults = camera.getAllUnreadResults();
         aprilTagSeen = false;
         
         for (var change : unreadResults) {
-            visionEst = pose_est.update(change);
+            visionEst = change.getTargets();
             int iteration = 0;
             last_pose = new Pose2d();
             // Check if a pose was estimated
-            if (visionEst.isPresent()) {
+            if (!visionEst.isEmpty()) {
                 double est_timestamp = change.getTimestampSeconds();
                 aprilTagList = new Pose3d[change.getTargets().size()];
                 // Get found tag count and average distance
-                for (var tag : change.getTargets()) {
-                    var tag_pose3d = pose_est.getFieldTags().getTagPose(tag.getFiducialId());
+                for (var tag : visionEst) {
+                    var tag_pose3d = PhotonUtils.estimateFieldToRobotAprilTag(
+                        tag.bestCameraToTarget, 
+                        pose_est.getFieldTags().getTagPose(tag.fiducialId).get(), 
+                        settings.robot_to_camera.inverse());
 
-                    if (!tag_pose3d.isEmpty()) {
-                        Pose3d estPose = PhotonUtils.estimateFieldToRobotAprilTag(tag.getBestCameraToTarget(),
-                                tag_pose3d.get(), settings.robot_to_camera.inverse());
                         if (tag.getPoseAmbiguity() <= ambiguity_threshold) {
                             double dist = tag.getBestCameraToTarget().getTranslation().getDistance(new Translation3d());
                             if (dist <= maxDistance) {
                                 Vector<N3> est_std = settings.single_tag_std;
                                 est_std = est_std.times(1 + (dist * dist / 30));
 
-                                drive.addVisionPose(estPose.toPose2d(), est_timestamp, est_std);
-                                last_pose = estPose.toPose2d();
+                                drive.addVisionPose(tag_pose3d.toPose2d(), est_timestamp, est_std);
+                                last_pose = tag_pose3d.toPose2d();
 
                                 aprilTagList[iteration] = AprilTagFieldLayout.loadField(field).getTagPose(tag.getFiducialId()).get();
                                 iteration++;
                                 aprilTagSeen = true;
                             }
                         }
-
-                    }
 
                 }
 

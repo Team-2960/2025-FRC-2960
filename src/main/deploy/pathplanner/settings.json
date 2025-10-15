@@ -6,15 +6,16 @@
     "LA Obselete",
     "Left Auton",
     "Middle Auton",
-    "Teleop Paths",
+    "Learn Folder",
     "RA Obselete",
-    "Right Auton"
+    "Right Auton",
+    "Teleop Paths"
   ],
   "autoFolders": [
     "New Folder"
   ],
   "defaultMaxVel": 4.5,
-  "defaultMaxAccel": 7.0,
+  "defaultMaxAccel": 9.0,
   "defaultMaxAngVel": 540.0,
   "defaultMaxAngAccel": 720.0,
   "defaultNominalVoltage": 12.0,
@@ -25,7 +26,7 @@
   "driveGearing": 5.08,
   "maxDriveSpeed": 5.33,
   "driveMotorType": "vortex",
-  "driveCurrentLimit": 60.0,
+  "driveCurrentLimit": 80.0,
   "wheelCOF": 1.2,
   "flModuleX": 0.33,
   "flModuleY": 0.33,

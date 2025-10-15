@@ -3,29 +3,45 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.500986842105263,
-        "y": 7.257894736842105
+        "x": 6.975740131578947,
+        "y": 6.853782894736842
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.9309076721325997,
-        "y": 6.881849836641253
+        "x": 7.975740131578947,
+        "y": 6.853782894736842
       },
       "isLocked": false,
-      "linkedName": "Test Human Player"
+      "linkedName": "harrison point"
     },
     {
       "anchor": {
-        "x": 3.8294407894736837,
-        "y": 5.1411184210526315
+        "x": 4.3393914473684205,
+        "y": 0.6766447368421052
       },
       "prevControl": {
-        "x": 3.2639418915444285,
-        "y": 5.629179254290936
+        "x": 6.015645559210526,
+        "y": 0.8907277960526299
+      },
+      "nextControl": {
+        "x": 2.663137335526315,
+        "y": 0.4625616776315796
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 2.270723684210526,
+        "y": 5.997450657894737
+      },
+      "prevControl": {
+        "x": 1.2707236842105258,
+        "y": 5.997450657894737
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Test Reef"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
@@ -42,13 +58,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -59.99999999999999
+    "rotation": 0.0
   },
   "reversed": false,
-  "folder": "LA Obselete",
+  "folder": "Learn Folder",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -54.0
+    "rotation": 90.0
   },
   "useDefaultConstraints": true
 }
