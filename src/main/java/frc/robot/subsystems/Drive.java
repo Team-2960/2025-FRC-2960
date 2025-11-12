@@ -1044,6 +1044,68 @@ public class Drive extends SubsystemBase {
         presetPoseCommand.schedule();
     }
 
+    public Command getAutonReefAlignCmd(Pose2d offset){
+        return this.runEnd(() -> {
+                linearGoToReef(offset.getTranslation());
+                rotGoToReef(offset.getRotation());
+            }, 
+            () ->setRate(0, 0, 0)
+        )
+        .until(
+            () -> 
+            Math.abs(
+                getReefFace(new Translation2d())
+                .getRotation()
+                .minus(getEstimatedPos().getRotation()).getDegrees()) 
+                <= Constants.alignRotTolerance.getDegrees()
+            && Math.abs(
+                PhotonUtils.getDistanceToPose(
+                        getEstimatedPos(), 
+                        getReefFace(offset.getTranslation())
+                    )
+                ) 
+                <= Constants.alignLinearTolerance
+        ).finallyDo(
+            () -> {
+                inLinearTol = Math.abs(
+                    PhotonUtils.getDistanceToPose(getEstimatedPos(), getReefFace(offset.getTranslation()))) 
+                    <= Constants.alignLinearTolerance;
+
+                inRotTol = Math.abs(
+                    getReefFace(new Translation2d())
+                    .getRotation()
+                    .minus(getEstimatedPos().getRotation()).getDegrees()) 
+                    <= Constants.alignRotTolerance.getDegrees();
+            }
+        );
+        
+        
+    }
+
+    public Command getGoToReefCommand(Pose2d offset){
+        return this.runEnd(() -> {
+                linearGoToReef(offset.getTranslation());
+                rotGoToReef(offset.getRotation());
+            }, 
+            () ->setRate(0, 0, 0)
+        )
+        .until(
+            () -> 
+            Math.abs(
+                getReefFace(new Translation2d())
+                .getRotation()
+                .minus(getEstimatedPos().getRotation()).getDegrees()) 
+                <= Constants.alignRotTolerance.getDegrees()
+            && Math.abs(
+                PhotonUtils.getDistanceToPose(
+                        getEstimatedPos(), 
+                        getReefFace(offset.getTranslation())
+                    )
+                ) 
+                <= Constants.alignLinearTolerance
+        );
+    }
+
     /**
      * Periodic update method
      */
