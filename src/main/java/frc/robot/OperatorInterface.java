@@ -1,5 +1,9 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
 import com.pathplanner.lib.path.PathConstraints;
 
 import edu.wpi.first.math.MathUtil;
@@ -7,6 +11,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.units.measure.MutAngularVelocity;
+import edu.wpi.first.units.measure.MutLinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
@@ -34,15 +40,9 @@ public class OperatorInterface extends SubsystemBase {
 
 
     //Manual Control Class Variables
-    private double xSpeed;
-    private double ySpeed;
-    private double rSpeed;
-
-    private double xAxis;
-    private double yAxis;
-    private double rAxis;
-
-
+    private MutLinearVelocity xSpeed = MetersPerSecond.mutable(0);
+    private MutLinearVelocity ySpeed = MetersPerSecond.mutable(0);
+    private MutAngularVelocity rSpeed = RotationsPerSecond.mutable(0);
     
     // Shuffleboard Entries
     private GenericEntry sb_driveX;
@@ -88,15 +88,15 @@ public class OperatorInterface extends SubsystemBase {
         Drive drive = Drive.getInstance();
         
         driverController.y()
-            .onTrue(drive.new GoToReefCommand(new Pose2d(Constants.centerOffset, new Rotation2d()))
+            .onTrue(drive.getGoToReefCommand(new Pose2d(Constants.centerOffset, new Rotation2d()))
             );
 
         driverController.y().and(driverController.rightBumper())
-            .onTrue(drive.new GoToReefCommand(new Pose2d(Constants.rightBranchOffset, new Rotation2d()))
+            .onTrue(drive.getGoToReefCommand(new Pose2d(Constants.rightBranchOffset, new Rotation2d()))
             );
 
         driverController.y().and(driverController.leftBumper())
-            .onTrue(drive.new GoToReefCommand(new Pose2d(Constants.leftBranchOffset, new Rotation2d()))
+            .onTrue(drive.getGoToReefCommand(new Pose2d(Constants.leftBranchOffset, new Rotation2d()))
             );
 
         driverController.b()
@@ -118,7 +118,7 @@ public class OperatorInterface extends SubsystemBase {
         driverController.axisMagnitudeGreaterThan(0, 0.06)
             .or(driverController.axisGreaterThan(1, 0.06))
             .or(driverController.axisGreaterThan(4, 0.06))
-                .onTrue(new RunCommand(() -> drive.setRate(xSpeed, ySpeed, rSpeed), drive));
+                .onTrue(drive.getRateCmd(() -> xSpeed, () -> ySpeed, () -> rSpeed));
             
     }
 
@@ -203,14 +203,9 @@ public class OperatorInterface extends SubsystemBase {
         Rotation2d rotationMirror = (drive.isRedAlliance() ? Rotation2d.fromDegrees(180) : Rotation2d.fromDegrees(0));
 
 
-        this.xSpeed = xSpeed;
-        this.ySpeed = ySpeed;
-        this.rSpeed = rSpeed;
-
-        this.xAxis = xAxis;
-        this.yAxis = yAxis;
-        this.rAxis = rAxis;
-
+        this.xSpeed.mut_replace(MetersPerSecond.of(xSpeed));
+        this.ySpeed.mut_replace(MetersPerSecond.of(ySpeed));
+        this.rSpeed.mut_replace(RadiansPerSecond.of(rSpeed));
 
         // if (Math.abs(xAxis) > 0 || Math.abs(yAxis) > 0 || Math.abs(rAxis) > 0){
         //     drive.setRate(xSpeed, ySpeed, rSpeed);
@@ -223,7 +218,7 @@ public class OperatorInterface extends SubsystemBase {
 
         
         if(driverController.getHID().getPOV() == 0 && driverController.getHID().getStartButton()){
-            drive.setPresetPose(
+            drive.getPresetPoseCmd(
                 FieldLayout.getReef(ReefFace.ZERO).plus(new Transform2d(Constants.robotLength/2 * -presetMirror, 0, rotationMirror)));
         }
 

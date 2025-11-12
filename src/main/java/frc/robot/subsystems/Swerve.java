@@ -14,13 +14,29 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.struct.Rotation2dStruct;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.units.AngleUnit.*;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+
+import static edu.wpi.first.units.Units.Degree;
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Radian;
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 public class Swerve extends SubsystemBase {
 
@@ -106,29 +122,41 @@ public class Swerve extends SubsystemBase {
         sb_driveVolt = layout.add("Drive Voltage", 0).getEntry();
     }
 
+    
+    /**
+     * Get current swerve module angle in Angle unit.
+     * @return returns Angle unit of module absolute encoder pos
+     */
+    public Angle getAnglePos(){
+        return Rotations.of(encAngle.getPosition());
+    }
+
     /**
      * Gets the current swerve module angle
      * 
-     * @return current swerve module angle
+     * @return current swerve module angle as Rotation2d
      */
-    public Rotation2d getAnglePos() {
+    public Rotation2d getAngleRotation2dPos() {
         return Rotation2d.fromRotations(encAngle.getPosition());
     }
 
     /**
-     * Get the current swerve module angle rate
+     * Get swerve module angle rate
+     * @return Angular Velocity unit of absolute encoder on module
      */
-    public double getAngleRate() {
-        return encAngle.getVelocity();
+    public AngularVelocity getAngleRate(){
+        return RotationsPerSecond.of(encAngle.getVelocity()/60);
     }
+
+    //TODO retune values for the correct rate. Used to return angle rate in RPM inste
 
     /**
      * Gets the current swerve module drive distance
      * 
      * @return current swerve module drive distance
      */
-    public double getDrivePos() {
-        return encDrive.getPosition() * Constants.driveRatio;
+    public Distance getDrivePos() {
+        return Meters.of(encDrive.getPosition() * Constants.driveRatio);
     }
 
     /**
@@ -136,8 +164,8 @@ public class Swerve extends SubsystemBase {
      * 
      * @return current swerve module drive speed
      */
-    public double getDriveVelocity() {
-        return encDrive.getVelocity()/60 * Constants.driveRatio;
+    public LinearVelocity getDriveVelocity() {
+        return MetersPerSecond.of(encDrive.getVelocity()/60 * Constants.driveRatio);
     }
 
     /**
@@ -146,7 +174,7 @@ public class Swerve extends SubsystemBase {
      * @return current swerve module positions
      */
     public SwerveModulePosition getPosition() {
-        return new SwerveModulePosition(getDrivePos(), getAnglePos());
+        return new SwerveModulePosition(getDrivePos().in(Meters), getAngleRotation2dPos());
     }
 
     /**
@@ -155,8 +183,7 @@ public class Swerve extends SubsystemBase {
      * @return current swerve module state
      */
     public SwerveModuleState getState() {
-        return new SwerveModuleState(getDriveVelocity(),
-                getAnglePos());
+        return new SwerveModuleState(getDriveVelocity(), getAngleRotation2dPos());
     }
 
     /**
@@ -168,12 +195,14 @@ public class Swerve extends SubsystemBase {
         this.desiredState = desiredState;
     }
 
+
+
     /**
      * Subsystem period update
      */
     @Override
     public void periodic() {
-        desiredState.optimize(getAnglePos());
+        desiredState.optimize(getAngleRotation2dPos());
 
         updateDrive(desiredState);
         updateAngle(desiredState);
@@ -185,7 +214,7 @@ public class Swerve extends SubsystemBase {
      */
     private void updateDrive(SwerveModuleState state) {
         // Calculate the drive output from the drive PID controller.
-        double pidOutput = drivePIDcontroller.calculate(getDriveVelocity(),
+        double pidOutput = drivePIDcontroller.calculate(getDriveVelocity().in(MetersPerSecond),
                 state.speedMetersPerSecond);
 
         double ffOutput = driveFeedforward.calculate(state.speedMetersPerSecond);
@@ -200,13 +229,13 @@ public class Swerve extends SubsystemBase {
      */
     private void updateAngle(SwerveModuleState state) {
         // Get current module angle
-        Rotation2d encoderRotation = getAnglePos();
+        Angle encoderRotation = getAnglePos();
 
         // Calculate target rate
-        double error = encoderRotation.getRadians() - state.angle.getRadians();
-        double compError = 2 * Math.PI - (Math.abs(error));
-        double compareError = Math.min(Math.abs(error), compError);
-        double direction = error > 0 ? 1 : -1;
+        Angle error = encoderRotation.minus(state.angle.getMeasure());
+        double compError = 2 * Math.PI - (Math.abs(error.in(Radians)));
+        double compareError = Math.min(Math.abs(error.in(Radians)), compError);
+        double direction = error.in(Radians) > 0 ? 1 : -1;
 
         if (compareError == compError)
             direction *= -1;
@@ -215,7 +244,7 @@ public class Swerve extends SubsystemBase {
         double angleVelocity = targetRate * direction;
 
         // Calculate motor output
-        double pidOutput = anglePIDController.calculate(getAngleRate(), angleVelocity);
+        double pidOutput = anglePIDController.calculate(getAngleRate().in(RadiansPerSecond), angleVelocity);
 
         double ffOutput = angleFeedforward.calculate(angleVelocity);
 
@@ -232,10 +261,10 @@ public class Swerve extends SubsystemBase {
      */
     private void updateUI() {
         sb_angleSetPoint.setDouble(desiredState.angle.getDegrees());
-        sb_angleCurrent.setDouble(getAnglePos().getDegrees());
+        sb_angleCurrent.setDouble(getAnglePos().in(Degrees));
         sb_angleVolt.setDouble(mAngle.getBusVoltage() * mAngle.getAppliedOutput());
         sb_driveSetPoint.setDouble(desiredState.speedMetersPerSecond);
-        sb_driveCurrent.setDouble(getDriveVelocity());
+        sb_driveCurrent.setDouble(getDriveVelocity().in(MetersPerSecond));
         sb_driveVolt.setDouble(mDrive.getAppliedOutput() * mDrive.getBusVoltage());
     }
 }

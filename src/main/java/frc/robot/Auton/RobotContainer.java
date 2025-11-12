@@ -34,8 +34,8 @@ public class RobotContainer {
     elevIntakeCommand = new RunCommand(() -> elevator.setElevatorPos(Constants.elevIntakePos), elevator);
     elevL4PosCommand = new RunCommand(() -> elevator.setElevatorPos(Constants.elevL4Pos), elevator);
 
-    NamedCommands.registerCommand("rightBranchAlign", drive.new AutonReefAlign(new Pose2d(Constants.rightBranchOffset, new Rotation2d())));
-    NamedCommands.registerCommand("leftBranchAlign", drive.new AutonReefAlign(new Pose2d(Constants.leftBranchOffset, new Rotation2d())));
+    NamedCommands.registerCommand("rightBranchAlign", drive.getAutonReefAlignCmd(new Pose2d(Constants.rightBranchOffset, new Rotation2d())));
+    NamedCommands.registerCommand("leftBranchAlign", drive.getAutonReefAlignCmd(new Pose2d(Constants.leftBranchOffset, new Rotation2d())));
     NamedCommands.registerCommand("goToIntakeCommand", elevArmControl.getGoToIntakeCommand());
     NamedCommands.registerCommand("goToL1Command", elevArmControl.getGoToL1Command());
     NamedCommands.registerCommand("goToL2Command", elevArmControl.getGoToL2Command());
@@ -54,8 +54,8 @@ public class RobotContainer {
     NamedCommands.registerCommand("elevIntakePos", elevIntakeCommand);
     NamedCommands.registerCommand("elevL4Pos", elevL4PosCommand);
     NamedCommands.registerCommand("driveDoNothing", new RunCommand(() -> drive.setChassisSpeeds(new ChassisSpeeds(0,0,0), false), drive));
-    NamedCommands.registerCommand("leftBranchNoFinish", drive.new GoToReefCommand(new Pose2d(Constants.leftBranchOffset, new Rotation2d())));
-    NamedCommands.registerCommand("rightBranchNoFinish", drive.new GoToReefCommand(new Pose2d(Constants.rightBranchOffset, new Rotation2d())));
+    NamedCommands.registerCommand("leftBranchNoFinish", drive.getGoToReefCommand(new Pose2d(Constants.leftBranchOffset, new Rotation2d())));
+    NamedCommands.registerCommand("rightBranchNoFinish", drive.getGoToReefCommand(new Pose2d(Constants.rightBranchOffset, new Rotation2d())));
 
     autoChooser = AutoBuilder.buildAutoChooser();
     
