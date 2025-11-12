@@ -1,5 +1,7 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Inches;
+
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
@@ -9,6 +11,7 @@ import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.units.measure.Distance;
 import frc.robot.Util.*;
 
 public class Constants {
@@ -145,8 +148,8 @@ public class Constants {
     public static final double elevatorDefTol = .5;         // in.
     public static final double elevatorPosTol = .5;         // in.
 
-    public static final double elevatorTopLim = 57.5;         //in.
-    public static final double elevatorBotLim = 0.25;        //in.
+    public static final Distance elevatorTopLim = Inches.of(57.5);         //in.
+    public static final Distance elevatorBotLim = Inches.of(0.25);        //in.
 
     public static final double elevIntakePos = 0;       // in.
     public static final double elevL1Pos = 0;           // in.

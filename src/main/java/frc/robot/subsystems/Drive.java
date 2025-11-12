@@ -87,9 +87,6 @@ public class Drive extends SubsystemBase {
     private PIDController angleAlignPID;
     private PIDController driveAlignPID;
 
-    private boolean isLinearManualDrive = true;
-    private boolean isRotManualDrive = true;
-
     private boolean inLinearTol = false;
     private boolean inRotTol = false;
 
@@ -625,14 +622,6 @@ public class Drive extends SubsystemBase {
         return is_red;
     }
 
-    public void setLinearManualDrive(boolean isLinearManualDrive){
-        this.isLinearManualDrive = isLinearManualDrive;
-    }
-
-    public void setRotManualDrive(boolean isRotManualDrive){
-        this.isRotManualDrive = isRotManualDrive;
-    }
-
     public void ballerinaSpin(){
         setAngleRate(RotationsPerSecond.of(100000000));
     }
@@ -794,74 +783,6 @@ public class Drive extends SubsystemBase {
         
         if (getCurrentCommand() != pathFindCommand) pathFindCommand.schedule();
     }
-
-    
-    // /**
-    //  * Sets the target linear rate
-    //  * @param xSpeed    Target X rate
-    //  * @param ySpeed    Target Y rate
-    //  */
-    // public void setDriveRate(double xSpeed, double ySpeed) {
-    //     DriveRateCommand driveRate = linearDriveCommands.driveRateCommand;
-    //     driveRate.setSpeeds(xSpeed, ySpeed);
-        
-    //     if (linearDriveCommands.getCurrentCommand() != driveRate) driveRate.schedule();
-    // }
-
-    // /**
-    //  * Sets the target angle rate
-    //  * @param rSpeed    Target angle rate
-    //  */
-    // public void setRotationRate(double rSpeed) {
-    //     RotationRateCommand rotationRate = rotationDriveCommands.rotationRateCommand;
-    //     rotationRate.setRotationRate(rSpeed);
-
-    //     if (rotationDriveCommands.getCurrentCommand() != rotationRate)
-    //         rotationRate.schedule();
-    // }
-
-    // /**
-    //  * Sets the robot to align to an angle
-    //  * @param targetAngle   target angle
-    //  */
-    // public void setAngleAlign(Rotation2d targetAngle) {
-    //     AngleAlignCommand rotationCommand = rotationDriveCommands.angleAlignCommand;
-    //     rotationCommand.setAngle(targetAngle);
-    //     if (rotationDriveCommands.getCurrentCommand() != rotationCommand)
-    //         rotationCommand.schedule();
-    // }
-
-    // /**
-    //  * Sets the robot to align to a point
-    //  * @param targetPoint       target point
-    //  * @param rotationOffset    offset angle
-    //  */
-    // public void setPointAlign(Translation2d targetPoint, Rotation2d rotationOffset) {
-    //     PointAlignCommand pointAlign = rotationDriveCommands.pointAlignCommand;
-
-    //     pointAlign.setPoint(targetPoint);
-    //     pointAlign.setOffset(rotationOffset);
-
-    //     if (rotationDriveCommands.getCurrentCommand() != pointAlign)
-    //         pointAlign.schedule();
-    // }
-
-    // /**
-    //  * Aligns to the reef
-    //  * @param offset    offset angle
-    //  */
-    // public void setReefAlign(Rotation2d offset) {
-    //     ReefAlignCommand reefAlignCommand = rotationDriveCommands.reefAlignCommand;
-    //     reefAlignCommand.setOffset(offset);
-    //     if (rotationDriveCommands.getCurrentCommand() != reefAlignCommand)
-    //         reefAlignCommand.schedule();
-    // }
-
-    // public void setRotGoToReef(Rotation2d offset){
-    //     frc.robot.subsystems.Drive.RotationDriveCommands.RotGoToReefCommand rotGoToReefCommand = rotationDriveCommands.rotGoToReefCommand;
-    //     rotGoToReefCommand.setOffset(offset);
-    //     if(rotGoToReefCommand != rotationDriveCommands.getCurrentCommand()) rotGoToReefCommand.schedule();
-    // }
 
     public void setRate(LinearVelocity xSpeed, LinearVelocity ySpeed, AngularVelocity rSpeed){
         updateKinematics(xSpeed, ySpeed, true);

@@ -14,6 +14,9 @@ import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.MutCurrent;
 import edu.wpi.first.units.measure.MutDistance;
 import edu.wpi.first.units.measure.MutLinearVelocity;
@@ -371,8 +374,8 @@ public class Elevator extends SubsystemBase {
      * 
      * @return current elevator position (in)
      */
-    public double getElevatorPos() {
-        return elevatorEncoder.getPosition();
+    public Distance getElevatorPos() {
+        return Inches.of(elevatorEncoder.getPosition());
     }
 
     /**
@@ -380,16 +383,16 @@ public class Elevator extends SubsystemBase {
      * 
      * @return current elevator velocity (in per sec)
      */
-    public double getElevatorVelocity() {
-        return elevatorEncoder.getVelocity();
+    public LinearVelocity getElevatorVelocity() {
+        return InchesPerSecond.of(elevatorEncoder.getVelocity());
     }
 
-    public double getElevatorVoltage(){
-        return elevatorMotor.getAppliedOutput() * elevatorMotor.getBusVoltage();
+    public Voltage getElevatorVoltage(){
+        return Volts.of(elevatorMotor.getAppliedOutput() * elevatorMotor.getBusVoltage());
     }
 
-    public double getElevatorCurrent(){
-        return elevatorMotor.getOutputCurrent();
+    public Current getElevatorCurrent(){
+        return Amps.of(elevatorMotor.getOutputCurrent());
     }
 
     /**
@@ -397,10 +400,10 @@ public class Elevator extends SubsystemBase {
      * 
      * @return true if the position is at their target
      */
-    public boolean atPos(double targetPos, double posTol) {
-        double currentPos = getElevatorPos();
+    public boolean atPos(Distance targetPos, Distance posTol) {
+        Distance currentPos = getElevatorPos();
 
-        return Math.abs(targetPos - currentPos) < posTol;
+        return targetPos.minus(currentPos).abs(Inches) < posTol.in(Inches);
     }
 
     /**
@@ -411,7 +414,7 @@ public class Elevator extends SubsystemBase {
     public void setElevatorPos(double targetPos) {
         
         // Calculate trapezoidal profile
-        double currentPos = getElevatorPos();
+        double currentPos = getElevatorPos().in(Inches);
         double maxPosRate = Constants.maxElevatorAutoSpeed;
         double posError = targetPos - currentPos;
 
@@ -429,21 +432,21 @@ public class Elevator extends SubsystemBase {
      * 
      * @param targetSpeed target
      */
-    private void setElevatorRate(double targetSpeed) {
+    private void setElevatorRate(LinearVelocity targetSpeed) {
         double result = this.elevatorRate;
 
         //double currentPos = getElevatorPos();
-        double posRate = getElevatorVelocity();            
+        LinearVelocity posRate = getElevatorVelocity();            
 
-        sb_posRateError.setDouble(posRate - targetSpeed);
+        sb_posRateError.setDouble(posRate.in(InchesPerSecond) - targetSpeed.in(InchesPerSecond));
 
         // Calculate motor voltage output
-        double calcPID = elevatorPID.calculate(posRate, targetSpeed);
-        double calcFF = elevatorFF.calculate(targetSpeed);
+        double calcPID = elevatorPID.calculate(posRate.in(InchesPerSecond), targetSpeed.in(InchesPerSecond));
+        double calcFF = elevatorFF.calculate(targetSpeed.in(InchesPerSecond));
 
         result = calcPID + calcFF;
         
-        setMotorVolt(result);
+        setMotorVolt(Volts.of(result));
         
         //Shuffleboard display
         this.elevatorRate = result;
